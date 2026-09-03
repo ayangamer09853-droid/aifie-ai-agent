@@ -268,7 +268,14 @@ import { getTimeseriesStoreStatus, getCandleBars, recordMarketTick, computeSessi
 import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateCpcvPaths, evaluateStrategyPromotionGate } from "./src/strategy-validation-pipeline.mjs";
 import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, calculateHierarchicalRiskParity, evaluateDefensiveHedging } from "./src/portfolio-risk-fortress.mjs";
 import { routeOrderThroughSor, generateTwapOrderSlices, generateIcebergOrderPlan, verifyBrokerConnectivityStatus } from "./src/broker-adapters-suite.mjs";
-import { synthesizeStrategyGenome, adaptPolicyParametersFromRewards, getEvolvedGenomeLibrary } from "./src/self-evolving-swarm.mjs";
+import {
+  synthesizeStrategyGenome,
+  adaptPolicyParametersFromRewards,
+  getEvolvedGenomeLibrary,
+  getEvolutionStatus,
+  runEvolutionCycle,
+  startAutonomousEvolutionDaemon
+} from "./src/self-evolving-swarm.mjs";
 
 const sources = getConnectedSourceStatus();
 
@@ -1210,6 +1217,12 @@ export function app(request, response) {
     }).catch(() => {});
     return;
   }
+  if (request.method === "GET" && url.pathname === "/api/v100/swarm/evolution-status") {
+    return respond(response, 200, getEvolutionStatus());
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/swarm/trigger-evolution") {
+    return respond(response, 200, runEvolutionCycle({ paper, orders, strategyLab, persist }));
+  }
 
   return respond(response, 404, { error: "not found" });
   } catch (err) {
@@ -1235,6 +1248,7 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
     startContinuous247AgentSwarmDaemon();
     startPersistentPublicTunnelDaemon({ port });
     startMasterAutonomousNexusDaemon({ intervalMs: 60000 });
+    startAutonomousEvolutionDaemon({ intervalMs: 30000, paper, orders, strategyLab, persist });
     console.log(`\n==================================================`);
     console.log(`🚀 AIFIE AI AGENT ONLINE & AUTONOMOUS 24/7`);
     console.log(`📊 Local Web Dashboard: http://localhost:${port}`);

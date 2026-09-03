@@ -169,7 +169,7 @@ import { getTimeseriesStoreStatus, computeSessionVwap, getCandleBars } from "./t
 import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateStrategyPromotionGate } from "./strategy-validation-pipeline.mjs";
 import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, evaluateDefensiveHedging } from "./portfolio-risk-fortress.mjs";
 import { routeOrderThroughSor, generateTwapOrderSlices } from "./broker-adapters-suite.mjs";
-import { synthesizeStrategyGenome, getEvolvedGenomeLibrary } from "./self-evolving-swarm.mjs";
+import { synthesizeStrategyGenome, getEvolvedGenomeLibrary, getEvolutionStatus, runEvolutionCycle } from "./self-evolving-swarm.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
@@ -521,17 +521,20 @@ ${twap.slices.slice(0, 4).map(s => `• Slice #${s.sliceIndex}: <b>${s.quantity}
   }
 
   if (command === "/evolve" || command === "/genomes") {
-    const g = synthesizeStrategyGenome({ targetRegime: "TRENDING_BULLISH" });
-    const lib = getEvolvedGenomeLibrary();
-    return `🧬 <b>SELF-EVOLVING AI STRATEGY GENOME</b>
+    const cycle = runEvolutionCycle({ paper, orders });
+    const evo = getEvolutionStatus();
+    return `🧬 <b>SELF-EVOLVING SWARM GENERATION #${evo.generation}</b>
 ──────────────────
-<b>Genome ID:</b> <code>${g.genomeId}</code>
-<b>Name:</b> <b>${g.name}</b>
-<b>Target Regime:</b> <code>${g.targetRegime}</code>
-<b>Entry Rule:</b> <i>${g.rules.entry}</i>
-<b>Exit Rule:</b> <i>${g.rules.exit}</i>
-<b>Est Expected Sharpe:</b> <b>${g.estimatedExpectedSharpe}</b>
-<b>Vault Genomes Available:</b> <b>${lib.totalGenomesAvailable}</b>`;
+<b>Status:</b> <b>ACTIVE (AUTO-EVOLVING 24/7)</b>
+<b>Generation Count:</b> <b>Gen #${evo.generation}</b>
+<b>Champion Strategy:</b> <b>${evo.championGenome.name}</b>
+<b>Champion Fitness:</b> <code>${evo.championFitness}%</code> (Sharpe ~${evo.championGenome.estimatedExpectedSharpe})
+<b>Adaptive Stop-Loss:</b> <code>${evo.currentPolicyParameters.stopLossPercent}%</code>
+<b>Adaptive Take-Profit:</b> <code>${evo.currentPolicyParameters.takeProfitPercent}%</code>
+<b>Target Regime:</b> <code>${evo.championGenome.targetRegime || "ALL_WEATHER"}</code>
+<b>Latest Mutation:</b> <i>${cycle.candidateGenome ? cycle.candidateGenome.name : "Hyperparameter gradient tuned"}</i>
+<b>Evolution Rationale:</b> <i>${cycle.adaptationRationale}</i>
+<i>Strategies mutate, crossover, and promote winning alphas automatically without human intervention.</i>`;
   }
 
   if (command === "/dsr" || command === "/falsification") {

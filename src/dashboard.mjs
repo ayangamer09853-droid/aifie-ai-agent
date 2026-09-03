@@ -1690,10 +1690,12 @@ Type any command below or use the quick action buttons above.</div>
                 <option value="VOLATILE_CRISIS">Volatile Crisis (Defensive Hedged Mean-Reversion)</option>
                 <option value="MEAN_REVERTING_SIDEWAYS">Mean-Reverting Sideways (Range Scalper)</option>
               </select>
-              <button onclick="runQuantSynthesizeGenome()" style="background:var(--neon-purple); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 16px; border-radius:4px; cursor:pointer;">SYNTHESIZE NEW GENOME</button>
-              <button onclick="runQuantLoadGenomes()" style="background:rgba(157,78,221,0.2); border:1px solid var(--neon-purple); color:var(--neon-purple); font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 12px; border-radius:4px; cursor:pointer;">VAULT LIBRARY</button>
+              <button onclick="runQuantSynthesizeGenome()" style="background:var(--neon-purple); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">SYNTHESIZE NEW GENOME</button>
+              <button onclick="runTriggerEvolutionUi()" style="background:linear-gradient(90deg, #9d4edd, #ff007f); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">🧬 EVOLVE NOW</button>
+              <button onclick="loadEvolutionStatusUi()" style="background:rgba(0,255,157,0.15); border:1px solid var(--neon-green); color:var(--neon-green); font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">📊 STATUS</button>
+              <button onclick="runQuantLoadGenomes()" style="background:rgba(157,78,221,0.2); border:1px solid var(--neon-purple); color:var(--neon-purple); font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">VAULT</button>
             </div>
-            <div id="quantGenomeResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:120px; white-space:pre-wrap; line-height:1.6;">Click "SYNTHESIZE NEW GENOME" to compile automated rules and hyperparameters tailored to current market regimes.</div>
+            <div id="quantGenomeResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:120px; white-space:pre-wrap; line-height:1.6;">Click "EVOLVE NOW" or "STATUS" to inspect real-time autonomous generational mutation, crossover, and RL adaptation.</div>
           </div>
         </div>
 
@@ -1954,6 +1956,43 @@ Type any command below or use the quick action buttons above.</div>
         box.textContent = '=== ALPHA GENOME VAULT (' + data.totalGenomesAvailable + ' GENOMES) ===\n\n' + genomeLines;
       } catch (err) {
         box.textContent = 'Vault Error: ' + err.message;
+      }
+    }
+
+    async function runTriggerEvolutionUi() {
+      const box = document.getElementById('quantGenomeResults');
+      box.textContent = 'Triggering real-time autonomous genetic evolution cycle...';
+      try {
+        const res = await fetch('/api/v100/swarm/trigger-evolution', { method: 'POST' });
+        const data = await res.json();
+        box.textContent = '=== 🧬 AUTONOMOUS EVOLUTION GENERATION #' + data.generation + ' ===\n' +
+          'Champion Status: ' + (data.championUpdated ? '🏆 NEW CHAMPION PROMOTED!' : 'STEADY EVOLUTION') + '\n' +
+          'Champion Strategy: ' + data.championGenome.name + ' (Fitness: ' + data.championGenome.fitnessScore + '%)\n' +
+          'Candidate Offspring: ' + (data.candidateGenome ? data.candidateGenome.name : 'N/A') + '\n' +
+          'Adapted Stop-Loss: ' + data.adaptedPolicy.stopLossPercent + '%\n' +
+          'Adapted Take-Profit: ' + data.adaptedPolicy.takeProfitPercent + '%\n' +
+          'Rationale: ' + data.adaptationRationale;
+      } catch (err) {
+        box.textContent = 'Evolution Error: ' + err.message;
+      }
+    }
+
+    async function loadEvolutionStatusUi() {
+      const box = document.getElementById('quantGenomeResults');
+      box.textContent = 'Fetching live evolution state and generational ledger...';
+      try {
+        const res = await fetch('/api/v100/swarm/evolution-status');
+        const data = await res.json();
+        const mutLines = data.recentMutations.slice(0, 3).map(function(m) {
+          return '• Gen #' + m.generation + ' [' + m.type + ']: ' + m.name + ' (Fitness: ' + m.fitnessScore + '%)';
+        }).join('\n');
+        box.textContent = '=== 🧬 EVOLUTION STATUS (GEN #' + data.generation + ') ===\n' +
+          'Active Champion: ' + data.championGenome.name + ' (' + data.championFitness + '%)\n' +
+          'Dynamic SL / TP: ' + data.currentPolicyParameters.stopLossPercent + '% / ' + data.currentPolicyParameters.takeProfitPercent + '%\n' +
+          'Total Genomes Synthesized: ' + data.totalGenomesSynthesized + '\n\n' +
+          'Recent Generational Mutations:\n' + mutLines;
+      } catch (err) {
+        box.textContent = 'Status Error: ' + err.message;
       }
     }
 

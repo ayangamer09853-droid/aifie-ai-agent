@@ -39,7 +39,11 @@ import {
 import {
   synthesizeStrategyGenome,
   adaptPolicyParametersFromRewards,
-  getEvolvedGenomeLibrary
+  getEvolvedGenomeLibrary,
+  mutateGenome,
+  crossoverGenomes,
+  runEvolutionCycle,
+  getEvolutionStatus
 } from "../src/self-evolving-swarm.mjs";
 
 import { app } from "../server.mjs";
@@ -148,6 +152,21 @@ test("Self-Evolving AI Swarm synthesizes strategy genomes and adapts policy from
 
   const library = getEvolvedGenomeLibrary();
   assert.ok(library.totalGenomesAvailable >= 3);
+
+  const mutated = mutateGenome(genome);
+  assert.ok(mutated.genomeId.startsWith("GENOME_MUTATED_"));
+  assert.equal(mutated.mutationCount, 1);
+
+  const cross = crossoverGenomes(genome, mutated);
+  assert.ok(cross.genomeId.startsWith("GENOME_CROSS_"));
+
+  const evoCycle = runEvolutionCycle();
+  assert.equal(evoCycle.success, true);
+  assert.ok(evoCycle.generation >= 2);
+
+  const evoStatus = getEvolutionStatus();
+  assert.ok(evoStatus.generation >= 2);
+  assert.ok(evoStatus.championFitness > 50);
 });
 
 test("Future Requirements REST API endpoints respond with 200 OK", async () => {
@@ -178,6 +197,16 @@ test("Future Requirements REST API endpoints respond with 200 OK", async () => {
     assert.equal(swarmRes.status, 200);
     const swarmData = await swarmRes.json();
     assert.ok(swarmData.totalGenomesAvailable >= 3);
+
+    const evoRes = await fetch(`http://127.0.0.1:${port}/api/v100/swarm/evolution-status`);
+    assert.equal(evoRes.status, 200);
+    const evoData = await evoRes.json();
+    assert.ok(evoData.generation !== undefined);
+
+    const trigRes = await fetch(`http://127.0.0.1:${port}/api/v100/swarm/trigger-evolution`, { method: "POST" });
+    assert.equal(trigRes.status, 200);
+    const trigData = await trigRes.json();
+    assert.equal(trigData.success, true);
   } finally {
     server.closeAllConnections?.();
     await new Promise(resolve => server.close(resolve));

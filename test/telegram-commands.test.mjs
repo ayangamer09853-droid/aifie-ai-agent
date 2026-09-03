@@ -70,7 +70,7 @@ test("processTelegramCommand handles future requirements commands (/timeseries, 
   assert.ok(twapMsg.includes("TWAP ORDER EXECUTION"));
 
   const evolveMsg = await processTelegramCommand({ command: "/evolve" });
-  assert.ok(evolveMsg.includes("SELF-EVOLVING AI STRATEGY"));
+  assert.ok(evolveMsg.includes("SELF-EVOLVING"));
 
   const dsrMsg = await processTelegramCommand({ command: "/dsr" });
   assert.ok(dsrMsg.includes("HANSEN SPA"));
