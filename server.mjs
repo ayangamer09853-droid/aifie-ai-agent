@@ -221,6 +221,14 @@ import { evaluateAlertPriority, sendSmartTelegramAlert } from "./src/smart-teleg
 // v91.0 Sovereign 20-Platform Omni-Cloud Orchestrator
 import { getOmniCloudStatus, getFailoverChain, runHealthCheckAllPlatforms } from "./src/omni-cloud-platform-orchestrator.mjs";
 
+// v92.0 Autonomous Multi-Market Apex Analyst Engine
+import {
+  runFullAutonomousMarketScan,
+  getAutonomousAnalystInspection,
+  generateDailyAnalystBriefing,
+  getAnalystWatchState
+} from "./src/autonomous-chart-analyst-engine.mjs";
+
 // v93.0 Nous Research Hermes Agent Engine
 import { getHermesAgentStatus, runHermesAutonomousAgent, hermesSynthesizeSkill } from "./src/hermes-agent-integration.mjs";
 
@@ -804,6 +812,24 @@ export function app(request, response) {
       }
     });
     return;
+  }
+
+  // v92.0 Autonomous Multi-Market Apex Analyst Engine Endpoints
+  if (request.method === "GET" && url.pathname === "/api/v92/analyst/scan") {
+    runFullAutonomousMarketScan().then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
+    return;
+  }
+  if (request.method === "GET" && url.pathname === "/api/v92/analyst/inspect") {
+    const symbol = url.searchParams.get("symbol") || "BTCUSDT";
+    getAutonomousAnalystInspection(symbol).then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
+    return;
+  }
+  if (request.method === "GET" && url.pathname === "/api/v92/analyst/briefing") {
+    generateDailyAnalystBriefing().then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
+    return;
+  }
+  if (request.method === "GET" && url.pathname === "/api/v92/analyst/watch") {
+    return respond(response, 200, getAnalystWatchState());
   }
 
   // v92.0 UpsideOnly, Alpha Consensus, & FxFactory Trinity Endpoints

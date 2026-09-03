@@ -361,6 +361,7 @@ export const DASHBOARD = `<!DOCTYPE html>
 
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-COMMAND" onclick="switchPreset('COMMAND')">1:COMMAND</button>
+      <button class="nav-tab" id="tab-ANALYST" onclick="switchPreset('ANALYST')" style="border-color: #ff007a; color: #ff007a; font-weight: 900; background: rgba(255, 0, 122, 0.08);">🎯:APEX ANALYST</button>
       <button class="nav-tab" id="tab-MARKETS" onclick="switchPreset('MARKETS')">2:MARKETS</button>
       <button class="nav-tab" id="tab-STRATEGIES" onclick="switchPreset('STRATEGIES')">3:STRATEGIES</button>
       <button class="nav-tab" id="tab-RISK" onclick="switchPreset('RISK')">4:RISK</button>
@@ -387,6 +388,60 @@ export const DASHBOARD = `<!DOCTYPE html>
     <div class="ticker-card" id="card-OIL"><span class="ticker-symbol">OIL</span><span class="ticker-price ticker-down" id="price-OIL">$72.40 -1.2%</span></div>
     <div class="ticker-card" id="card-NIFTY50"><span class="ticker-symbol">NIFTY50</span><span class="ticker-price ticker-up" id="price-NIFTY50">25,420.50 +0.6%</span></div>
     <div class="ticker-card" id="card-VIX"><span class="ticker-symbol">VIX</span><span class="ticker-price ticker-down" id="price-VIX">15.42 -5.2%</span></div>
+  </div>
+
+  <!-- VIEW: APEX AUTONOMOUS CHART ANALYST -->
+  <div id="view-ANALYST" class="view-content">
+    <div style="background: radial-gradient(circle at top, rgba(255, 0, 122, 0.12), transparent 70%), #040810; border: 1px solid rgba(255, 0, 122, 0.3); border-radius: 8px; padding: 18px; margin-bottom: 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-size: 16px; font-weight: 900; color: #ff007a; letter-spacing: 1px; display:flex; align-items:center; gap:8px;">
+            <span>🎯 AIFIE APEX CHIEF MARKET ANALYST</span>
+            <span style="font-size: 10px; background: rgba(255,0,122,0.2); border: 1px solid #ff007a; color:#fff; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);">24/7 AUTONOMOUS</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+            <b>"IT READS THE CHART. Before I even ask. IT FINDS THE SETUPS In seconds. IT EXPLAINS THE TRADE Not just the signal. IT CALCULATES THE RISK Before every trade. IT WATCHES EVERY MARKET 24/7."</b>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-primary" onclick="triggerMarketScan()" style="background:#ff007a; border-color:#ff007a; font-weight:bold;">⚡ SCAN ALL MARKETS</button>
+          <button class="btn btn-secondary" onclick="loadDailyBriefing()" style="border-color:#ff007a; color:#ff007a;">☀️ DAILY BRIEFING</button>
+        </div>
+      </div>
+
+      <!-- Quick Symbol Inspector Bar -->
+      <div style="display:flex; gap:8px; margin-top:14px; background:rgba(0,0,0,0.4); padding:8px 12px; border-radius:6px; border:1px solid var(--border-panel); align-items:center; flex-wrap:wrap;">
+        <span style="font-size:11px; font-family:var(--font-mono); color:var(--neon-cyan);">🔍 INSPECT CHART & SETUPS:</span>
+        <input type="text" id="analystSymbolInput" value="BTCUSDT" placeholder="e.g. BTCUSDT, ETHUSDT, AAPL, NVDA, XAUUSD" style="background:#010204; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:11px; border-radius:4px; width:200px;">
+        <button class="btn btn-secondary" onclick="inspectSymbolAnalyst()" style="padding:6px 12px; font-size:11px; border-color:var(--neon-cyan); color:var(--neon-cyan);">READ CHART & THESIS</button>
+      </div>
+    </div>
+
+    <!-- 2-Column Analyst Layout -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+      
+      <!-- Left Column: Active Market Setups Grid -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>🌐 24/7 MONITORED MARKET SETUPS (CRYPTO, EQUITIES, COMMODITIES, FOREX)</span>
+          <span style="color:var(--neon-green);" id="analystScanCount">● 13 ASSETS WATCHED</span>
+        </div>
+        <div class="panel-body" id="analystMarketSetupsContainer" style="max-height: 600px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+          <div style="color:var(--text-muted); font-size:11px; font-family:var(--font-mono); padding:10px;">Click "SCAN ALL MARKETS" to generate live setup cards...</div>
+        </div>
+      </div>
+
+      <!-- Right Column: Institutional Thesis & Risk Breakdown -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>🧠 INSTITUTIONAL THESIS, SMC CONFLUENCE & PRE-TRADE RISK</span>
+          <span style="color:#ff007a; font-weight:bold;" id="analystActiveSymbol">BTCUSDT</span>
+        </div>
+        <div class="panel-body">
+          <pre id="analystThesisOutput" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:14px; font-family:var(--font-mono); font-size:11px; color:#a0aec0; white-space:pre-wrap; max-height:560px; overflow-y:auto; line-height:1.6;">Select or inspect any symbol to view the full human-readable institutional trade blueprint...</pre>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- VIEW 1: COMMAND CENTER (DEFAULT) -->
@@ -1410,6 +1465,113 @@ export const DASHBOARD = `<!DOCTYPE html>
       if (preset === 'SOURCES') load24SourcesView();
       if (preset === 'APEX') loadApexV100View();
       if (preset === 'QUANT') loadQuantLabView();
+      if (preset === 'ANALYST') loadApexAnalystView();
+    }
+
+    // Apex Autonomous Chart Analyst Handlers
+    async function loadApexAnalystView() {
+      triggerMarketScan();
+    }
+
+    async function triggerMarketScan() {
+      const container = document.getElementById('analystMarketSetupsContainer');
+      const countEl = document.getElementById('analystScanCount');
+      if (container) container.innerHTML = '<div style="color:var(--neon-cyan); font-family:var(--font-mono); font-size:11px; padding:12px;">⚡ Reading multi-timeframe charts across 13 markets in seconds...</div>';
+      
+      try {
+        const res = await fetch('/api/v92/analyst/scan');
+        const data = await res.json();
+        if (countEl) countEl.innerText = '● ' + (data.totalAssetsScanned || 13) + ' ASSETS SCANNED (' + (data.highConvictionSetupsCount || 0) + ' A+ SETUPS)';
+        
+        if (container && Array.isArray(data.scanResults)) {
+          container.innerHTML = data.scanResults.map(s => {
+            const isBuy = s.setup.direction.includes('BUY');
+            const color = isBuy ? 'var(--neon-green)' : (s.setup.direction.includes('SELL') ? 'var(--neon-red)' : 'var(--neon-amber)');
+            return \`
+              <div onclick="inspectSymbolAnalyst('\${s.symbol}')" style="background:#010204; border:1px solid var(--border-panel); border-radius:6px; padding:10px 12px; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.borderColor='#ff007a'" onmouseout="this.style.borderColor='var(--border-panel)'">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <span style="font-weight:bold; font-size:13px; color:#fff;">\${s.symbol}</span>
+                    <span style="font-size:10px; color:var(--text-muted); margin-left:6px;">\${s.name} (\${s.category})</span>
+                  </div>
+                  <div style="font-size:12px; font-weight:bold; color:\${color};">
+                    \${s.setup.direction}
+                  </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:11px; font-family:var(--font-mono);">
+                  <div>Price: <b style="color:#fff;">$\${s.currentPrice.toLocaleString()}</b></div>
+                  <div>Grade: <b style="color:\${color};">\${s.setup.grade}</b> (<b>\${s.setup.convictionScore}%</b>)</div>
+                  <div>RRR: <b style="color:var(--neon-cyan);">\${s.riskModel.riskToRewardRatio}</b></div>
+                </div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:4px; font-family:var(--font-mono);">
+                  • Entry: $\${s.riskModel.entryPrice} | Stop: $\${s.riskModel.stopLossPrice} | T2: $\${s.riskModel.target2Price}
+                </div>
+              </div>
+            \`;
+          }).join('');
+        }
+
+        // Auto-display BTC thesis on initial scan
+        if (data.scanResults && data.scanResults.length > 0) {
+          displayAnalystThesis(data.scanResults[0]);
+        }
+      } catch (err) {
+        if (container) container.innerHTML = '<div style="color:var(--neon-red); font-size:11px;">Error scanning markets: ' + err.message + '</div>';
+      }
+    }
+
+    async function inspectSymbolAnalyst(customSymbol) {
+      const sym = (customSymbol || document.getElementById('analystSymbolInput').value || 'BTCUSDT').toUpperCase();
+      const output = document.getElementById('analystThesisOutput');
+      const activeSym = document.getElementById('analystActiveSymbol');
+      if (activeSym) activeSym.innerText = sym;
+      if (output) output.textContent = 'Reading chart patterns, SMC imbalances, Wyckoff phases, and computing pre-trade risk for ' + sym + '...';
+      
+      try {
+        const res = await fetch('/api/v92/analyst/inspect?symbol=' + encodeURIComponent(sym));
+        const data = await res.json();
+        displayAnalystThesis(data);
+      } catch (err) {
+        if (output) output.textContent = '[ERROR] Failed to analyze ' + sym + ': ' + err.message;
+      }
+    }
+
+    function displayAnalystThesis(data) {
+      const output = document.getElementById('analystThesisOutput');
+      const activeSym = document.getElementById('analystActiveSymbol');
+      if (activeSym && data.symbol) activeSym.innerText = data.symbol;
+      if (output && data.thesis) {
+        output.textContent = data.thesis.fullThesisNarrative;
+      } else if (output && data.explanation) {
+        output.textContent = data.explanation.fullThesisNarrative;
+      }
+    }
+
+    async function loadDailyBriefing() {
+      const output = document.getElementById('analystThesisOutput');
+      const activeSym = document.getElementById('analystActiveSymbol');
+      if (activeSym) activeSym.innerText = 'DAILY GAMEPLAN';
+      if (output) output.textContent = 'Synthesizing institutional Chief Analyst briefing across all asset classes...';
+      
+      try {
+        const res = await fetch('/api/v92/analyst/briefing');
+        const b = await res.json();
+        let formatted = b.briefingTitle + '\n' + '='.repeat(50) + '\n';
+        formatted += '📅 DATE: ' + b.date + ' | MONITORED ASSETS: ' + b.totalMonitoredAssets + '\n';
+        formatted += '🌐 REGIME: ' + b.marketRegimeOverview + '\n';
+        formatted += '🛡️ PHILOSOPHY: ' + b.analystPhilosophy + '\n\n';
+        formatted += '🏆 TOP ACTIONABLE APEX SETUPS:\n';
+        formatted += '-'.repeat(50) + '\n';
+        b.topActionablePicks.forEach((p, idx) => {
+          formatted += \`\n#\${idx + 1} \${p.symbol} (\${p.name}) — \${p.direction} [Grade \${p.grade} | \${p.conviction}]\n\`;
+          formatted += \`   • Entry: \${p.entry} | Hard Stop: \${p.stopLoss} | Target 2: \${p.target2} (\${p.rrr} RRR)\n\`;
+          formatted += \`   • Confluences:\n\`;
+          p.confluences.forEach(c => { formatted += \`     ✓ \${c}\n\`; });
+        });
+        if (output) output.textContent = formatted.trim();
+      } catch (err) {
+        if (output) output.textContent = '[ERROR] Failed to load briefing: ' + err.message;
+      }
     }
 
     // Quant Lab Future Engines Handlers

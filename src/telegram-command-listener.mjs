@@ -168,6 +168,7 @@ import { getStrategyOptimizationRankings } from "./strategy-hyper-optimizer.mjs"
 import { getTimeseriesStoreStatus, computeSessionVwap, getCandleBars } from "./timeseries-market-store.mjs";
 import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateStrategyPromotionGate } from "./strategy-validation-pipeline.mjs";
 import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, evaluateDefensiveHedging } from "./portfolio-risk-fortress.mjs";
+import { getAutonomousAnalystInspection, generateDailyAnalystBriefing, runFullAutonomousMarketScan } from "./autonomous-chart-analyst-engine.mjs";
 import { routeOrderThroughSor, generateTwapOrderSlices } from "./broker-adapters-suite.mjs";
 import { synthesizeStrategyGenome, getEvolvedGenomeLibrary, getEvolutionStatus, runEvolutionCycle } from "./self-evolving-swarm.mjs";
 import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./trading-bot.mjs";
@@ -175,90 +176,14 @@ import { startAutoTrader, stopAutoTrader, getAutoTraderStatus, executeAutonomous
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
-    [{ text: "🤖 24/7 Auto-Trader ON" }, { text: "⚡ Auto-Trade Scan Now" }],
-    [{ text: "🏦 Broker Sandbox Gateway" }, { text: "🏆 Top 5 Alpha Strategies" }],
-    [{ text: "☁️ 24/7 Cloud Node" }, { text: "🚀 1-Click Blueprints" }],
-    [{ text: "🌐 Multi-Node Mesh" }, { text: "🔥 Liquidity Heatmap" }],
-    [{ text: "⚡ Web3 DEX Arbitrage" }, { text: "🏛️ Tokenized RWA Treasury" }],
-    [{ text: "📈 Apex Backtest" }, { text: "🎲 Monte Carlo Cone" }],
-    [{ text: "👁️ Chart Vision AI" }, { text: "🎙️ Voice Command" }],
-    [{ text: "👑 Master Nexus 360°" }, { text: "⚡ Run Nexus Cycle" }],
-    [{ text: "🦞 OpenClaw Assistant" }, { text: "🛠️ Vercel Agent Skills" }],
-    [{ text: "🧠 Hermes-3 Agent Loop" }, { text: "📜 Hermes Learned Skills" }],
-    [{ text: "🛡️ Paper Portfolio Status" }, { text: "⚡ Alpha Consensus 80%" }],
-    [{ text: "📅 FxFactory Macro Shield" }, { text: "👑 Trinity Profit Cycle" }],
-    [{ text: "🌐 Public Live Website" }, { text: "☁️ 24/7 Cloud Relay" }],
-    [{ text: "💻 Cloud PC Telemetry" }, { text: "🖥️ Virtual Desktop URL" }],
-    [{ text: "👑 100 Autonomous AI Agents" }],
+    [{ text: "🤖 Auto-Trader Status" }, { text: "⚡ Auto-Trade Scan Now" }],
+    [{ text: "▶️ Auto-Trader ON" }, { text: "⏹️ Auto-Trader OFF" }],
+    [{ text: "🛡️ Paper Portfolio Status" }, { text: "📒 Real PnL Ledger" }],
+    [{ text: "⚡ Alpha Consensus 80%" }, { text: "📅 FxFactory Macro Shield" }],
     [{ text: "📊 Euler Risk Budget" }, { text: "💥 Black Swan Stress-Test" }],
-    [{ text: "🤖 24/7 Multi-Agent Swarm" }, { text: "🏭 1,000+ Strategy Factory" }],
-    [{ text: "☣️ VPIN Flow Toxicity" }, { text: "🛡️ Microstructure Defense" }],
-    [{ text: "🔄 Convex Rebalance" }, { text: "📈 Efficient Frontier" }],
-    [{ text: "⚖️ Cointegration Pairs" }, { text: "🔍 SHAP Factor Attribution" }],
-    [{ text: "🧠 Neural Command Graph" }, { text: "📊 DOM L2 Ladder" }],
-    [{ text: "🔗 Asset Correlation" }, { text: "📋 Strategy Robustness" }],
-    [{ text: "⚖️ Smart Order Router" }, { text: "📒 Real PnL Ledger" }],
-    [{ text: "📊 Overall System Analysis" }, { text: "⚡ HFT Spread & Dark Pool" }],
-    [{ text: "🤖 AutoML Retraining Gate" }, { text: "🏛️ Web3 RWA Yield Vault" }],
-    [{ text: "🖼️ 60 FPS Visual Canvas & Voice" }, { text: "🔐 AES-256 Key Vault" }],
-    [{ text: "📡 WS Market Streamer" }, { text: "🛡️ Loss Circuit Breaker" }],
-    [{ text: "🔐 Verify Telegram OTP" }, { text: "🌍 Real-World Agent Status" }],
-    [{ text: "🔑 Generate .env Template" }, { text: "✅ Live Pre-Flight Check" }],
-    [{ text: "🔬 Quant Research Platform" }, { text: "🛡️ PBO Overfitting Audit" }],
-    [{ text: "📊 Strategy Scorecard" }, { text: "🧬 Strategy Genome Compiler" }],
-    [{ text: "💥 Tail Risk Lab" }, { text: "📉 Alpha Lifecycle State" }],
-    [{ text: "🌐 24/7 Always-ON Status" }, { text: "☁️ Sync to 24/7 Cloud" }],
-    [{ text: "⚙️ Conway Automaton" }, { text: "📊 Automaton State Matrix" }],
-    [{ text: "🕷️ Scrapling Stealth Scraper" }, { text: "🔮 Polymarket Odds" }],
-    [{ text: "🔄 Walk-Forward Optimizer" }, { text: "🎲 Monte Carlo Paths" }],
-    [{ text: "🧪 Alpha Research Lab" }, { text: "📊 Sentiment Temperature" }],
-    [{ text: "⚡ Self-Healing Pipeline" }, { text: "⚖️ NL Pairs Arbitrage" }],
-    [{ text: "💭 Add Thought / Decision" }, { text: "🔍 Query Thought Graph" }],
-    [{ text: "🤖 Zero Human Protocol" }, { text: "💸 Auto Bank Sweep" }],
-    [{ text: "🕸️ Knowledge Graph Intel" }, { text: "🧠 Recall Long-Term Memory" }],
-    [{ text: "👑 Supreme Megastructure v60" }, { text: "🌐 60-Subsystem Synergy Audit" }],
-    [{ text: "🔐 ZK Federated ML" }, { text: "🛡️ ZK Gradient Audit" }],
-    [{ text: "🧬 Self-Evolve Codebase" }, { text: "⚡ Profile Hot Paths" }],
-    [{ text: "🛡️ Options Tail-Risk Hedge" }, { text: "📊 99% CVaR Risk Audit" }],
-    [{ text: "💎 TON ⇄ Solana Bridge" }, { text: "🌌 Bridge Stars to Solana" }],
-    [{ text: "🧠 Multi-LLM Swarm Router" }, { text: "🗳️ 5-Model Consensus Vote" }],
-    [{ text: "⭐ Collect Telegram Stars" }, { text: "💫 Convert Stars to Bank" }],
-    [{ text: "💸 Collect All Money" }, { text: "📥 Collect to Bank UPI" }],
-    [{ text: "⚡ Cross-Chain Flash Arb" }, { text: "🛡️ Flashbots MEV Shield" }],
-    [{ text: "👔 24/7 Manager AI Agent" }, { text: "📋 Manager Task Matrix" }],
-    [{ text: "🪙 Create Crypto Token" }, { text: "💧 Deploy DEX Liquidity" }],
-    [{ text: "📡 Malaviya Internet Mesh" }, { text: "🌐 Connect Mesh Node" }],
-    [{ text: "🌌 Web 4.0 Quantum Mesh" }, { text: "📜 A2A Smart Contracts" }],
-    [{ text: "⚡ Boost Mining Speed" }, { text: "⛏️ Crypto Mining Pools" }],
-    [{ text: "📥 Deposit Real Money" }, { text: "📤 Withdraw to Bank" }],
-    [{ text: "🌐 Internet Agents Swarm" }, { text: "📝 Submit Learning Form" }],
-    [{ text: "⚡ Zero Latency HFT" }, { text: "🛡️ Quantum Vault" }],
-    [{ text: "🛒 AI Marketplace" }, { text: "👑 Quantum Empire v40" }],
-    [{ text: "🏦 RWA Yield Harvester" }, { text: "🕸️ Neural Mesh Router" }],
-    [{ text: "🌐 Sovereign Internet Freedom" }, { text: "🌐 Multi-Cloud HA Grid" }],
-    [{ text: "🔗 Cross-Chain DEX & ZK" }, { text: "⚡ WebSockets Canvas" }],
-    [{ text: "🔑 Crypto Wallet Vault" }, { text: "🖼️ Vision & Chart Intel" }],
-    [{ text: "🎙️ Speak with Aifie" }, { text: "🛠️ AI Tools & Repos" }],
-    [{ text: "🌍 Global Market Universe" }, { text: "👑 Supreme Apex Audit" }],
-    [{ text: "♻️ Perpetual Auto-Reinvest" }, { text: "🌐 Multi-Server Cluster" }],
-    [{ text: "🚀 Fully Autonomous Autopilot" }, { text: "⚖️ ERC Risk Parity" }],
-    [{ text: "⚡ HFT POV Execution" }, { text: "🔄 Quant Loop ICIR" }],
-    [{ text: "🏰 AI Empire Matrix" }, { text: "🛡️ Security Shield" }],
-    [{ text: "💵 Withdraw Money" }, { text: "⚡ 250ms Speed Boost" }],
-    [{ text: "💰 8 Income Streams" }, { text: "🏦 DeFi Bank Yield" }],
-    [{ text: "💻 Server Hardware" }, { text: "🌐 Omni Channel" }],
-    [{ text: "🔮 Unified Alpha" }, { text: "🌌 Quantum Apex" }],
-    [{ text: "⚡ Flashbots MEV" }, { text: "📊 Status" }],
-    [{ text: "⛏️ Crypto Mining" }, { text: "💸 Auto-Sell Profit" }],
-    [{ text: "⚡ Flash Loan Arb" }, { text: "👑 Zero Capital Growth" }],
-    [{ text: "⚡ Auto Freedom" }, { text: "⚖️ Pairs Arb" }],
-    [{ text: "🌐 Global Macro" }, { text: "👑 Profit Vault" }],
-    [{ text: "🧠 AI Learning" }, { text: "🎯 6-Factor Score" }],
-    [{ text: "🕶️ Dark Pool Prints" }, { text: "📈 Options GEX" }],
-    [{ text: "🐳 Whale Wallets" }, { text: "⚡ SMC Structure" }],
-    [{ text: "🌊 Order Flow CVD" }, { text: "🏦 Treasury" }],
-    [{ text: "💰 Daily Report" }, { text: "🚨 Emergency Kill" }],
-    [{ text: "🔄 Reset Kill Switch" }]
+    [{ text: "👑 Master Nexus 360°" }, { text: "⚡ Run Nexus Cycle" }],
+    [{ text: "📊 Overall System Analysis" }, { text: "🚨 Emergency Kill" }],
+    [{ text: "🔄 Reset Kill Switch" }, { text: "💰 Daily Report" }]
   ],
   resize_keyboard: true,
   one_time_keyboard: false
@@ -267,25 +192,22 @@ export const MOBILE_KEYBOARD = {
 export function parseTelegramCommand(text = "") {
   let normalized = text.trim();
 
-  if (normalized.startsWith("👑 Master Nexus 360°")) normalized = "/nexus";
-  if (normalized.startsWith("⚡ Run Nexus Cycle")) normalized = "/nexuscycle";
-  if (normalized.startsWith("🦞 OpenClaw Assistant")) normalized = "/openclaw";
-  if (normalized.startsWith("🛠️ Vercel Agent Skills")) normalized = "/skills";
-  if (normalized.startsWith("🧠 Hermes-3 Agent Loop")) normalized = "/hermes";
-  if (normalized.startsWith("📜 Hermes Learned Skills")) normalized = "/hermesskills";
+  if (normalized.startsWith("🤖 Auto-Trader Status")) normalized = "/autotrade status";
+  if (normalized.startsWith("⚡ Auto-Trade Scan Now")) normalized = "/autotrade now";
+  if (normalized.startsWith("▶️ Auto-Trader ON")) normalized = "/autotrade on";
+  if (normalized.startsWith("⏹️ Auto-Trader OFF")) normalized = "/autotrade off";
   if (normalized.startsWith("🛡️ Paper Portfolio Status")) normalized = "/paperstatus";
+  if (normalized.startsWith("📒 Real PnL Ledger")) normalized = "/ledger";
   if (normalized.startsWith("⚡ Alpha Consensus 80%")) normalized = "/alphaconsensus BTC/USDT";
   if (normalized.startsWith("📅 FxFactory Macro Shield")) normalized = "/fxfactory";
-  if (normalized.startsWith("👑 Trinity Profit Cycle")) normalized = "/trinity BTC/USDT";
-  if (normalized.startsWith("🌐 Public Live Website")) normalized = "/public";
-  if (normalized.startsWith("☁️ 24/7 Cloud Relay")) normalized = "/cloud";
-  if (normalized.startsWith("💻 Cloud PC Telemetry")) normalized = "/vcomputer";
-  if (normalized.startsWith("🖥️ Virtual Desktop URL")) normalized = "/desktop";
-  if (normalized.startsWith("👑 100 Autonomous AI Agents")) normalized = "/fleet";
   if (normalized.startsWith("📊 Euler Risk Budget")) normalized = "/eulerrisk";
   if (normalized.startsWith("💥 Black Swan Stress-Test")) normalized = "/stresstest";
-  if (normalized.startsWith("🤖 24/7 Multi-Agent Swarm")) normalized = "/swarm";
-  if (normalized.startsWith("🏭 1,000+ Strategy Factory")) normalized = "/megafactory";
+  if (normalized.startsWith("👑 Master Nexus 360°")) normalized = "/nexus";
+  if (normalized.startsWith("⚡ Run Nexus Cycle")) normalized = "/nexuscycle";
+  if (normalized.startsWith("📊 Overall System Analysis")) normalized = "/overallanalysis";
+  if (normalized.startsWith("🚨 Emergency Kill")) normalized = "/kill";
+  if (normalized.startsWith("🔄 Reset Kill Switch")) normalized = "/resume";
+  if (normalized.startsWith("💰 Daily Report")) normalized = "/report";
   if (normalized.startsWith("☣️ VPIN Flow Toxicity")) normalized = "/vpin BTC/USDT";
   if (normalized.startsWith("🛡️ Microstructure Defense")) normalized = "/defend BTC/USDT";
   if (normalized.startsWith("🔄 Convex Rebalance")) normalized = "/rebalance";
@@ -452,6 +374,39 @@ export function parseTelegramCommand(text = "") {
 export async function processTelegramCommand({ command, symbol = "AAPL", quantity = 1, fullText = "" } = {}, { paper = {}, orders = [] } = {}) {
   const normSymbol = (symbol || "AAPL").trim().toUpperCase();
   const prices = getPriceBuffer(normSymbol);
+
+  if (command === "/analyst" || command === "/chartanalyst" || command === "/setup") {
+    const sym = (symbol || "BTCUSDT").toUpperCase();
+    const insp = await getAutonomousAnalystInspection(sym);
+    return `🧠 <b>AIFIE APEX CHIEF MARKET ANALYST — ${insp.symbol}</b>
+──────────────────
+📊 <b>Setup Grade:</b> <b>${insp.setup.grade}</b>
+🎯 <b>Direction:</b> <b>${insp.setup.direction}</b> (Conviction: <code>${insp.setup.convictionScore}/100</code>)
+💰 <b>Price:</b> <b>$${insp.chart.currentPrice}</b> | <b>Trend:</b> <code>${insp.chart.trend}</code>
+
+🛡️ <b>RISK & EXECUTION BLUEPRINT:</b>
+• <b>Entry Trigger:</b> <code>$${insp.risk.entryPrice}</code>
+• <b>Hard Stop-Loss:</b> <code>$${insp.risk.stopLossPrice}</code> (1% Max Loss: <b>$${insp.risk.maxCapitalAtRisk}</b>)
+• <b>Target 1 (1:2 RRR):</b> <code>$${insp.risk.target1Price}</code>
+• <b>Target 2 (${insp.risk.riskToRewardRatio}):</b> <code>$${insp.risk.target2Price}</code>
+• <b>Position Size:</b> <b>${insp.risk.recommendedQuantity} units</b>
+
+💡 <b>Confluence Factors:</b>
+${insp.setup.confluences.map(c => `• ${c}`).join("\n")}
+• <i>Wyckoff Phase: ${insp.chart.wyckoffPhase}</i>`;
+  }
+
+  if (command === "/briefing" || command === "/gameplan") {
+    const b = await generateDailyAnalystBriefing();
+    return `☀️ <b>${b.briefingTitle}</b>
+──────────────────
+📅 <b>Date:</b> <code>${b.date}</code> | <b>Monitored:</b> <b>${b.totalMonitoredAssets} Assets</b>
+
+🏆 <b>TOP ACTIONABLE APEX SETUPS:</b>
+${b.topActionablePicks.map(p => `• <b>${p.symbol}</b> (${p.direction}): Entry <code>${p.entry}</code> | Stop <code>${p.stopLoss}</code> | Target <code>${p.target2}</code> [<code>${p.rrr}</code>]`).join("\n\n")}
+
+🛡️ <b>Philosophy:</b> <i>${b.analystPhilosophy}</i>`;
+  }
 
   if (command === "/sandbox") {
     const sbx = getMultiBrokerSandboxStatus();
