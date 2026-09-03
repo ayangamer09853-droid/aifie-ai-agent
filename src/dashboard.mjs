@@ -1693,9 +1693,11 @@ Type any command below or use the quick action buttons above.</div>
               <button onclick="runQuantSynthesizeGenome()" style="background:var(--neon-purple); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">SYNTHESIZE NEW GENOME</button>
               <button onclick="runTriggerEvolutionUi()" style="background:linear-gradient(90deg, #9d4edd, #ff007f); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">🧬 EVOLVE NOW</button>
               <button onclick="loadEvolutionStatusUi()" style="background:rgba(0,255,157,0.15); border:1px solid var(--neon-green); color:var(--neon-green); font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">📊 STATUS</button>
+              <button onclick="runQuantHalfKellySizingUi()" style="background:rgba(255,165,0,0.2); border:1px solid #ffa500; color:#ffa500; font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">⚖️ SIZING</button>
+              <button onclick="runQuantConsensusUi()" style="background:rgba(0,229,255,0.2); border:1px solid #00e5ff; color:#00e5ff; font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">🗳️ CONSENSUS</button>
               <button onclick="runQuantLoadGenomes()" style="background:rgba(157,78,221,0.2); border:1px solid var(--neon-purple); color:var(--neon-purple); font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">VAULT</button>
             </div>
-            <div id="quantGenomeResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:120px; white-space:pre-wrap; line-height:1.6;">Click "EVOLVE NOW" or "STATUS" to inspect real-time autonomous generational mutation, crossover, and RL adaptation.</div>
+            <div id="quantGenomeResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:120px; white-space:pre-wrap; line-height:1.6;">Click "EVOLVE NOW", "SIZING", or "CONSENSUS" to inspect real-time autonomous generational mutation and multi-model voting.</div>
           </div>
         </div>
 
@@ -1993,6 +1995,44 @@ Type any command below or use the quick action buttons above.</div>
           'Recent Generational Mutations:\n' + mutLines;
       } catch (err) {
         box.textContent = 'Status Error: ' + err.message;
+      }
+    }
+
+    async function runQuantHalfKellySizingUi() {
+      const box = document.getElementById('quantGenomeResults');
+      box.textContent = 'Calculating Dynamic Half-Kelly lot sizing...';
+      try {
+        const res = await fetch('/api/v100/bot/sizing?symbol=BTC/USDT&price=65000');
+        const data = await res.json();
+        box.textContent = '=== ⚖️ DYNAMIC HALF-KELLY POSITION SIZING ===\n' +
+          'Symbol: ' + data.symbol + ' | Price: $' + data.currentPrice.toLocaleString() + '\n' +
+          'Account Cash: $' + data.cash.toLocaleString() + '\n' +
+          'Kelly Target Alloc: ' + data.recommendedAllocPercent + ' (Fraction: ' + data.halfKellyFraction + ')\n' +
+          'Allocated Capital: $' + data.allocatedCash.toLocaleString() + '\n' +
+          'Calculated Lot Size: ' + data.calculatedLotSize + ' units (Cap: ' + data.maxTradeQuantity + ')\n' +
+          'Verdict: Dynamic volatility target sizing safely active.';
+      } catch (err) {
+        box.textContent = 'Sizing Error: ' + err.message;
+      }
+    }
+
+    async function runQuantConsensusUi() {
+      const box = document.getElementById('quantGenomeResults');
+      box.textContent = 'Evaluating Multi-Genome Ensemble Consensus...';
+      try {
+        const res = await fetch('/api/v100/bot/consensus?symbol=BTC/USDT');
+        const data = await res.json();
+        const voteLines = data.votes.map(function(v) {
+          return '• ' + v.name + ': [' + v.vote + '] (Fitness: ' + v.fitness + '%)';
+        }).join('\n');
+        box.textContent = '=== 🗳️ MULTI-GENOME ENSEMBLE CONSENSUS ===\n' +
+          'Symbol: ' + data.symbol + ' | Generation: #' + data.generation + '\n' +
+          'Champion: ' + data.championGenome + '\n' +
+          'Consensus: ' + (data.consensusPassed ? '✅ CONFIRMED CONFLUENCE' : '⚠️ NO CONVERGENCE') + ' (' + data.agreementRatePercent + '% agreement)\n' +
+          'Votes: BUY=' + data.buyVotes + ', SELL=' + data.sellVotes + ', HOLD=' + data.holdVotes + '\n\n' +
+          voteLines;
+      } catch (err) {
+        box.textContent = 'Consensus Error: ' + err.message;
       }
     }
 

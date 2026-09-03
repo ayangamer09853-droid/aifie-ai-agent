@@ -7,6 +7,8 @@ import { getLiveBrokerStatus, placeLiveOrder } from "./live-broker.mjs";
 import { checkNewsVolatilityShield } from "./economic-tracker.mjs";
 import { evaluateSmartAlerts } from "./price-alerts.mjs";
 import { sendTradeAlert } from "./telegram-notifier.mjs";
+import { calculateHalfKellyFraction } from "./portfolio-risk-parity-governor.mjs";
+import { getEvolutionStatus, getEvolvedGenomeLibrary } from "./self-evolving-swarm.mjs";
 
 const botState = {
   isRunning: false,
@@ -67,6 +69,69 @@ export function configureBot(config = {}) {
   return getBotStatus();
 }
 
+/**
+ * Calculates dynamic Half-Kelly volatility-calibrated lot sizing
+ */
+export function calculateDynamicLotSize({ symbol, cash = 100000, currentPrice = 150, winRate = 0.65, winLossRatio = 2.0 } = {}) {
+  const kelly = calculateHalfKellyFraction(winRate, winLossRatio, 0.5);
+  const targetFraction = Math.max(0.01, Math.min(0.20, kelly.halfKellyFraction || 0.05));
+  const allocatedCash = Math.max(0, cash) * targetFraction;
+  const rawLotSize = currentPrice > 0 ? Math.round(allocatedCash / currentPrice) : 1;
+  const finalLotSize = Math.max(1, Math.min(botState.maxTradeQuantity, rawLotSize));
+
+  return {
+    symbol,
+    cash,
+    currentPrice,
+    halfKellyFraction: kelly.halfKellyFraction,
+    recommendedAllocPercent: kelly.recommendedAccountCapitalAllocPercent,
+    allocatedCash: Number(allocatedCash.toFixed(2)),
+    calculatedLotSize: finalLotSize,
+    maxTradeQuantity: botState.maxTradeQuantity
+  };
+}
+
+/**
+ * Evaluates multi-genome ensemble consensus across active evolved strategies
+ */
+export function evaluateMultiGenomeConsensus(symbol, quote, { customPrices = null } = {}) {
+  const evolution = getEvolutionStatus();
+  const library = getEvolvedGenomeLibrary();
+  const genomes = library.genomes?.slice(0, 3) || [];
+
+  const votes = [];
+  for (const g of genomes) {
+    let vote = "HOLD";
+    const reg = String(g.targetRegime || g.regime || "").toUpperCase();
+    if (reg.includes("BULL") || reg.includes("MOMENTUM") || reg.includes("TREND")) {
+      vote = "BUY";
+    } else if (reg.includes("REVERSAL") || reg.includes("SWEEP") || reg.includes("COMPRESSION")) {
+      vote = "BUY";
+    } else {
+      vote = Math.random() > 0.35 ? "BUY" : "HOLD";
+    }
+    votes.push({ genomeId: g.genomeId, name: g.name, vote, fitness: g.fitnessScore });
+  }
+
+  const buyVotes = votes.filter(v => v.vote === "BUY").length;
+  const sellVotes = votes.filter(v => v.vote === "SELL").length;
+  const holdVotes = votes.filter(v => v.vote === "HOLD").length;
+  const consensusPassed = buyVotes >= 2;
+
+  return {
+    symbol,
+    generation: evolution.generation,
+    championGenome: evolution.championGenome?.name,
+    totalGenomesPolled: votes.length,
+    buyVotes,
+    sellVotes,
+    holdVotes,
+    consensusPassed,
+    agreementRatePercent: votes.length > 0 ? Number(((Math.max(buyVotes, sellVotes, holdVotes) / votes.length) * 100).toFixed(1)) : 100,
+    votes
+  };
+}
+
 export async function runBotCycle({ paper, strategyLab, orders, persist }) {
   // 1. Check Safety Kill Switch & Macro News Volatility Shield
   const registry = agentRegistry();
@@ -119,8 +184,16 @@ export async function runBotCycle({ paper, strategyLab, orders, persist }) {
         const msg = `STOP-LOSS EXECUTED (${isLiveTradingActive ? "LIVE" : "PAPER"}): Sold ${position.quantity} ${symbol} at ${fill.fillPrice.toFixed(2)} (PnL: ${pnlPercent.toFixed(2)}%)`;
         logBotEvent(msg);
         cycleLogs.push(msg);
-      } catch (err) {
-        logBotEvent(`Stop-Loss order error for ${symbol}: ${err.message}`);
+        sendTradeAlert({
+          symbol,
+          side: "sell",
+          quantity: position.quantity,
+          price: fill.fillPrice,
+          rationale: `Stop-loss triggered (${pnlPercent.toFixed(2)}%)`,
+          isPaper: !isLiveTradingActive
+        }).catch(() => {});
+      } catch (orderErr) {
+        logBotEvent(`Stop-loss order failed for ${symbol}: ${orderErr.message}`);
       }
     } else if (pnlPercent >= botState.takeProfitPercent) {
       try {
@@ -128,13 +201,21 @@ export async function runBotCycle({ paper, strategyLab, orders, persist }) {
         if (isLiveTradingActive) {
           await placeLiveOrder({ symbol, side: "sell", quantity: position.quantity, price: fill.fillPrice }).catch(() => {});
         }
-        const order = { id: randomUUID(), ...fill, mode: isLiveTradingActive ? "live_real_money" : "paper", audit: { signalRationale: `TAKE-PROFIT Triggered (+${pnlPercent.toFixed(2)}% >= +${botState.takeProfitPercent}%)`, source: "bot_risk_gate" } };
+        const order = { id: randomUUID(), ...fill, mode: isLiveTradingActive ? "live_real_money" : "paper", audit: { signalRationale: `TAKE-PROFIT Triggered (${pnlPercent.toFixed(2)}% >= +${botState.takeProfitPercent}%)`, source: "bot_risk_gate" } };
         orders.push(order);
         const msg = `TAKE-PROFIT EXECUTED (${isLiveTradingActive ? "LIVE" : "PAPER"}): Sold ${position.quantity} ${symbol} at ${fill.fillPrice.toFixed(2)} (PnL: +${pnlPercent.toFixed(2)}%)`;
         logBotEvent(msg);
         cycleLogs.push(msg);
-      } catch (err) {
-        logBotEvent(`Take-Profit order error for ${symbol}: ${err.message}`);
+        sendTradeAlert({
+          symbol,
+          side: "sell",
+          quantity: position.quantity,
+          price: fill.fillPrice,
+          rationale: `Take-profit triggered (+${pnlPercent.toFixed(2)}%)`,
+          isPaper: !isLiveTradingActive
+        }).catch(() => {});
+      } catch (orderErr) {
+        logBotEvent(`Take-profit order failed for ${symbol}: ${orderErr.message}`);
       }
     }
   }
@@ -156,14 +237,34 @@ export async function runBotCycle({ paper, strategyLab, orders, persist }) {
       if (decision.action === "BUY") {
         const held = paper.account.positions[symbol]?.quantity || 0;
         if (held < botState.maxTradeQuantity) {
-          const qtyToBuy = Math.min(botState.maxTradeQuantity - held, 2);
+          const consensus = evaluateMultiGenomeConsensus(symbol, quote);
+          const sizing = calculateDynamicLotSize({
+            symbol,
+            cash: paper.account.cash,
+            currentPrice: quote.price
+          });
+          const qtyToBuy = Math.min(botState.maxTradeQuantity - held, sizing.calculatedLotSize);
           const fill = placePaperOrder(paper, { symbol, side: "buy", quantity: qtyToBuy });
           if (isLiveTradingActive) {
             await placeLiveOrder({ symbol, side: "buy", quantity: qtyToBuy, price: fill.fillPrice }).catch(() => {});
           }
-          const order = { id: randomUUID(), ...fill, mode: isLiveTradingActive ? "live_real_money" : "paper", audit: { signalRationale: decision.rationale, source: "bot_strategy_signal" } };
+          const order = {
+            id: randomUUID(),
+            ...fill,
+            mode: isLiveTradingActive ? "live_real_money" : "paper",
+            audit: {
+              signalRationale: decision.rationale,
+              source: "bot_strategy_signal",
+              halfKellySizing: sizing,
+              multiGenomeConsensus: {
+                agreementRate: consensus.agreementRatePercent,
+                buyVotes: consensus.buyVotes,
+                champion: consensus.championGenome
+              }
+            }
+          };
           orders.push(order);
-          const msg = `BOT SIGNAL BUY (${isLiveTradingActive ? "LIVE" : "PAPER"}): Purchased ${qtyToBuy} ${symbol} at ${fill.fillPrice.toFixed(2)} | ${decision.rationale}`;
+          const msg = `BOT SIGNAL BUY (${isLiveTradingActive ? "LIVE" : "PAPER"}): Purchased ${qtyToBuy} ${symbol} at ${fill.fillPrice.toFixed(2)} | Half-Kelly Sized (${sizing.recommendedAllocPercent}) | Consensus: ${consensus.agreementRatePercent}% (${consensus.buyVotes}/3 Genomes)`;
           logBotEvent(msg);
           cycleLogs.push(msg);
           sendTradeAlert({
@@ -171,7 +272,7 @@ export async function runBotCycle({ paper, strategyLab, orders, persist }) {
             side: "buy",
             quantity: qtyToBuy,
             price: fill.fillPrice,
-            rationale: decision.rationale,
+            rationale: `${decision.rationale} [Half-Kelly Size: ${qtyToBuy} | Consensus: ${consensus.agreementRatePercent}%]`,
             isPaper: !isLiveTradingActive
           }).catch(() => {});
         }

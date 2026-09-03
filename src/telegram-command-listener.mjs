@@ -170,6 +170,7 @@ import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateStrategyPromoti
 import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, evaluateDefensiveHedging } from "./portfolio-risk-fortress.mjs";
 import { routeOrderThroughSor, generateTwapOrderSlices } from "./broker-adapters-suite.mjs";
 import { synthesizeStrategyGenome, getEvolvedGenomeLibrary, getEvolutionStatus, runEvolutionCycle } from "./self-evolving-swarm.mjs";
+import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./trading-bot.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
@@ -433,6 +434,8 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("🛡️ 99% VaR Fortress")) normalized = "/var 100000";
   if (normalized.startsWith("⚡ Smart Order Router")) normalized = "/sor AAPL";
   if (normalized.startsWith("🧬 Synthesize AI Genome")) normalized = "/evolve TRENDING_BULLISH";
+  if (normalized.startsWith("⚖️ Half-Kelly Sizing")) normalized = "/sizing AAPL";
+  if (normalized.startsWith("🗳️ Multi-Genome Consensus")) normalized = "/consensus AAPL";
 
   const parts = normalized.split(/\s+/);
   const command = parts[0]?.toLowerCase() || "";
@@ -548,6 +551,38 @@ ${twap.slices.slice(0, 4).map(s => `• Slice #${s.sliceIndex}: <b>${s.quantity}
 <b>Hansen SPA p-Value:</b> <code>${spa.spaPValue}</code>
 <b>Benchmark Superiority:</b> <b>${spa.recommendation}</b>
 <i>Anti-data-mining mathematical rejection gate.</i>`;
+  }
+
+  if (command === "/sizing") {
+    const quote = paper.quotes?.[normSymbol] || { price: 150 };
+    const sizing = calculateDynamicLotSize({
+      symbol: normSymbol,
+      cash: paper.account?.cash || 100000,
+      currentPrice: quote.price
+    });
+    return `⚖️ <b>DYNAMIC HALF-KELLY POSITION SIZING</b>
+──────────────────
+<b>Symbol:</b> <code>${normSymbol}</code> | <b>Price:</b> <b>$${sizing.currentPrice}</b>
+<b>Available Cash:</b> $${sizing.cash.toLocaleString()}
+<b>Kelly Target Capital:</b> <b>${sizing.recommendedAllocPercent}</b> ($${sizing.allocatedCash.toLocaleString()})
+<b>Calculated Lot Size:</b> <b>${sizing.calculatedLotSize} units</b>
+<b>Max Position Cap:</b> <code>${sizing.maxTradeQuantity} units</code>
+<i>Automatically calibrates position risk against volatility.</i>`;
+  }
+
+  if (command === "/consensus") {
+    const quote = paper.quotes?.[normSymbol] || { price: 150 };
+    const con = evaluateMultiGenomeConsensus(normSymbol, quote);
+    return `🗳️ <b>MULTI-GENOME ENSEMBLE CONSENSUS</b>
+──────────────────
+<b>Symbol:</b> <code>${normSymbol}</code> | <b>Price:</b> $${quote.price}
+<b>Evolution Generation:</b> <b>Gen #${con.generation}</b>
+<b>Champion Strategy:</b> <b>${con.championGenome}</b>
+<b>Consensus Verdict:</b> <b>${con.consensusPassed ? "✅ CONFIRMED CONFLUENCE" : "⚠️ NO CONVERGENCE"}</b>
+<b>Agreement Rate:</b> <code>${con.agreementRatePercent}%</code>
+<b>Vote Split:</b> 🟢 BUY: <b>${con.buyVotes}</b> | 🔴 SELL: <b>${con.sellVotes}</b> | ⚪ HOLD: <b>${con.holdVotes}</b>
+${con.votes.map(v => `• <b>${v.name}</b>: <code>${v.vote}</code> (Fitness: ${v.fitness}%)`).join("\n")}
+<i>Requires >=2/3 multi-model alignment to eliminate false breakouts.</i>`;
   }
 
   if (command === "/cloud") {

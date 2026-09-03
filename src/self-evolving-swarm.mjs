@@ -12,7 +12,6 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { configureBot, getBotStatus } from "./trading-bot.mjs";
 import { registerStrategy } from "./strategy-lab.mjs";
 import { getMarketRegime } from "./market-regime.mjs";
 
@@ -72,6 +71,10 @@ const evolutionState = {
       timestamp: new Date().toISOString()
     }
   ],
+  currentPolicy: {
+    stopLossPercent: 3.0,
+    takeProfitPercent: 6.0
+  },
   timerHandle: null
 };
 
@@ -268,9 +271,8 @@ export function runEvolutionCycle({ paper = {}, orders = [], strategyLab = null,
     return { win: pnl > 0, pnlPercent: pnl };
   });
 
-  const botStatus = getBotStatus();
-  const currentSl = botStatus.stopLossPercent || 3.0;
-  const currentTp = botStatus.takeProfitPercent || 6.0;
+  const currentSl = evolutionState.currentPolicy?.stopLossPercent || 3.0;
+  const currentTp = evolutionState.currentPolicy?.takeProfitPercent || 6.0;
 
   const adaptation = adaptPolicyParametersFromRewards({
     currentStopLoss: currentSl,
@@ -278,10 +280,10 @@ export function runEvolutionCycle({ paper = {}, orders = [], strategyLab = null,
     tradeOutcomes: tradeOutcomes.length ? tradeOutcomes : undefined
   });
 
-  // Apply tuned parameters to live trading bot
+  // Apply tuned parameters to live policy
   const tunedSl = adaptation.optimizedParameters?.stopLossPercent || currentSl;
   const tunedTp = adaptation.optimizedParameters?.takeProfitPercent || currentTp;
-  configureBot({ stopLossPercent: tunedSl, takeProfitPercent: tunedTp });
+  evolutionState.currentPolicy = { stopLossPercent: tunedSl, takeProfitPercent: tunedTp };
 
   // 2. Synthesize or mutate strategy genome for the current market regime
   let regime = "TRENDING_BULLISH";
@@ -325,11 +327,15 @@ export function runEvolutionCycle({ paper = {}, orders = [], strategyLab = null,
       }
     }
 
-    // Configure bot to adopt champion strategy parameters
-    configureBot({
+    evolutionState.currentPolicy = {
       stopLossPercent: candidateGenome.hyperparameters?.stopLossPercent || tunedSl,
       takeProfitPercent: candidateGenome.hyperparameters?.takeProfitPercent || tunedTp
-    });
+    };
+    if (typeof configureBot === "function") {
+      try {
+        configureBot(evolutionState.currentPolicy);
+      } catch (_cbErr) {}
+    }
   }
 
   // 4. Log mutation & ledger update
@@ -432,8 +438,8 @@ export function getEvolutionStatus() {
     championGenome: evolutionState.championGenome,
     championFitness: evolutionState.championFitness,
     currentPolicyParameters: {
-      stopLossPercent: getBotStatus().stopLossPercent,
-      takeProfitPercent: getBotStatus().takeProfitPercent
+      stopLossPercent: evolutionState.currentPolicy?.stopLossPercent ?? 3.0,
+      takeProfitPercent: evolutionState.currentPolicy?.takeProfitPercent ?? 6.0
     },
     recentMutations: evolutionState.mutationsApplied.slice(0, 10),
     ledger: evolutionState.evolutionLedger.slice(0, 10),

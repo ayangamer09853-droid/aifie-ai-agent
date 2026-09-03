@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { syncRecordToSupabase } from "./supabase-cloud-db-connector.mjs";
 
 const INITIAL_STATE = Object.freeze({ version: 3, orders: [], paper: {} });
 
@@ -13,20 +14,42 @@ function validOrder(order) {
 }
 
 export function createStateStore(filePath) {
-  function read() {
-    if (!existsSync(filePath)) return { ...INITIAL_STATE, orders: [] };
-    try {
-      const parsed = JSON.parse(readFileSync(filePath, "utf8"));
-      if (![1, 2, 3].includes(parsed?.version) || !Array.isArray(parsed.orders) || !parsed.orders.every(validOrder)) throw new Error("invalid state");
-      return { version: 3, orders: parsed.orders, paper: parsed.paper ?? {} };
-    } catch { return { ...INITIAL_STATE, orders: [] }; }
+  const backupPath = `${filePath.replace(/\.json$/, "")}.backup.json`;
+
+  function parseStateFile(targetPath) {
+    const parsed = JSON.parse(readFileSync(targetPath, "utf8"));
+    if (![1, 2, 3].includes(parsed?.version) || !Array.isArray(parsed.orders) || !parsed.orders.every(validOrder)) throw new Error("invalid state");
+    return { version: 3, orders: parsed.orders, paper: parsed.paper ?? {} };
   }
+
+  function read() {
+    if (existsSync(filePath)) {
+      try {
+        return parseStateFile(filePath);
+      } catch (_corruptErr) {
+        if (existsSync(backupPath)) {
+          try { return parseStateFile(backupPath); } catch (_bErr) {}
+        }
+      }
+    } else if (existsSync(backupPath)) {
+      try { return parseStateFile(backupPath); } catch (_bErr) {}
+    }
+    return { ...INITIAL_STATE, orders: [] };
+  }
+
   function write(state) {
     mkdirSync(dirname(filePath), { recursive: true });
     const temporaryPath = `${filePath}.tmp`;
+    if (existsSync(filePath)) {
+      try { copyFileSync(filePath, backupPath); } catch (_bErr) {}
+    }
     writeFileSync(temporaryPath, JSON.stringify(state, null, 2), "utf8");
     renameSync(temporaryPath, filePath);
+    try {
+      syncRecordToSupabase("aifie_state", { id: "latest_checkpoint", ...state, updatedAt: new Date().toISOString() }).catch(() => {});
+    } catch (_cErr) {}
   }
+
   return {
     load: read,
     save(state) { write({ version: 3, orders: state.orders ?? [], paper: state.paper ?? {} }); },

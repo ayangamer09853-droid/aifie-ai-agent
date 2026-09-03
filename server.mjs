@@ -276,6 +276,7 @@ import {
   runEvolutionCycle,
   startAutonomousEvolutionDaemon
 } from "./src/self-evolving-swarm.mjs";
+import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./src/trading-bot.mjs";
 
 const sources = getConnectedSourceStatus();
 
@@ -1222,6 +1223,17 @@ export function app(request, response) {
   }
   if (request.method === "POST" && url.pathname === "/api/v100/swarm/trigger-evolution") {
     return respond(response, 200, runEvolutionCycle({ paper, orders, strategyLab, persist }));
+  }
+  if (request.method === "GET" && url.pathname === "/api/v100/bot/sizing") {
+    const sym = url.searchParams.get("symbol") || "AAPL";
+    const price = parseFloat(url.searchParams.get("price") || "150");
+    const cash = paper.account.cash || 100000;
+    return respond(response, 200, calculateDynamicLotSize({ symbol: sym, cash, currentPrice: price }));
+  }
+  if (request.method === "GET" && url.pathname === "/api/v100/bot/consensus") {
+    const sym = url.searchParams.get("symbol") || "AAPL";
+    const quote = paper.quotes[sym] || { price: 150 };
+    return respond(response, 200, evaluateMultiGenomeConsensus(sym, quote));
   }
 
   return respond(response, 404, { error: "not found" });
