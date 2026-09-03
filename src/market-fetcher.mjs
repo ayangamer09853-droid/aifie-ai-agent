@@ -4,6 +4,8 @@
  * required for technical indicators.
  */
 
+import { recordMarketTick } from "./timeseries-market-store.mjs";
+
 const priceBuffers = new Map();
 
 function normalizeSymbol(symbol) {
@@ -32,6 +34,11 @@ export function recordPrice(symbol, price) {
   buffer.push(price);
   if (buffer.length > 100) {
     buffer.shift();
+  }
+  try {
+    recordMarketTick({ symbol: normalized, price, volume: 1 });
+  } catch (_e) {
+    // Non-blocking
   }
   return buffer;
 }

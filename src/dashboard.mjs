@@ -377,6 +377,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       <button class="nav-tab" id="tab-NEXUS" onclick="switchPreset('NEXUS')" style="border-color: #00e5ff; color: #00e5ff; font-weight: 900; background: rgba(0, 229, 255, 0.08);">🌐 NEXUS 360°</button>
       <button class="nav-tab" id="tab-SOURCES" onclick="switchPreset('SOURCES')" style="border-color: var(--neon-purple); color: var(--neon-purple); font-weight: 900; background: rgba(157, 78, 221, 0.08);">🧬 24 SOURCES</button>
       <button class="nav-tab" id="tab-APEX" onclick="switchPreset('APEX')" style="border-color: #ff007f; color: #ff007f; font-weight: 900; background: rgba(255, 0, 127, 0.08);">🚀 APEX v100</button>
+      <button class="nav-tab" id="tab-QUANT" onclick="switchPreset('QUANT')" style="border-color: #00ff9d; color: #00ff9d; font-weight: 900; background: rgba(0, 255, 157, 0.08);">⚡ QUANT LAB</button>
     </div>
 
     <div class="top-telemetry">
@@ -1577,6 +1578,129 @@ Type any command below or use the quick action buttons above.</div>
     </div>
   </div>
 
+  <!-- VIEW 15: QUANT LAB (FUTURE ENGINES: TIMESERIES, VALIDATION, RISK FORTRESS, BROKER SOR, SELF-EVOLVING SWARM) -->
+  <div id="view-QUANT" class="view-content">
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px;">
+      
+      <!-- TOP STATUS ROW -->
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+        <div class="panel" style="border-left: 3px solid var(--neon-cyan);">
+          <div class="panel-header" style="font-size: 11px;"><span>TIMESERIES L1/L2</span><span style="color: var(--neon-cyan);">ONLINE</span></div>
+          <div class="panel-body"><div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: #fff;" id="quantTimeseriesStatus">RING-BUFFER</div><div style="font-size: 10px; color: var(--text-muted);">5,000 Ticks/Asset & Live VWAP</div></div>
+        </div>
+        <div class="panel" style="border-left: 3px solid var(--neon-green);">
+          <div class="panel-header" style="font-size: 11px;"><span>HANSEN SPA GATE</span><span style="color: var(--neon-green);">ACTIVE</span></div>
+          <div class="panel-body"><div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--neon-green);">DEFLATED SHARPE</div><div style="font-size: 10px; color: var(--text-muted);">Anti-Data-Mining Statistical Filter</div></div>
+        </div>
+        <div class="panel" style="border-left: 3px solid var(--neon-amber);">
+          <div class="panel-header" style="font-size: 11px;"><span>RISK FORTRESS</span><span style="color: var(--neon-amber);">99% VaR</span></div>
+          <div class="panel-body"><div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--neon-amber);">EULER RISK</div><div style="font-size: 10px; color: var(--text-muted);">Marginal Volatility Budgeting</div></div>
+        </div>
+        <div class="panel" style="border-left: 3px solid #ff007f;">
+          <div class="panel-header" style="font-size: 11px;"><span>SMART ORDER ROUTER</span><span style="color: #ff007f;">ACTIVE</span></div>
+          <div class="panel-body"><div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: #ff007f;">TWAP & ICEBERG</div><div style="font-size: 10px; color: var(--text-muted);">US, Crypto & Indian Venues</div></div>
+        </div>
+        <div class="panel" style="border-left: 3px solid var(--neon-purple);">
+          <div class="panel-header" style="font-size: 11px;"><span>AI SWARM GENOMES</span><span style="color: var(--neon-purple);">EVOLVING</span></div>
+          <div class="panel-body"><div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--neon-purple);">RL POLICY TUNER</div><div style="font-size: 10px; color: var(--text-muted);">Reward-Based Parameter Shift</div></div>
+        </div>
+      </div>
+
+      <!-- MAIN INTERACTIVE GRID -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        
+        <!-- CARD 1: TIMESERIES & VWAP -->
+        <div class="panel">
+          <div class="panel-header">
+            <span>⏱️ REAL-TIME TIMESERIES STORE & CANDLE AGGREGATOR</span>
+            <span style="color: var(--neon-cyan);">L1/L2 ZERO-LEAK</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="quantTsSymbol" value="BTC/USDT" placeholder="Symbol" style="flex:1; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:12px; border-radius:4px;">
+              <select id="quantTsTf" style="width:80px; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
+                <option value="1s">1s</option>
+                <option value="1m" selected>1m</option>
+                <option value="5m">5m</option>
+              </select>
+              <button onclick="fetchQuantTimeseries()" style="background:var(--neon-cyan); color:#000; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">FETCH CANDLES</button>
+            </div>
+            <div id="quantTsResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:160px; white-space:pre-wrap; line-height:1.6;">Click "FETCH CANDLES" to inspect real-time ring buffer ticks, candle bars, and session VWAP.</div>
+          </div>
+        </div>
+
+        <!-- CARD 2: STRATEGY VALIDATION & HANSEN SPA -->
+        <div class="panel">
+          <div class="panel-header">
+            <span>🔬 HANSEN SPA & DEFLATED SHARPE (DSR) VALIDATION</span>
+            <span style="color: var(--neon-green);">FALSIFICATION GATE</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="quantSharpe" value="2.2" step="0.1" placeholder="Sharpe" style="flex:1; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:12px; border-radius:4px;">
+              <input type="number" id="quantTrials" value="50" placeholder="Trials" style="width:90px; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:12px; border-radius:4px;">
+              <button onclick="runQuantValidationAudit()" style="background:var(--neon-green); color:#000; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">AUDIT DSR</button>
+            </div>
+            <div id="quantValidationResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:160px; white-space:pre-wrap; line-height:1.6;">Click "AUDIT DSR" to test against Hansen Superior Predictive Ability and Deflated Sharpe overfit boundaries.</div>
+          </div>
+        </div>
+
+        <!-- CARD 3: 99% VaR & EULER RISK FORTRESS -->
+        <div class="panel">
+          <div class="panel-header">
+            <span>🛡️ PORTFOLIO RISK FORTRESS & EULER RISK BUDGET</span>
+            <span style="color: var(--neon-amber);">99% 1-DAY VaR</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+              <input type="number" id="quantPortfolioVal" value="100000" placeholder="Portfolio Notional ($)" style="flex:1; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:12px; border-radius:4px;">
+              <button onclick="runQuantRiskAudit()" style="background:var(--neon-amber); color:#000; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 14px; border-radius:4px; cursor:pointer;">COMPUTE VaR</button>
+            </div>
+            <div id="quantRiskResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:160px; white-space:pre-wrap; line-height:1.6;">Click "COMPUTE VaR" to evaluate 99% Parametric VaR, Expected Shortfall (CVaR), and Euler % risk breakdown.</div>
+          </div>
+        </div>
+
+        <!-- CARD 4: SMART ORDER ROUTER (SOR) & TWAP -->
+        <div class="panel">
+          <div class="panel-header">
+            <span>⚡ SMART ORDER ROUTER (SOR) & ALGORITHMIC SLICING</span>
+            <span style="color: #ff007f;">TWAP & ICEBERG</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="quantSorSymbol" value="BTC/USDT" placeholder="Symbol" style="flex:1; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:12px; border-radius:4px;">
+              <input type="number" id="quantSorQty" value="10" placeholder="Quantity" style="width:80px; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); font-size:12px; border-radius:4px;">
+              <button onclick="runQuantSorRoute()" style="background:#ff007f; color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 12px; border-radius:4px; cursor:pointer;">ROUTE SOR</button>
+              <button onclick="runQuantTwapSlices()" style="background:rgba(255,0,127,0.2); border:1px solid #ff007f; color:#ff007f; font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 10px; border-radius:4px; cursor:pointer;">TWAP</button>
+            </div>
+            <div id="quantSorResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:160px; white-space:pre-wrap; line-height:1.6;">Click "ROUTE SOR" or "TWAP" to test best execution routing and order slicing algorithms.</div>
+          </div>
+        </div>
+
+        <!-- CARD 5: SELF-EVOLVING AI STRATEGY GENOME VAULT -->
+        <div class="panel" style="grid-column: span 2;">
+          <div class="panel-header">
+            <span>🧬 SELF-EVOLVING AI QUANTITATIVE STRATEGY GENOME VAULT</span>
+            <span style="color: var(--neon-purple);">RL POLICY ADAPTATION</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px;">
+              <select id="quantRegimeSelect" style="flex:1; background:#000; border:1px solid var(--border-panel); color:#fff; padding:6px; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
+                <option value="TRENDING_BULLISH">Trending Bullish (Momentum)</option>
+                <option value="VOLATILE_CRISIS">Volatile Crisis (Defensive Hedged Mean-Reversion)</option>
+                <option value="MEAN_REVERTING_SIDEWAYS">Mean-Reverting Sideways (Range Scalper)</option>
+              </select>
+              <button onclick="runQuantSynthesizeGenome()" style="background:var(--neon-purple); color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:6px 16px; border-radius:4px; cursor:pointer;">SYNTHESIZE NEW GENOME</button>
+              <button onclick="runQuantLoadGenomes()" style="background:rgba(157,78,221,0.2); border:1px solid var(--neon-purple); color:var(--neon-purple); font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:6px 12px; border-radius:4px; cursor:pointer;">VAULT LIBRARY</button>
+            </div>
+            <div id="quantGenomeResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:120px; white-space:pre-wrap; line-height:1.6;">Click "SYNTHESIZE NEW GENOME" to compile automated rules and hyperparameters tailored to current market regimes.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <script>
     const stages = ['DATA', 'MARKET_STATE', 'SIGNALS', 'STRATEGIES', 'ROBUSTNESS', 'RISK', 'POSITION_SIZING', 'EXECUTION', 'OUTCOME', 'LEARNING'];
     let currentPulsingStageIndex = 0;
@@ -1667,6 +1791,170 @@ Type any command below or use the quick action buttons above.</div>
       if (preset === 'NEXUS') loadNexusStatus();
       if (preset === 'SOURCES') load24SourcesView();
       if (preset === 'APEX') loadApexV100View();
+      if (preset === 'QUANT') loadQuantLabView();
+    }
+
+    // Quant Lab Future Engines Handlers
+    async function loadQuantLabView() {
+      fetchQuantTimeseries();
+    }
+
+    async function fetchQuantTimeseries() {
+      const sym = document.getElementById('quantTsSymbol').value || 'BTC/USDT';
+      const tf = document.getElementById('quantTsTf').value || '1m';
+      const box = document.getElementById('quantTsResults');
+      box.textContent = 'Streaming timeseries ring-buffer and computing VWAP...';
+      try {
+        const res = await fetch('/api/v100/timeseries/candles?symbol=' + encodeURIComponent(sym) + '&tf=' + tf);
+        const data = await res.json();
+        const statRes = await fetch('/api/v100/timeseries/status');
+        const stat = await statRes.json();
+        box.textContent = '=== TIMESERIES STORE L1/L2 ===\n' +
+          'Symbol: ' + data.symbol + ' (' + data.timeframe + ')\n' +
+          'Candles Ingested: ' + data.candles.length + '\n' +
+          'Tracked Assets: ' + stat.trackedSymbols.join(', ') + '\n' +
+          'Session VWAP: $' + (stat.symbolSummaries && stat.symbolSummaries[data.symbol] ? stat.symbolSummaries[data.symbol].vwap : 'N/A') + '\n\n' +
+          'Recent Candles:\n' + JSON.stringify(data.candles.slice(-3), null, 2);
+      } catch (err) {
+        box.textContent = 'Timeseries Error: ' + err.message;
+      }
+    }
+
+    async function runQuantValidationAudit() {
+      const sharpe = parseFloat(document.getElementById('quantSharpe').value || '2.2');
+      const trials = parseInt(document.getElementById('quantTrials').value || '50', 10);
+      const box = document.getElementById('quantValidationResults');
+      box.textContent = 'Running Hansen Superior Predictive Ability and Deflated Sharpe tests...';
+      try {
+        const res = await fetch('/api/v100/validation/dsr?sharpe=' + sharpe + '&trials=' + trials);
+        const data = await res.json();
+        const spaRes = await fetch('/api/v100/validation/spa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+        const spa = await spaRes.json();
+        box.textContent = '=== DEFLATED SHARPE (DSR) & HANSEN SPA ===\n' +
+          'Observed Sharpe: ' + data.observedSharpe + '\n' +
+          'Expected Max Sharpe (Null): ' + data.expectedMaxSharpeUnderNull + '\n' +
+          'DSR Z-Score: ' + data.dsrZScore + '\n' +
+          'Deflated Sharpe p-Value: ' + data.deflatedSharpePValue + '\n' +
+          'Verdict: ' + data.verdict + '\n\n' +
+          '=== HANSEN SPA TEST ===\n' +
+          'SPA p-Value: ' + spa.spaPValue + '\n' +
+          'Recommendation: ' + spa.recommendation;
+      } catch (err) {
+        box.textContent = 'Validation Error: ' + err.message;
+      }
+    }
+
+    async function runQuantRiskAudit() {
+      const val = parseFloat(document.getElementById('quantPortfolioVal').value || '100000');
+      const box = document.getElementById('quantRiskResults');
+      box.textContent = 'Computing 99% Parametric VaR, Expected Shortfall, and Euler Risk Budgeting...';
+      try {
+        const res = await fetch('/api/v100/risk/var?value=' + val);
+        const data = await res.json();
+        const eulerRes = await fetch('/api/v100/risk/euler');
+        const euler = await eulerRes.json();
+        const hedgeRes = await fetch('/api/v100/risk/hedge');
+        const hedge = await hedgeRes.json();
+        box.textContent = '=== PORTFOLIO RISK FORTRESS ===\n' +
+          'Portfolio Base: $' + data.portfolioValue.toLocaleString() + '\n' +
+          '99% 1-Day VaR: $' + data.parametricVaR.notional.toLocaleString() + ' (' + data.parametricVaR.percent + '%)\n' +
+          'Expected Shortfall (CVaR): $' + data.expectedShortfallCVaR.notional.toLocaleString() + ' (' + data.expectedShortfallCVaR.percent + '%)\n' +
+          'Annualized Volatility: ' + data.annualizedVolatilityPercent + '%\n\n' +
+          '=== EULER RISK ALLOCATION ===\n' +
+          'Highest Risk Asset: ' + euler.highestRiskAsset + '\n' +
+          'Total Volatility: ' + euler.totalPortfolioVolatility + '\n\n' +
+          '=== VOLATILITY HEDGE ===\n' +
+          'State: ' + hedge.hedgingStatus + '\n' +
+          'Recommended Hedge Ratio: ' + (hedge.recommendedHedgeRatio * 100) + '% ($' + hedge.recommendedHedgeNotional + ')';
+      } catch (err) {
+        box.textContent = 'Risk Audit Error: ' + err.message;
+      }
+    }
+
+    async function runQuantSorRoute() {
+      const sym = document.getElementById('quantSorSymbol').value || 'BTC/USDT';
+      const qty = parseFloat(document.getElementById('quantSorQty').value || '10');
+      const box = document.getElementById('quantSorResults');
+      box.textContent = 'Routing order through Smart Order Router (SOR)...';
+      try {
+        const res = await fetch('/api/v100/brokers/route-sor', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol: sym, quantity: qty })
+        });
+        const data = await res.json();
+        box.textContent = '=== SMART ORDER ROUTING RESULT ===\n' +
+          'Route ID: ' + data.routeId + '\n' +
+          'Symbol: ' + data.symbol + ' (' + data.side.toUpperCase() + ')\n' +
+          'Quantity: ' + data.quantity + ' | Est Notional: $' + data.estimatedNotional + '\n' +
+          'Selected Venue: ' + data.selectedVenue + '\n' +
+          'Execution Strategy: ' + data.executionStrategy + '\n' +
+          'Estimated Slippage Drag: ' + data.routingSlippageEstimatedBps + ' bps';
+      } catch (err) {
+        box.textContent = 'SOR Error: ' + err.message;
+      }
+    }
+
+    async function runQuantTwapSlices() {
+      const sym = document.getElementById('quantSorSymbol').value || 'BTC/USDT';
+      const qty = parseFloat(document.getElementById('quantSorQty').value || '10');
+      const box = document.getElementById('quantSorResults');
+      box.textContent = 'Generating 15-minute TWAP execution plan...';
+      try {
+        const res = await fetch('/api/v100/brokers/twap-slices', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol: sym, totalQuantity: qty * 10, durationMinutes: 15 })
+        });
+        const data = await res.json();
+        const sliceLines = data.slices.slice(0, 5).map(function(s) {
+          return '• Slice #' + s.sliceIndex + ': ' + s.quantity + ' units at +' + s.scheduledTimeOffsetSec + 's (' + s.scheduledExecutionTime.slice(11, 19) + ')';
+        }).join('\n');
+        box.textContent = '=== TWAP 15-MIN EXECUTION SLICES ===\n' +
+          'Total Quantity: ' + data.totalQuantity + ' across ' + data.slicesCount + ' slices\n\n' +
+          sliceLines + '\n...and ' + (data.slicesCount - 5) + ' more slices scheduled.';
+      } catch (err) {
+        box.textContent = 'TWAP Error: ' + err.message;
+      }
+    }
+
+    async function runQuantSynthesizeGenome() {
+      const regime = document.getElementById('quantRegimeSelect').value;
+      const box = document.getElementById('quantGenomeResults');
+      box.textContent = 'Synthesizing novel Quantitative Strategy Genome via AI Swarm...';
+      try {
+        const res = await fetch('/api/v100/swarm/synthesize', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ targetRegime: regime })
+        });
+        const g = await res.json();
+        box.textContent = '=== AI SYNTHESIZED GENOME ===\n' +
+          'ID: ' + g.genomeId + '\n' +
+          'Name: ' + g.name + '\n' +
+          'Target Regime: ' + g.targetRegime + '\n' +
+          'Entry: ' + g.rules.entry + '\n' +
+          'Exit: ' + g.rules.exit + '\n' +
+          'Stop Loss: ' + g.hyperparameters.stopLossPercent + '% | Take Profit: ' + g.hyperparameters.takeProfitPercent + '%\n' +
+          'Expected Sharpe: ' + g.estimatedExpectedSharpe;
+      } catch (err) {
+        box.textContent = 'Genome Error: ' + err.message;
+      }
+    }
+
+    async function runQuantLoadGenomes() {
+      const box = document.getElementById('quantGenomeResults');
+      box.textContent = 'Loading Alpha Genome Vault...';
+      try {
+        const res = await fetch('/api/v100/swarm/genomes');
+        const data = await res.json();
+        const genomeLines = data.genomes.map(function(g) {
+          return '• [' + g.genomeId + '] ' + g.name + '\n  Regime: ' + g.regime + ' | Fitness: ' + g.fitnessScore + '%\n  Rule: ' + g.entryRule;
+        }).join('\n\n');
+        box.textContent = '=== ALPHA GENOME VAULT (' + data.totalGenomesAvailable + ' GENOMES) ===\n\n' + genomeLines;
+      } catch (err) {
+        box.textContent = 'Vault Error: ' + err.message;
+      }
     }
 
     // Apex v100 Interactive Backtesting, Monte Carlo, Vision & Voice
