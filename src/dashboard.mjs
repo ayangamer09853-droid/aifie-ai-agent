@@ -361,6 +361,7 @@ export const DASHBOARD = `<!DOCTYPE html>
 
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-COMMAND" onclick="switchPreset('COMMAND')">1:COMMAND</button>
+      <button class="nav-tab" id="tab-PIPELINE" onclick="switchPreset('PIPELINE')" style="border-color: #00d2ff; color: #00d2ff; font-weight: 900; background: rgba(0, 210, 255, 0.08);">⚡:5-STAGE MACHINE</button>
       <button class="nav-tab" id="tab-ANALYST" onclick="switchPreset('ANALYST')" style="border-color: #ff007a; color: #ff007a; font-weight: 900; background: rgba(255, 0, 122, 0.08);">🎯:APEX ANALYST</button>
       <button class="nav-tab" id="tab-MARKETS" onclick="switchPreset('MARKETS')">2:MARKETS</button>
       <button class="nav-tab" id="tab-STRATEGIES" onclick="switchPreset('STRATEGIES')">3:STRATEGIES</button>

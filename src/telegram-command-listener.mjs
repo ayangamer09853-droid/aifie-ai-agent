@@ -169,6 +169,7 @@ import { getTimeseriesStoreStatus, computeSessionVwap, getCandleBars } from "./t
 import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateStrategyPromotionGate } from "./strategy-validation-pipeline.mjs";
 import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, evaluateDefensiveHedging } from "./portfolio-risk-fortress.mjs";
 import { getAutonomousAnalystInspection, generateDailyAnalystBriefing, runFullAutonomousMarketScan } from "./autonomous-chart-analyst-engine.mjs";
+import { runFull5StagePipelineCycle, get5StagePipelineStatus, executeHumanDecision } from "./modular-5stage-ai-trading-machine.mjs";
 import { routeOrderThroughSor, generateTwapOrderSlices } from "./broker-adapters-suite.mjs";
 import { synthesizeStrategyGenome, getEvolvedGenomeLibrary, getEvolutionStatus, runEvolutionCycle } from "./self-evolving-swarm.mjs";
 import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./trading-bot.mjs";
@@ -406,6 +407,47 @@ ${insp.setup.confluences.map(c => `• ${c}`).join("\n")}
 ${b.topActionablePicks.map(p => `• <b>${p.symbol}</b> (${p.direction}): Entry <code>${p.entry}</code> | Stop <code>${p.stopLoss}</code> | Target <code>${p.target2}</code> [<code>${p.rrr}</code>]`).join("\n\n")}
 
 🛡️ <b>Philosophy:</b> <i>${b.analystPhilosophy}</i>`;
+  }
+
+  if (command === "/pipeline" || command === "/5stage") {
+    const res = await runFull5StagePipelineCycle();
+    const stat = get5StagePipelineStatus();
+    return `🤖 <b>MODULAR 5-STAGE 24/7 AI TRADING MACHINE</b>
+──────────────────
+<b>Status:</b> <code>${stat.status}</code> | <b>Cycles:</b> <b>#${stat.pipelineState.totalCyclesExecuted}</b>
+<b>Assets Scanned:</b> <b>${res.totalScanned}</b> | <b>Setups Passed Risk:</b> <b>${res.actionableSetupsPassedRisk}</b>
+<b>Pending Human Decisions:</b> <b>${stat.pipelineState.pendingDecisions.length}</b>
+
+<b>Workflow Stages:</b>
+1. <b>SCANNER:</b> Real-time market & volume velocity
+2. <b>SIGNAL ENGINE:</b> 5 Archetypes (Breakout, Pullback, Momentum, Trend, Reversal)
+3. <b>TRADE PLANNER:</b> Entry, Stop, Target, Invalidation Level
+4. <b>RISK ENGINE:</b> 1% Risk Guard, R:R >= 2.0 (Pass/Fail)
+5. <b>24/7 MONITOR:</b> Live tick tracking & 1-Tap Human Decision
+
+<i>AI handles the noise. You make the final call.</i>`;
+  }
+
+  if (command === "/decide" || command === "/approve" || command === "/reject") {
+    const parts = text.trim().split(/\s+/);
+    const decisionId = parts[1];
+    const action = command === "/approve" ? "APPROVE" : command === "/reject" ? "REJECT" : (parts[2] || "APPROVE");
+
+    if (!decisionId) {
+      return `⚠️ <b>Usage:</b> <code>/decide [decision_id] [approve|watchlist|reject]</code>
+Example: <code>/decide DECISION_a1b2c3d4 approve</code>`;
+    }
+
+    const decRes = executeHumanDecision(decisionId, action, { paper, orders });
+    if (!decRes.success) {
+      return `❌ <b>Decision Failed:</b> ${decRes.error}`;
+    }
+
+    return `✅ <b>HUMAN DECISION REGISTERED</b>
+──────────────────
+<b>Decision:</b> <b>${decRes.decision}</b>
+<b>Asset:</b> <code>${decRes.item.symbol}</code> (${decRes.item.direction})
+<b>Message:</b> <i>${decRes.message}</i>`;
   }
 
   if (command === "/sandbox") {
