@@ -1,0 +1,14 @@
+# .dockerignore — Aifie AI Agent Production Build Exclusions
+node_modules/
+.env
+data/
+sources/
+.git/
+.ai/
+*.log
+*.pdf
+*.bat
+*.vbs
+*.ps1
+test/
+.github/

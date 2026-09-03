@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "name": "aifie-ai-agent",
+  "builds": [
+    { "src": "server.mjs", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/server.mjs" },
+    { "src": "/(.*)", "dest": "/server.mjs" }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["sin1", "iad1", "fra1"],
+  "functions": {
+    "server.mjs": {
+      "maxDuration": 30,
+      "memory": 512
+    }
+  }
+}

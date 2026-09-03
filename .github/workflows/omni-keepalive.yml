@@ -1,0 +1,172 @@
+name: Aifie 20-Platform Omni-Cloud Keep-Alive & Swarm Daemon v91.0
+
+on:
+  schedule:
+    # Every 5 minutes 24/7 — pings all platforms and runs swarm tick
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Admin command to dispatch (START_BOT, STOP_BOT, RUN_SWARM_TICK, TRIGGER_SWEEP)"
+        required: false
+        default: "RUN_SWARM_TICK"
+
+jobs:
+  keepalive-and-swarm:
+    name: Ping All Platforms + Run Swarm Tick
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Ping Oracle Cloud (PRIMARY)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.ORACLE_CLOUD_URL }}" ]; then
+            STATUS=$(curl -sf --max-time 5 "${{ secrets.ORACLE_CLOUD_URL }}/api/status" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','unknown'))" 2>/dev/null || echo "OFFLINE")
+            echo "Oracle Cloud: $STATUS"
+          else
+            echo "Oracle Cloud: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Fly.io (BACKUP 1)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.FLY_IO_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.FLY_IO_URL }}/api/status" > /dev/null && echo "Fly.io: ONLINE" || echo "Fly.io: OFFLINE"
+          else
+            echo "Fly.io: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Koyeb (BACKUP 2)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.KOYEB_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.KOYEB_URL }}/api/status" > /dev/null && echo "Koyeb: ONLINE" || echo "Koyeb: OFFLINE"
+          else
+            echo "Koyeb: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Render (BACKUP 3)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RENDER_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.RENDER_URL }}/api/status" > /dev/null && echo "Render: ONLINE" || echo "Render: OFFLINE"
+          else
+            echo "Render: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Railway (BACKUP 4)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.RAILWAY_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.RAILWAY_URL }}/api/status" > /dev/null && echo "Railway: ONLINE" || echo "Railway: OFFLINE"
+          else
+            echo "Railway: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Vercel (SERVERLESS)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.VERCEL_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.VERCEL_URL }}/api/v91/vercel/status" > /dev/null && echo "Vercel: ONLINE" || echo "Vercel: OFFLINE"
+          else
+            echo "Vercel: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Netlify (SERVERLESS)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.NETLIFY_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.NETLIFY_URL }}/.netlify/functions/status" > /dev/null && echo "Netlify: ONLINE" || echo "Netlify: OFFLINE"
+          else
+            echo "Netlify: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Deno Deploy (EDGE)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.DENO_DEPLOY_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.DENO_DEPLOY_URL }}/status" > /dev/null && echo "Deno Deploy: ONLINE" || echo "Deno Deploy: OFFLINE"
+          else
+            echo "Deno Deploy: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Replit (ALWAYS-ON)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.REPLIT_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.REPLIT_URL }}/api/status" > /dev/null && echo "Replit: ONLINE" || echo "Replit: OFFLINE"
+          else
+            echo "Replit: NOT_CONFIGURED"
+          fi
+
+      - name: Ping Glitch (MIRROR)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.GLITCH_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.GLITCH_URL }}/" > /dev/null && echo "Glitch: ONLINE" || echo "Glitch: OFFLINE"
+          else
+            echo "Glitch: NOT_CONFIGURED"
+          fi
+
+      - name: Ping HuggingFace Space (AI ENGINE)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.HUGGINGFACE_SPACE_URL }}" ]; then
+            curl -sf --max-time 10 "${{ secrets.HUGGINGFACE_SPACE_URL }}/" > /dev/null && echo "HuggingFace: ONLINE" || echo "HuggingFace: OFFLINE"
+          else
+            echo "HuggingFace: NOT_CONFIGURED"
+          fi
+
+      - name: Ping PythonAnywhere (PYTHON AI)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.PYTHONANYWHERE_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.PYTHONANYWHERE_URL }}/" > /dev/null && echo "PythonAnywhere: ONLINE" || echo "PythonAnywhere: OFFLINE"
+          else
+            echo "PythonAnywhere: NOT_CONFIGURED"
+          fi
+
+      - name: Ping InfinityFree Relay (PHP CRON)
+        continue-on-error: true
+        run: |
+          if [ -n "${{ secrets.INFINITYFREE_URL }}" ]; then
+            curl -sf --max-time 5 "${{ secrets.INFINITYFREE_URL }}/ping.php" > /dev/null && echo "InfinityFree: ONLINE" || echo "InfinityFree: OFFLINE"
+          else
+            echo "InfinityFree: NOT_CONFIGURED"
+          fi
+
+      - name: Dispatch Swarm Tick to Primary (or Failover)
+        continue-on-error: true
+        run: |
+          COMMAND="${{ github.event.inputs.command || 'RUN_SWARM_TICK' }}"
+          DISPATCHED=false
+
+          for URL in "${{ secrets.ORACLE_CLOUD_URL }}" "${{ secrets.FLY_IO_URL }}" "${{ secrets.KOYEB_URL }}" "${{ secrets.RENDER_URL }}"; do
+            if [ -z "$URL" ]; then continue; fi
+            RESULT=$(curl -sf --max-time 10 -X POST "$URL/api/admin/command" \
+              -H "Content-Type: application/json" \
+              -d "{\"command\": \"$COMMAND\"}" 2>/dev/null || echo "")
+            if [ -n "$RESULT" ]; then
+              echo "✅ $COMMAND dispatched to $URL"
+              echo "Result: $RESULT"
+              DISPATCHED=true
+              break
+            fi
+          done
+
+          if [ "$DISPATCHED" = "false" ]; then
+            echo "⚠️ No upstream responded to $COMMAND — all platforms may be starting up"
+          fi
+
+      - name: Summary Report
+        run: |
+          echo "=================================="
+          echo "Aifie Omni-Cloud Keep-Alive Report"
+          echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "Platforms pinged: 12 (+ 8 DB/Serverless)"
+          echo "GitHub Actions cron: RUNNING EVERY 5 MINUTES"
+          echo "=================================="

@@ -1,0 +1,35 @@
+name: Aifie 24/7 Autonomous Cloud Swarm Daemon
+
+on:
+  schedule:
+    # Run every 10 minutes in the cloud 24/7
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  cloud-agent-swarm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run Cloud Multi-Agent Autonomous Cycle
+        run: |
+          echo "Starting 24/7 Cloud Autonomous Multi-Agent Swarm Tick..."
+          node -e "
+            import('./src/autonomous-100-agent-fleet.mjs').then(m => {
+              const res = m.executeFleetWorkCycle();
+              console.log('24/7 Cloud Cycle Executed. Agents online:', res.onlineAgentsCount);
+            });
+          "
+
+      - name: Run Zero-Dependency Autonomous Test Suite
+        run: |
+          node --test test/v87-native-indicators-minimal-deps.test.mjs

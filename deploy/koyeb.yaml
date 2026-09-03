@@ -1,0 +1,34 @@
+// Koyeb Service Manifest v91.0
+// Deploy at: https://app.koyeb.com
+// Connect GitHub repo, set service type = web, port = 8787
+
+name: aifie-ai-agent
+type: web
+regions:
+  - was
+  - fra
+instance_type: free
+scaling:
+  min_instances: 1
+  max_instances: 1
+ports:
+  - port: 8787
+    protocol: http
+health_checks:
+  - port: 8787
+    path: /api/status
+    interval: 30s
+    timeout: 5s
+    restart_limit: 3
+env:
+  - key: PORT
+    value: "8787"
+  - key: HOST
+    value: "0.0.0.0"
+  - key: NODE_ENV
+    value: "production"
+build:
+  type: dockerfile
+  dockerfile: Dockerfile
+run:
+  command: node server.mjs

@@ -1,0 +1,20 @@
+{
+  "name": "aifie-ai-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Paper-trading research agent foundation",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@alpacahq/alpaca-trade-api": "^4.0.2",
+    "@solana/web3.js": "^1.98.4",
+    "ccxt": "^4.5.77",
+    "ethers": "^6.17.0",
+    "ws": "^8.21.3"
+  }
+}

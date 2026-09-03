@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  # ============================================================================
+  # 1. CLOUD VIRTUAL DESKTOP & BROWSER (Ubuntu XFCE + Chromium + Audio + noVNC)
+  # Accessible via browser on Smartphone / Tablet / PC with Zero Local Software
+  # ============================================================================
+  vcomputer-desktop:
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce
+    container_name: aifie-cloud-desktop
+    security_opt:
+      - seccomp:unconfined # Allows Google Chrome / Chromium sandbox to run smoothly
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - SUBFOLDER=/
+      - TITLE=AIFIE Cloud Virtual Computer
+      - CUSTOM_USER=aifie
+      - PASSWORD=aifie_secure_cloud_2026
+    volumes:
+      - ./data/vcomputer-desktop-config:/config
+      - /var/run/docker.sock:/var/run/docker.sock # Optional: allows docker control from desktop
+      - ./sources:/sources # Direct access to quantitative source repositories
+    ports:
+      - "3000:3000"       # Web Desktop HTTP (noVNC / KasmVNC)
+      - "3001:3001"       # Web Desktop HTTPS (SSL)
+    shm_size: "2gb"       # Generous shared memory for 4K video & Chromium tabs
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 12G     # Oracle Free Tier has 24 GB RAM
+
+  # ============================================================================
+  # 2. CLOUD WEB TERMINAL (High-Speed Low-Latency Web Terminal via ttyd)
+  # Provides instant zsh/bash shell access via any web browser or mobile phone
+  # ============================================================================
+  vcomputer-terminal:
+    image: tsl0922/ttyd:alpine
+    container_name: aifie-cloud-terminal
+    command: ttyd -p 7681 -t fontSize=14 -t fontFamily="JetBrains Mono" -c aifie:aifie_secure_cloud_2026 sh
+    ports:
+      - "7681:7681"       # Web Terminal Port
+    volumes:
+      - ../:/workspace    # Mount project workspace
+    working_dir: /workspace
+    restart: unless-stopped
+
+  # ============================================================================
+  # 3. AIFIE AUTONOMOUS AGENT & QUANT COMMAND OS (Node.js 22 Runtime)
+  # Institutional AI trading engines, backtesting, and Telegram bot listener
+  # ============================================================================
+  aifie-agent:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: aifie-core-server
+    environment:
+      - PORT=8787
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+    ports:
+      - "8787:8787"       # Aifie Dashboard & REST/WSS Gateway
+    volumes:
+      - ../data:/app/data
+      - ../.env:/app/.env
+    restart: unless-stopped
+    depends_on:
+      - vcomputer-desktop
+      - vcomputer-terminal

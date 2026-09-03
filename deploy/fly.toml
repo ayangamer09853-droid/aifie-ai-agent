@@ -1,0 +1,32 @@
+// Fly.io Deployment Configuration v91.0
+// Deploy with: fly launch --name aifie-ai-agent --region sin
+app = "aifie-ai-agent"
+primary_region = "sin"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8787"
+  HOST = "0.0.0.0"
+  NODE_ENV = "production"
+
+[http_service]
+  internal_port = 8787
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[http_service.checks]]
+  interval = "10s"
+  timeout = "5s"
+  grace_period = "10s"
+  method = "GET"
+  path = "/api/status"
+
+[[vm]]
+  memory = "256mb"
+  cpu_kind = "shared"
+  cpus = 1

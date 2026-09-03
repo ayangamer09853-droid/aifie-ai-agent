@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  aifie-agent:
+    build: .
+    container_name: aifie-server
+    restart: always
+    ports:
+      - "8787:8787"
+    environment:
+      - PORT=8787
+      - HOST=0.0.0.0
+      - MAX_LIVE_ORDER_NOTIONAL=50000
+      - MAX_DAILY_LOSS_PERCENT=5.0
+      - RISK_PER_TRADE_PERCENT=1.0
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs

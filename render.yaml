@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: aifie-ai-agent-247
+    env: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_ENV
+        value: production
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: LIVE_TRADING_ENABLED
+        value: "false"
+      - key: MAX_LIVE_ORDER_NOTIONAL
+        value: "50000"
+      - key: MAX_DAILY_LOSS_PERCENT
+        value: "3.5"
+      - key: RISK_PER_TRADE_PERCENT
+        value: "1.0"
+      - key: POLYGON_API_KEY
+        sync: false
+      - key: TWELVE_DATA_KEY
+        sync: false
+      - key: ALPHA_VANTAGE_KEY
+        sync: false
+      - key: FINNHUB_API_KEY
+        sync: false
+      - key: GNEWS_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: MASTER_VAULT_PASSWORD
+        generateValue: true
+    healthCheckPath: /api/status
+    autoDeploy: true
