@@ -205,6 +205,7 @@ import { queryFleetAgents, getFleetDivisionsSummary, executeFleetWorkCycle } fro
 
 // v86.0 Public Gateway Manager & Full AI Agent Web Access
 import { getPublicGatewayStatus, setPublicGatewayUrl } from "./src/public-gateway-manager.mjs";
+import { startPersistentPublicTunnelDaemon } from "./src/persistent-public-tunnel-daemon.mjs";
 
 // v88.0 Online Cloud Relay & Zero-Dependency Streaming
 import { getOnlineCloudStatus, recordCloudKeepAlivePing } from "./src/online-cloud-service-relay.mjs";
@@ -1291,6 +1292,7 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
     startMasterAutonomousNexusDaemon({ intervalMs: 60000 });
     startAutonomousEvolutionDaemon({ intervalMs: 30000, paper, orders, strategyLab, persist });
     startAutoTrader({ paper, orders, persist, intervalMs: 10000 });
+    startPersistentPublicTunnelDaemon({ port });
     console.log(`\n==================================================`);
     console.log(`🚀 AIFIE AI AGENT ONLINE & AUTONOMOUS 24/7`);
     console.log(`📊 Local Web Dashboard: http://localhost:${port}`);
