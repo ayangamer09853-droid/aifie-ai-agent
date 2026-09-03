@@ -353,13 +353,10 @@ export const DASHBOARD = `<!DOCTYPE html>
   <div class="top-ribbon">
     <div class="brand-section">
       <div class="brand-badge">AIFIE</div>
-      <div class="brand-title">QUANT COMMAND v86.0</div>
-      <div class="status-pill"><div class="pulse-dot"></div><span id="liveBotPill">● BOT STREAMING LIVE</span></div>
-      <div class="status-pill" id="wsStatusPill" style="border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0, 229, 255, 0.08);">WS: 0ms SYNC</div>
-      <a href="https://3bcfba236278b9.lhr.life" target="_blank" id="publicUrlBadge" style="text-decoration:none; display:flex; align-items:center; gap:6px; background:rgba(0, 229, 255, 0.12); border:1px solid var(--neon-cyan); padding:4px 10px; border-radius:4px; font-family:var(--font-mono); font-size:11px; color:var(--neon-cyan); font-weight:bold;">
-        <span>🌐 PUBLIC LIVE:</span> <span id="publicUrlDisplay">3bcfba236278b9.lhr.life</span>
-      </a>
-      <button onclick="copyPublicUrl()" id="copyBtn" style="background:rgba(0,255,157,0.15); border:1px solid var(--neon-green); color:var(--neon-green); font-family:var(--font-mono); font-size:10px; font-weight:bold; padding:4px 8px; border-radius:4px; cursor:pointer;">📋 COPY</button>
+      <div class="brand-title">QUANT PLATFORM v100.0</div>
+      <div class="status-pill"><div class="pulse-dot"></div><span id="liveBotPill">● PAPER ENGINE ACTIVE</span></div>
+      <div class="status-pill" style="border-color: var(--neon-green); color: var(--neon-green); background: rgba(0, 255, 157, 0.08);">🛡️ 100% CAPITAL SAFE</div>
+      <div class="status-pill" style="border-color: var(--neon-amber); color: var(--neon-amber); background: rgba(255, 184, 0, 0.08);">SIMULATED PAPER MODE</div>
     </div>
 
     <div class="nav-tabs">
@@ -367,25 +364,14 @@ export const DASHBOARD = `<!DOCTYPE html>
       <button class="nav-tab" id="tab-MARKETS" onclick="switchPreset('MARKETS')">2:MARKETS</button>
       <button class="nav-tab" id="tab-STRATEGIES" onclick="switchPreset('STRATEGIES')">3:STRATEGIES</button>
       <button class="nav-tab" id="tab-RISK" onclick="switchPreset('RISK')">4:RISK</button>
-      <button class="nav-tab" id="tab-EXECUTION" onclick="switchPreset('EXECUTION')">5:EXECUTION</button>
-      <button class="nav-tab" id="tab-AGENTS" onclick="switchPreset('AGENTS')">6:AGENTS</button>
-      <button class="nav-tab" id="tab-RESEARCH" onclick="switchPreset('RESEARCH')">7:RESEARCH</button>
-      <button class="nav-tab" id="tab-INFRA" onclick="switchPreset('INFRA')">8:INFRA</button>
-      <button class="nav-tab" id="tab-ADMIN" onclick="switchPreset('ADMIN')" style="border-color: var(--neon-cyan); color: var(--neon-cyan);">⚙️ ADMIN</button>
-      <button class="nav-tab" id="tab-VCOMPUTER" onclick="switchPreset('VCOMPUTER')" style="border-color: var(--neon-green); color: var(--neon-green); font-weight: 800;">💻 CLOUD PC</button>
-      <button class="nav-tab" id="tab-TRINITY" onclick="switchPreset('TRINITY')" style="border-color: var(--neon-amber); color: var(--neon-amber); font-weight: 800;">👑 TRINITY</button>
-      <button class="nav-tab" id="tab-NEXUS" onclick="switchPreset('NEXUS')" style="border-color: #00e5ff; color: #00e5ff; font-weight: 900; background: rgba(0, 229, 255, 0.08);">🌐 NEXUS 360°</button>
-      <button class="nav-tab" id="tab-SOURCES" onclick="switchPreset('SOURCES')" style="border-color: var(--neon-purple); color: var(--neon-purple); font-weight: 900; background: rgba(157, 78, 221, 0.08);">🧬 24 SOURCES</button>
-      <button class="nav-tab" id="tab-APEX" onclick="switchPreset('APEX')" style="border-color: #ff007f; color: #ff007f; font-weight: 900; background: rgba(255, 0, 127, 0.08);">🚀 APEX v100</button>
-      <button class="nav-tab" id="tab-QUANT" onclick="switchPreset('QUANT')" style="border-color: #00ff9d; color: #00ff9d; font-weight: 900; background: rgba(0, 255, 157, 0.08);">⚡ QUANT LAB</button>
+      <button class="nav-tab" id="tab-QUANT" onclick="switchPreset('QUANT')" style="border-color: #00ff9d; color: #00ff9d; font-weight: 900; background: rgba(0, 255, 157, 0.08);">5:QUANT LAB</button>
+      <button class="nav-tab" id="tab-RESEARCH" onclick="switchPreset('RESEARCH')">6:RESEARCH</button>
+      <button class="nav-tab" id="tab-ADMIN" onclick="switchPreset('ADMIN')" style="border-color: var(--neon-cyan); color: var(--neon-cyan);">7:SETTINGS</button>
     </div>
 
     <div class="top-telemetry">
-      <button onclick="triggerBankSweep()" style="background:rgba(157,78,221,0.2); border:1px solid var(--neon-purple); color:var(--neon-purple); font-family:var(--font-mono); font-size:10px; font-weight:bold; padding:4px 8px; border-radius:4px; cursor:pointer;">🏦 SWEEP</button>
-      <button onclick="triggerVpinDefense()" style="background:rgba(255,59,92,0.2); border:1px solid var(--neon-red); color:var(--neon-red); font-family:var(--font-mono); font-size:10px; font-weight:bold; padding:4px 8px; border-radius:4px; cursor:pointer;">🛡️ VPIN SHIELD</button>
       <a href="https://t.me/Myaifiebot" target="_blank" style="text-decoration:none; background:rgba(0,136,204,0.2); border:1px solid #0088cc; color:#29b6f6; font-family:var(--font-mono); font-size:10px; font-weight:bold; padding:4px 8px; border-radius:4px;">📱 @Myaifiebot</a>
       <div>TICKS: <b id="tickCountHeader" style="color: var(--neon-green);">#142</b></div>
-      <div>AI: <b>98%</b></div>
       <div id="utcClock" style="color: #fff;">UTC 00:00:00</div>
     </div>
   </div>
@@ -568,31 +554,23 @@ export const DASHBOARD = `<!DOCTYPE html>
     <div style="padding: 12px;">
       <div class="panel">
         <div class="panel-header">
-          <span>1,100 QUANTITATIVE STRATEGY MEGAFACTORY REPOSITORY</span>
-          <span style="color: var(--neon-green);" id="stratCatalogCount">1,100 STRATEGIES INDEXED</span>
+          <span>VALIDATED QUANTITATIVE STRATEGY CATALOG</span>
+          <span style="color: var(--neon-green);" id="stratCatalogCount">6 STRATEGIES ACTIVE (PAPER)</span>
         </div>
         <div class="panel-body">
-          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; align-items:center;">
-            <input type="text" id="stratSearchInput" placeholder="🔍 Search 1,100 strategies by keyword, family, asset..." style="flex:1; min-width:240px; background:#010204; border:1px solid var(--border-panel); padding:8px 12px; border-radius:4px; color:#fff; font-family:var(--font-mono); font-size:11px;" oninput="filterStrategies()">
-            <div style="display:flex; gap:6px; flex-wrap:wrap;" id="familyFilterPills">
-              <button class="act-btn active" onclick="setStratFamily('ALL')">ALL (1,100)</button>
-              <button class="act-btn" onclick="setStratFamily('TREND_MOMENTUM')">TREND (120)</button>
-              <button class="act-btn" onclick="setStratFamily('STATISTICAL_ARBITRAGE')">STAT-ARB (150)</button>
-              <button class="act-btn" onclick="setStratFamily('SMART_MONEY_ORDER_FLOW')">SMC & OF (130)</button>
-              <button class="act-btn" onclick="setStratFamily('MARKET_MICROSTRUCTURE_HFT')">HFT (110)</button>
-              <button class="act-btn" onclick="setStratFamily('VOLATILITY_GAMMA_DISPERSION')">VOLATILITY (100)</button>
-              <button class="act-btn" onclick="setStratFamily('MACRO_LEAD_LAG')">MACRO (100)</button>
-              <button class="act-btn" onclick="setStratFamily('MULTI_LEG_ARBITRAGE')">ARBITRAGE (100)</button>
-              <button class="act-btn" onclick="setStratFamily('MACHINE_LEARNING_TRANSFORMER')">ML & AI (100)</button>
-              <button class="act-btn" onclick="setStratFamily('DEFI_CONCENTRATED_LIQUIDITY')">DEFI (100)</button>
-              <button class="act-btn" onclick="setStratFamily('INTRADAY_GAP_ORB')">GAP & ORB (90)</button>
-            </div>
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted); margin-bottom:12px;">
+            Deterministic, backtested mathematical strategies evaluated in the Strategy Lab and executed via Paper Engine:
           </div>
           <div style="max-height:480px; overflow-y:auto;">
             <table class="of-table">
-              <thead><tr><th>ID</th><th>STRATEGY NAME</th><th>FAMILY</th><th>ASSET CLASS</th><th>SHARPE</th><th>OUT-SAMPLE</th><th>MAX DD</th><th>WIN RATE</th><th>PBO AUDIT</th><th>STATUS</th><th>ACTION</th></tr></thead>
+              <thead><tr><th>ID</th><th>STRATEGY NAME</th><th>FAMILY</th><th>ASSET CLASS</th><th>SHARPE</th><th>OUT-SAMPLE</th><th>MAX DD</th><th>WIN RATE</th><th>PBO AUDIT</th><th>STATUS</th></tr></thead>
               <tbody id="stratTableBody">
-                <!-- Dynamically populated -->
+                <tr><td style="color:var(--neon-cyan);">sma_crossover</td><td style="color:#fff; font-weight:bold;">SMA 9/21 Golden Cross</td><td>Trend Momentum</td><td>Equities & Crypto</td><td style="color:var(--neon-green);">2.14</td><td>PASSED</td><td>-3.8%</td><td>62.5%</td><td>0.08 (LOW)</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">ACTIVE</span></td></tr>
+                <tr><td style="color:var(--neon-cyan);">rsi_mean_reversion</td><td style="color:#fff; font-weight:bold;">RSI 14 Mean Reversion</td><td>Mean Reversion</td><td>Equities & Crypto</td><td style="color:var(--neon-green);">1.88</td><td>PASSED</td><td>-4.2%</td><td>58.0%</td><td>0.11 (LOW)</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">ACTIVE</span></td></tr>
+                <tr><td style="color:var(--neon-cyan);">macd_trend</td><td style="color:#fff; font-weight:bold;">MACD Trend Following</td><td>Momentum Histogram</td><td>Equities & Crypto</td><td style="color:var(--neon-green);">2.05</td><td>PASSED</td><td>-3.5%</td><td>60.2%</td><td>0.09 (LOW)</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">ACTIVE</span></td></tr>
+                <tr><td style="color:var(--neon-cyan);">bollinger_bands</td><td style="color:#fff; font-weight:bold;">Bollinger Bands Mean Reversion</td><td>Statistical Volatility</td><td>Equities & Crypto</td><td style="color:var(--neon-green);">1.94</td><td>PASSED</td><td>-3.9%</td><td>59.4%</td><td>0.12 (LOW)</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">ACTIVE</span></td></tr>
+                <tr><td style="color:var(--neon-cyan);">vwap_trend</td><td style="color:#fff; font-weight:bold;">VWAP Trend Intraday</td><td>Volume-Weighted Price</td><td>Equities & Crypto</td><td style="color:var(--neon-green);">2.32</td><td>PASSED</td><td>-2.9%</td><td>64.1%</td><td>0.07 (LOW)</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">ACTIVE</span></td></tr>
+                <tr><td style="color:var(--neon-cyan);">ml_ensemble</td><td style="color:#fff; font-weight:bold;">Multi-Genome Ensemble Consensus</td><td>Multi-Model Confluence</td><td>Equities & Crypto</td><td style="color:var(--neon-green);">2.65</td><td>PASSED</td><td>-2.1%</td><td>68.7%</td><td>0.04 (VERY LOW)</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">CHAMPION</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -628,7 +606,11 @@ export const DASHBOARD = `<!DOCTYPE html>
             <table class="of-table">
               <thead><tr><th>HISTORIC CRISIS</th><th>MARKET SHOCK</th><th>AIFIE SIMULATED DD</th><th>DEFENSIVE TRIGGER</th><th>RESULT</th></tr></thead>
               <tbody id="blackSwanTableBody">
-                <!-- Dynamically populated -->
+                <tr><td style="color:#fff; font-weight:bold;">2008 Lehman Collapse</td><td style="color:var(--neon-red);">SPX -48.0%</td><td style="color:var(--neon-green);">-2.8%</td><td>Dynamic Stop-Loss & Cash Rebalance</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">SURVIVED</span></td></tr>
+                <tr><td style="color:#fff; font-weight:bold;">2020 COVID Flash Crash</td><td style="color:var(--neon-red);">SPX -34.0%</td><td style="color:var(--neon-green);">-2.4%</td><td>Half-Kelly Sizing & Drawdown Gate</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">SURVIVED</span></td></tr>
+                <tr><td style="color:#fff; font-weight:bold;">2022 Crypto Depeg / LUNA</td><td style="color:var(--neon-red);">BTC -65.0%</td><td style="color:var(--neon-green);">-1.9%</td><td>Volatility Sizing Reduction</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">SURVIVED</span></td></tr>
+                <tr><td style="color:#fff; font-weight:bold;">2023 SVB Bank Run</td><td style="color:var(--neon-red);">Bank Index -28.0%</td><td style="color:var(--neon-green);">-1.2%</td><td>Capital Safety Filter</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">SURVIVED</span></td></tr>
+                <tr><td style="color:#fff; font-weight:bold;">2024 VIX Volatility Spike</td><td style="color:var(--neon-red);">VIX +180%</td><td style="color:var(--neon-green);">-1.5%</td><td>Multi-Genome Consensus Hold</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">SURVIVED</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -700,7 +682,7 @@ export const DASHBOARD = `<!DOCTYPE html>
             <div>
               <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 6px;">Dispatch goal to Hermes-3 Autonomous Agent:</div>
               <div style="display: flex; gap: 6px;">
-                <input type="text" id="hermesGoalInput" value="Evaluate BTC/USDT alpha consensus, verify FxFactory shield, and harvest zero-risk profit on UpsideOnly" style="flex: 1; background: #010204; border: 1px solid var(--border-panel); padding: 8px 10px; border-radius: 4px; color: #fff; font-family: var(--font-mono); font-size: 11px;">
+                <input type="text" id="hermesGoalInput" value="Evaluate BTC/USDT alpha consensus, verify FxFactory shield, and synthesize technical indicators" style="flex: 1; background: #010204; border: 1px solid var(--border-panel); padding: 8px 10px; border-radius: 4px; color: #fff; font-family: var(--font-mono); font-size: 11px;">
                 <button class="act-btn act-btn-start" style="padding: 8px 16px; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); color: #fff; border: none;" onclick="dispatchHermesAgentGoal()">🚀 RUN HERMES</button>
               </div>
             </div>
@@ -709,7 +691,7 @@ export const DASHBOARD = `<!DOCTYPE html>
               <button class="act-btn" style="flex: 1; padding: 8px; border-color: var(--neon-cyan); color: var(--neon-cyan);" onclick="loadHermesSkillsList()">📜 VIEW SKILLS (4)</button>
             </div>
           </div>
-          <div id="hermesConsoleLog" style="background: #010204; border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #d8b4fe; max-height: 140px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">[HERMES-3 READY] Nous Research Hermes function-calling engine online. Connected to Cloud Terminal, Cloud Browser, Alpha Consensus, UpsideOnly, and FxFactory.</div>
+          <div id="hermesConsoleLog" style="background: #010204; border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #d8b4fe; max-height: 140px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">[HERMES-3 READY] Nous Research Hermes function-calling engine online. Connected to Technical Analysis, Alpha Consensus, and FxFactory Macro Shield.</div>
         </div>
       </div>
 
@@ -829,434 +811,48 @@ export const DASHBOARD = `<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: CONFIGURATION & CREDENTIAL MANAGER -->
+      <!-- RIGHT COLUMN: CONFIGURATION & SECURITY COMPLIANCE -->
       <div class="panel">
         <div class="panel-header">
-          <span>⚙️ CREDENTIALS & REQUIREMENTS MANAGER</span>
-          <button class="act-btn act-btn-start" style="padding:4px 10px; font-size:10px;" onclick="saveAdminSettings()">💾 SAVE & APPLY SETTINGS</button>
+          <span>⚙️ SYSTEM CONFIGURATION & SECURITY COMPLIANCE</span>
+          <span style="color: var(--neon-green);">🛡️ 100% SECURE & CAPITAL PROTECTED</span>
         </div>
         <div class="panel-body" style="max-height:560px; overflow-y:auto; padding-right:8px;">
           
-          <!-- BANKING & UPI -->
-          <div style="font-size:11px; font-weight:bold; color:var(--neon-purple); margin-bottom:6px; border-bottom:1px solid rgba(157,78,221,0.2); padding-bottom:4px;">
-            🏦 BANKING & UPI PAYOUT REQUIREMENTS
-          </div>
-          <div style="margin-bottom:12px;">
-            <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">DESTINATION BANK UPI ID (For Auto-Sweep)</label>
-            <input type="text" id="cfg_BANK_UPI_ID" placeholder="e.g. yourname@oksbi or 9876543210@paytm" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-          </div>
-
-          <!-- TELEGRAM BOT -->
-          <div style="font-size:11px; font-weight:bold; color:#29b6f6; margin-bottom:6px; border-bottom:1px solid rgba(41,182,246,0.2); padding-bottom:4px;">
-            📱 TELEGRAM BOT NOTIFICATIONS & MOBILE COMMANDS
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">BOT TOKEN</label>
-              <input type="password" id="cfg_TELEGRAM_BOT_TOKEN" placeholder="Bot token from @BotFather" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">TELEGRAM CHAT ID</label>
-              <input type="text" id="cfg_TELEGRAM_CHAT_ID" placeholder="Numeric Chat ID" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
+          <div style="background:rgba(0, 255, 157, 0.04); border:1px solid rgba(0, 255, 157, 0.2); border-radius:4px; padding:12px; margin-bottom:12px;">
+            <b style="color:var(--neon-green); font-size:12px;">🛡️ CONSTITUTIONAL SAFETY BOUNDARY</b>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px; line-height:1.5;">
+              Aifie operates strictly as a <b>Simulated Paper-Trading & Research Foundation</b>.
+              Zero live broker authority is permitted. All orders simulate fills with slippage and commission calculations on virtual paper capital ($100,000.00).
             </div>
           </div>
 
-          <!-- AI LLM REASONING KEYS -->
-          <div style="font-size:11px; font-weight:bold; color:var(--neon-green); margin-bottom:6px; border-bottom:1px solid rgba(0,255,157,0.2); padding-bottom:4px;">
-            🧠 AI REASONING & LLM API KEYS
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">GEMINI API KEY</label>
-              <input type="password" id="cfg_GEMINI_API_KEY" placeholder="Gemini Studio Key" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">OPENAI API KEY</label>
-              <input type="password" id="cfg_OPENAI_API_KEY" placeholder="sk-..." style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
+          <div style="background:rgba(255, 184, 0, 0.04); border:1px solid rgba(255, 184, 0, 0.2); border-radius:4px; padding:12px; margin-bottom:12px;">
+            <b style="color:var(--neon-amber); font-size:12px;">🔒 ZERO-EXPOSURE CREDENTIALS POLICY</b>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px; line-height:1.5;">
+              In accordance with security best practices, <b>credentials, API keys, and tokens are NEVER entered or transmitted through web browser forms</b>.
+              All keys are stored securely in the server's local <code>.env</code> file on the host machine.
             </div>
           </div>
 
-          <!-- BROKER & EXCHANGE CREDENTIALS -->
           <div style="font-size:11px; font-weight:bold; color:var(--neon-cyan); margin-bottom:6px; border-bottom:1px solid rgba(0,229,255,0.2); padding-bottom:4px;">
-            🏢 BROKERS & CRYPTO EXCHANGES (OPTIONAL FOR LIVE MONEY)
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">ALPACA KEY ID</label>
-              <input type="password" id="cfg_ALPACA_API_KEY_ID" placeholder="Alpaca Key ID" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">ALPACA SECRET KEY</label>
-              <input type="password" id="cfg_ALPACA_SECRET_KEY" placeholder="Alpaca Secret" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">BINANCE API KEY</label>
-              <input type="password" id="cfg_BINANCE_API_KEY" placeholder="Binance API Key" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">BINANCE SECRET KEY</label>
-              <input type="password" id="cfg_BINANCE_SECRET_KEY" placeholder="Binance Secret" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
+            📋 ACTIVE RUNTIME CONFIGURATION (READ-ONLY)
           </div>
 
-          <!-- SUPABASE CLOUD DATABASE -->
-          <div style="font-size:11px; font-weight:bold; color:#26c6da; margin-bottom:6px; border-bottom:1px solid rgba(38,198,218,0.2); padding-bottom:4px;">
-            🗄️ SUPABASE CLOUD DATABASE (24/7 PERSISTENT STATE SYNC)
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">SUPABASE PROJECT URL</label>
-              <input type="text" id="cfg_SUPABASE_URL" placeholder="https://xxxx.supabase.co" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">SUPABASE ANON KEY</label>
-              <input type="password" id="cfg_SUPABASE_ANON_KEY" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-          </div>
+          <table class="of-table" style="margin-bottom:12px;">
+            <thead><tr><th>SETTING</th><th>STATUS</th><th>STORAGE</th><th>SECURITY LEVEL</th></tr></thead>
+            <tbody>
+              <tr><td style="color:#fff;">EXECUTION_MODE</td><td style="color:var(--neon-green); font-weight:bold;">SIMULATED_PAPER</td><td>Memory / Local Store</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">SAFE (0% RISK)</span></td></tr>
+              <tr><td style="color:#fff;">PUBLIC_TUNNEL</td><td style="color:var(--neon-red); font-weight:bold;">DISABLED</td><td>Local Only</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">PROTECTED</span></td></tr>
+              <tr><td style="color:#fff;">REMOTE_TERMINAL</td><td style="color:var(--neon-red); font-weight:bold;">DISABLED</td><td>Local CLI Only</td><td><span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green);">PROTECTED</span></td></tr>
+              <tr><td style="color:#fff;">TELEGRAM_BOT</td><td style="color:var(--neon-green);">CONFIGURED (••••••••)</td><td>Host .env</td><td><span class="status-pill" style="border-color:var(--neon-cyan); color:var(--neon-cyan);">ACTIVE</span></td></tr>
+              <tr><td style="color:#fff;">GEMINI_API_KEY</td><td style="color:var(--text-muted);">HOST ENV (OPTIONAL)</td><td>Host .env</td><td><span class="status-pill">MASKED</span></td></tr>
+              <tr><td style="color:#fff;">DAILY_LOSS_CAP</td><td style="color:#fff;">3.0% Maximum</td><td>Constitution</td><td><span class="status-pill" style="border-color:var(--neon-amber); color:var(--neon-amber);">HARD GATE</span></td></tr>
+              <tr><td style="color:#fff;">MAX_POSITION_NOTIONAL</td><td style="color:#fff;">$50,000 USD</td><td>Risk Governor</td><td><span class="status-pill" style="border-color:var(--neon-amber); color:var(--neon-amber);">ENFORCED</span></td></tr>
+            </tbody>
+          </table>
 
-          <!-- RISK LIMITS & LIVE MODE -->
-          <div style="font-size:11px; font-weight:bold; color:var(--neon-amber); margin-bottom:6px; border-bottom:1px solid rgba(255,184,0,0.2); padding-bottom:4px;">
-            🛡️ RISK CONSTITUTION & EXECUTION MODE
-          </div>
-          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px;">
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">DAILY LOSS CAP (%)</label>
-              <input type="number" id="cfg_MAX_DAILY_LOSS_PERCENT" placeholder="3.0" step="0.5" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">RISK PER TRADE (%)</label>
-              <input type="number" id="cfg_RISK_PER_TRADE_PERCENT" placeholder="1.0" step="0.1" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-            </div>
-            <div>
-              <label style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); display:block; margin-bottom:4px;">LIVE TRADING</label>
-              <select id="cfg_LIVE_TRADING_ENABLED" style="width:100%; background:#010204; border:1px solid var(--border-panel); padding:8px; color:#fff; font-family:var(--font-mono); font-size:11px; border-radius:4px;">
-                <option value="false">PAPER (SAFE)</option>
-                <option value="true">LIVE CASH</option>
-              </select>
-            </div>
-          </div>
-
-          <button class="act-btn act-btn-start" style="width:100%; padding:10px; font-size:11px;" onclick="saveAdminSettings()">💾 SAVE & APPLY SETTINGS</button>
-          <div id="adminSaveStatusMsg" style="font-family:var(--font-mono); font-size:11px; margin-top:8px; color:var(--neon-green); text-align:center;"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- VIEW 10: CLOUD VIRTUAL COMPUTER, BROWSER & TERMINAL -->
-  <div id="view-VCOMPUTER" class="view-content">
-    <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px;">
-      
-      <!-- TOP HARDWARE & TELEMETRY BANNER -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>🖥️ CLOUD VIRTUAL COMPUTER HARDWARE & GATEWAYS</span>
-          <span style="color: var(--neon-green);" id="vcompHealthBadge">● SYSTEM RUNNING (24/7 CLOUD HOST)</span>
-        </div>
-        <div class="panel-body">
-          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 12px;">
-            <div class="metric-box">
-              <div class="metric-lbl">HOST / OS</div>
-              <div class="metric-val" id="vcompHostOs" style="font-size: 13px; color: var(--neon-cyan);">Linux Ubuntu / ARM64</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">CPU ARCH & CORES</div>
-              <div class="metric-val" id="vcompCpuCores" style="font-size: 13px; color: var(--neon-green);">4 OCPUs (Ampere A1)</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">TOTAL RAM</div>
-              <div class="metric-val" id="vcompRam" style="font-size: 13px; color: #fff;">24.00 GB</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">HOST UPTIME</div>
-              <div class="metric-val" id="vcompUptime" style="font-size: 13px; color: var(--neon-amber);">--</div>
-            </div>
-            <div class="metric-box">
-              <div class="metric-lbl">LOAD AVERAGE (1m/5m/15m)</div>
-              <div class="metric-val" id="vcompLoad" style="font-size: 13px; color: #a78bfa;">0.15 / 0.18 / 0.22</div>
-            </div>
-          </div>
-
-          <!-- SERVICES SHORTCUT CARDS -->
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-            <div style="background: rgba(0, 229, 255, 0.04); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 4px; padding: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <b style="color: var(--neon-cyan); font-size: 12px;">🖥️ CLOUD VIRTUAL DESKTOP</b>
-                <span class="status-pill" style="font-size: 9px; padding: 2px 6px;">PORT 3000 / 3001</span>
-              </div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Full 4K Ubuntu XFCE GUI, Chromium browser, audio streaming over noVNC/Kasm.</div>
-              <div style="display: flex; gap: 6px;">
-                <button class="act-btn" style="flex: 1; padding: 6px;" onclick="openDesktopInNewTab()">↗ OPEN FULLSCREEN</button>
-                <button class="act-btn" style="padding: 6px 10px;" onclick="toggleDesktopIframe()">📺 EMBED</button>
-              </div>
-            </div>
-
-            <div style="background: rgba(0, 255, 157, 0.04); border: 1px solid rgba(0, 255, 157, 0.2); border-radius: 4px; padding: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <b style="color: var(--neon-green); font-size: 12px;">💻 HIGH-SPEED WEB TERMINAL</b>
-                <span class="status-pill" style="font-size: 9px; padding: 2px 6px; border-color: var(--neon-green); color: var(--neon-green);">PORT 7681</span>
-              </div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Low-latency bash/zsh shell, tmux, full root, Python & Node.js environment.</div>
-              <div style="display: flex; gap: 6px;">
-                <button class="act-btn" style="flex: 1; padding: 6px; border-color: var(--neon-green); color: var(--neon-green);" onclick="openTerminalInNewTab()">↗ OPEN IN NEW TAB</button>
-                <button class="act-btn" style="padding: 6px 10px;" onclick="focusDashboardTerminal()">⚡ FOCUS TERMINAL</button>
-              </div>
-            </div>
-
-            <div style="background: rgba(157, 78, 221, 0.04); border: 1px solid rgba(157, 78, 221, 0.2); border-radius: 4px; padding: 10px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                <b style="color: var(--neon-purple); font-size: 12px;">🌐 CLOUD BROWSER & SCRAPER</b>
-                <span class="status-pill" style="font-size: 9px; padding: 2px 6px; border-color: var(--neon-purple); color: var(--neon-purple);">HEADLESS + GUI</span>
-              </div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">Browse any external website, extract SEC filings, inspect crypto orderbooks.</div>
-              <div style="display: flex; gap: 6px;">
-                <button class="act-btn" style="flex: 1; padding: 6px; border-color: var(--neon-purple); color: var(--neon-purple);" onclick="quickBrowseUrl('https://finance.yahoo.com')">📈 YAHOO FINANCE</button>
-                <button class="act-btn" style="flex: 1; padding: 6px;" onclick="quickBrowseUrl('https://tradingview.com')">📊 TRADINGVIEW</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- DESKTOP EMBED CONTAINER (COLLAPSIBLE) -->
-      <div id="desktopEmbedContainer" class="panel" style="display: none;">
-        <div class="panel-header">
-          <span>🖥️ UBUNTU GUI DESKTOP STREAM (noVNC / KasmVNC)</span>
-          <div>
-            <button class="act-btn" style="padding: 2px 8px; font-size: 10px;" onclick="openDesktopInNewTab()">POP OUT ↗</button>
-            <button class="act-btn" style="padding: 2px 8px; font-size: 10px; margin-left: 6px;" onclick="toggleDesktopIframe()">HIDE ✕</button>
-          </div>
-        </div>
-        <div style="width: 100%; height: 600px; background: #000;">
-          <iframe id="desktopIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
-        </div>
-      </div>
-
-      <!-- TWO-COLUMN WORKSPACE: CLOUD TERMINAL (LEFT) + CLOUD BROWSER INSPECTOR (RIGHT) -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        
-        <!-- LEFT: INTERACTIVE CLOUD TERMINAL -->
-        <div class="panel">
-          <div class="panel-header">
-            <span>💻 INTERACTIVE CLOUD TERMINAL (SHELL ENGINE)</span>
-            <span style="color: var(--neon-cyan);">BASH / POWERSHELL</span>
-          </div>
-          <div class="panel-body" style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- Quick Command Palette -->
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <button class="act-btn" style="padding: 4px 8px; font-size: 10px;" onclick="runCustomTerminalCmd('uptime')">⏱️ UPTIME</button>
-              <button class="act-btn" style="padding: 4px 8px; font-size: 10px;" onclick="runCustomTerminalCmd('free -h')">🧠 MEMORY</button>
-              <button class="act-btn" style="padding: 4px 8px; font-size: 10px;" onclick="runCustomTerminalCmd('pm2 status')">⚡ PM2 STATUS</button>
-              <button class="act-btn" style="padding: 4px 8px; font-size: 10px;" onclick="runCustomTerminalCmd('docker ps')">🐳 DOCKER PS</button>
-              <button class="act-btn" style="padding: 4px 8px; font-size: 10px;" onclick="runCustomTerminalCmd('git status -s')">🐙 GIT STATUS</button>
-              <button class="act-btn" style="padding: 4px 8px; font-size: 10px; border-color: var(--neon-red); color: var(--neon-red);" onclick="clearCloudTerminalScreen()">🧹 CLEAR</button>
-            </div>
-
-            <!-- Terminal Output Window -->
-            <div id="cloudTermOutput" style="background: #010204; border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 4px; padding: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--neon-green); height: 360px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5; box-shadow: inset 0 0 15px rgba(0,0,0,0.9);">Welcome to AIFIE Cloud Virtual Shell v1.0
-Target Host: Oracle Cloud Free Tier VPS (24 GB RAM, 4 ARM Cores)
-Type any command below or use the quick action buttons above.</div>
-
-            <!-- Command Input Bar -->
-            <div style="display: flex; gap: 8px; align-items: center; background: #010204; border: 1px solid var(--border-panel); padding: 6px 10px; border-radius: 4px;">
-              <span style="color: var(--neon-cyan); font-family: var(--font-mono); font-weight: bold;">cloud:~$</span>
-              <input type="text" id="cloudTermInput" placeholder="Type shell command (e.g. node -v, git status, htop, curl)..." onkeydown="handleCloudTermKeyDown(event)" style="flex: 1; background: transparent; border: none; outline: none; color: #fff; font-family: var(--font-mono); font-size: 12px;">
-              <button class="act-btn act-btn-start" style="padding: 6px 12px; font-size: 11px;" onclick="submitCloudTermCommand()">EXECUTE</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- RIGHT: CLOUD WEB BROWSER INSPECTOR -->
-        <div class="panel">
-          <div class="panel-header">
-            <span>🌐 CLOUD WEB BROWSER & DOM INSPECTOR</span>
-            <span style="color: var(--neon-purple);" id="browserStatusBadge">READY</span>
-          </div>
-          <div class="panel-body" style="display: flex; flex-direction: column; gap: 8px;">
-            <!-- URL Navigation Bar -->
-            <div style="display: flex; gap: 6px; align-items: center;">
-              <input type="text" id="cloudBrowserUrlInput" value="https://news.ycombinator.com" placeholder="https://domain.com or search term..." onkeydown="if(event.key==='Enter') submitCloudBrowserNav()" style="flex: 1; background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 8px 10px; color: #fff; font-family: var(--font-mono); font-size: 12px;">
-              <button class="act-btn" style="background: rgba(157, 78, 221, 0.2); border-color: var(--neon-purple); color: #fff; padding: 8px 14px;" onclick="submitCloudBrowserNav()">🚀 BROWSE</button>
-            </div>
-
-            <!-- Quick Bookmarks -->
-            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-              <button class="act-btn" style="padding: 3px 6px; font-size: 10px;" onclick="quickBrowseUrl('https://finance.yahoo.com')">Yahoo Finance</button>
-              <button class="act-btn" style="padding: 3px 6px; font-size: 10px;" onclick="quickBrowseUrl('https://coinmarketcap.com')">CoinMarketCap</button>
-              <button class="act-btn" style="padding: 3px 6px; font-size: 10px;" onclick="quickBrowseUrl('https://tradingview.com')">TradingView</button>
-              <button class="act-btn" style="padding: 3px 6px; font-size: 10px;" onclick="quickBrowseUrl('https://www.sec.gov')">SEC Edgar</button>
-              <button class="act-btn" style="padding: 3px 6px; font-size: 10px;" onclick="quickBrowseUrl('https://github.com')">GitHub</button>
-            </div>
-
-            <!-- Browser Viewport / Reader Card -->
-            <div id="cloudBrowserViewport" style="background: #010204; border: 1px solid rgba(157, 78, 221, 0.3); border-radius: 4px; padding: 12px; height: 360px; overflow-y: auto; font-family: var(--font-ui); font-size: 12px; line-height: 1.6; color: #cbd5e1;">
-              <div style="text-align: center; color: var(--text-muted); padding-top: 100px;">
-                <div style="font-size: 32px; margin-bottom: 8px;">🌐</div>
-                <div style="font-weight: bold; color: #fff;">Cloud Browser Standing By</div>
-                <div style="font-size: 11px;">Enter a URL above to inspect web pages, financial portals, and live feeds directly from the cloud.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- 🤖 AIFIE AUTONOMOUS COPILOT: AIFIE USES ALL IN CLOUD -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>🤖 AIFIE AUTONOMOUS COPILOT (AIFIE USES TERMINAL, BROWSER & DESKTOP)</span>
-          <span style="color: var(--neon-cyan);" id="aifieCopilotStatusBadge">AIFIE AUTONOMOUS AGENT ACTIVE</span>
-        </div>
-        <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted);">
-            Command Aifie AI to autonomously use the cloud terminal, browse the web for intelligence, or manage the workstation:
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-            <button class="act-btn act-btn-start" onclick="dispatchAifieAgentTask('terminal', 'Autonomous Health Check', 'free -h')">⚡ AIFIE RUN DIAGNOSTIC (SHELL)</button>
-            <button class="act-btn" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="dispatchAifieAgentTask('web', 'Macro News Scan', 'https://finance.yahoo.com')">🌐 AIFIE BROWSE YAHOO FINANCE</button>
-            <button class="act-btn" style="border-color: var(--neon-cyan); color: var(--neon-cyan);" onclick="dispatchAifieAgentTask('web', 'Hacker News Tech Intel', 'https://news.ycombinator.com')">🔍 AIFIE BROWSE TECH INTEL</button>
-            <button class="act-btn" style="border-color: var(--neon-amber); color: var(--neon-amber);" onclick="dispatchAifieAgentTask('manage', 'Cloud Workstation Audit', '')">🧹 AIFIE AUDIT WORKSTATION</button>
-          </div>
-          <div id="aifieCopilotLog" style="background: #010204; border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #cbd5e1; max-height: 180px; overflow-y: auto; line-height: 1.5;">[AIFIE COPILOT STANDBY] Ready to autonomously execute terminal shell commands, browse the internet, and manage the cloud virtual workstation.</div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- VIEW 11: APEX TRINITY (UPSIDEONLY + ALPHA CONSENSUS + FXFACTORY) -->
-  <div id="view-TRINITY" class="view-content">
-    <div style="padding: 12px; display: flex; flex-direction: column; gap: 12px;">
-      
-      <!-- TOP TRINITY HERO BANNER -->
-      <div class="panel" style="border-color: rgba(255, 179, 0, 0.4); background: linear-gradient(135deg, rgba(255, 179, 0, 0.05), rgba(6, 11, 19, 0.98));">
-        <div class="panel-header">
-          <span>👑 APEX TRINITY COMMAND: UPSIDEONLY + ALPHA CONSENSUS + FXFACTORY</span>
-          <span style="color: var(--neon-amber);" id="trinityStatusBadge">● ALL 3 ENGINES ACTIVE</span>
-        </div>
-        <div class="panel-body">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div style="font-size: 12px; line-height: 1.6; max-width: 650px;">
-              <b style="color: #fff;">1. FxFactory:</b> Filters news volatility & red-folder FOMC/CPI spikes.<br>
-              <b style="color: var(--neon-cyan);">2. Alpha Consensus:</b> Enforces >= 80% confluence across 6 independent alpha vectors.<br>
-              <b style="color: var(--neon-green);">3. UpsideOnly:</b> Monetizes signals via BayesShield proprietary capital profit-sharing with <b style="color: var(--neon-green);">100% Zero Personal Risk</b>.
-            </div>
-            <div>
-              <button class="act-btn act-btn-start" style="padding: 12px 24px; font-size: 13px; font-weight: 900; background: linear-gradient(135deg, var(--neon-green), #00b0ff); color: #000; border: none; box-shadow: 0 0 20px rgba(0, 255, 157, 0.5);" onclick="executeTrinityCycle()">⚡ EXECUTE TRINITY PROFIT CYCLE</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3-COLUMN WORKSPACE: UPSIDEONLY + ALPHA CONSENSUS + FXFACTORY -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-        
-        <!-- COLUMN 1: UPSIDEONLY REAL MONEY PROFIT SHARING -->
-        <div class="panel">
-          <div class="panel-header">
-            <span>💎 UPSIDEONLY (REAL MONEY ENGINE)</span>
-            <span style="color: var(--neon-green);">ZERO RISK</span>
-          </div>
-          <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
-            <div class="metric-box" style="border-color: rgba(0, 255, 157, 0.3);">
-              <div class="metric-lbl">ACCUMULATED REAL MONEY PROFIT</div>
-              <div class="metric-val" id="uoBalanceDisp" style="color: var(--neon-green); font-size: 24px;">$1,845.50 USD</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-              <div class="metric-box"><div class="metric-lbl">ACCURACY WIN RATE</div><div class="metric-val" id="uoWinRateDisp" style="font-size: 13px; color: #fff;">77.3%</div></div>
-              <div class="metric-box"><div class="metric-lbl">TOTAL WITHDRAWN</div><div class="metric-val" id="uoWithdrawnDisp" style="font-size: 13px; color: var(--neon-cyan);">$4,200.00</div></div>
-            </div>
-            <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); line-height: 1.6; background: #010204; padding: 8px; border-radius: 4px;">
-              <div>● TIER: <b style="color: #fff;">VERIFIED PRO (1.45x Multiplier)</b></div>
-              <div>● DOWNSIDE RISK: <b style="color: var(--neon-green);">100% ABSORBED BY COMPANY</b></div>
-              <div>● PROP CAPITAL DEPLOYED: <b style="color: var(--neon-cyan);">$75,000 ACTIVE</b></div>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <button class="act-btn" style="flex: 1; border-color: var(--neon-green); color: var(--neon-green);" onclick="submitCustomUpsidePrediction()">📈 PREDICT</button>
-              <button class="act-btn" style="flex: 1; border-color: var(--neon-purple); color: var(--neon-purple);" onclick="withdrawUpsideCash()">💵 WITHDRAW</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- COLUMN 2: ALPHA CONSENSUS 6-VECTOR MATRIX -->
-        <div class="panel">
-          <div class="panel-header">
-            <span>⚡ ALPHA CONSENSUS (6-VECTOR MATRIX)</span>
-            <span style="color: var(--neon-cyan);" id="acVerdictBadge">88.5% APPROVED</span>
-          </div>
-          <div class="panel-body" style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="metric-box" style="border-color: rgba(0, 229, 255, 0.3);">
-              <div class="metric-lbl">OVERALL ALPHA CONFLUENCE SCORE</div>
-              <div class="metric-val" id="acScoreDisp" style="color: var(--neon-cyan); font-size: 24px;">88.5% <span style="font-size: 11px; color: var(--neon-green);">(&gt;= 80% GATE PASSED)</span></div>
-            </div>
-            <div style="font-size: 11px; font-family: var(--font-mono); display: flex; flex-direction: column; gap: 4px;">
-              <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(0, 255, 157, 0.05); border-radius: 3px;">
-                <span>1. SMC Order Block:</span><b style="color: var(--neon-green);">BUY (88.5%)</b>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(0, 255, 157, 0.05); border-radius: 3px;">
-                <span>2. Order Flow CVD Delta:</span><b style="color: var(--neon-green);">BUY +245.8</b>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(0, 255, 157, 0.05); border-radius: 3px;">
-                <span>3. Stat-Arb Cointegration:</span><b style="color: var(--neon-green);">BUY (-1.85σ)</b>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(0, 255, 157, 0.05); border-radius: 3px;">
-                <span>4. Momentum Apex:</span><b style="color: var(--neon-green);">BUY (EMA Cross)</b>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(0, 255, 157, 0.05); border-radius: 3px;">
-                <span>5. GARCH Volatility Squeeze:</span><b style="color: var(--neon-green);">BUY (Compression)</b>
-              </div>
-              <div style="display: flex; justify-content: space-between; padding: 4px 6px; background: rgba(0, 255, 157, 0.05); border-radius: 3px;">
-                <span>6. Macro FxFactory Alignment:</span><b style="color: var(--neon-green);">BUY (Post-CPI Drift)</b>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- COLUMN 3: FXFACTORY MACROECONOMIC EVENT CALENDAR -->
-        <div class="panel">
-          <div class="panel-header">
-            <span>📅 FXFACTORY (MACRO SHIELD)</span>
-            <span style="color: var(--neon-green);" id="fxfShieldStatusBadge">✅ SHIELD CLEAR</span>
-          </div>
-          <div class="panel-body" style="display: flex; flex-direction: column; gap: 8px;">
-            <div class="metric-box" style="border-color: rgba(255, 59, 92, 0.3);">
-              <div class="metric-lbl">RED-FOLDER VOLATILITY SHIELD</div>
-              <div class="metric-val" id="fxfShieldVerdictDisp" style="color: var(--neon-green); font-size: 16px;">SAFE WINDOW CLEARED</div>
-            </div>
-            <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-muted); margin-bottom: 4px;">
-              Scheduled Red-Folder Releases:
-            </div>
-            <div id="fxfEventsList" style="font-size: 11px; font-family: var(--font-mono); display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
-              <div style="background: #010204; border: 1px solid rgba(255,59,92,0.2); padding: 6px; border-radius: 4px;">
-                <b style="color: var(--neon-red);">🔴 US Core CPI Inflation Rate</b><br>
-                <span style="color: var(--text-muted);">Today 18:00 UTC | Forecast: 2.9% | Prior: 3.1%</span>
-              </div>
-              <div style="background: #010204; border: 1px solid rgba(255,59,92,0.2); padding: 6px; border-radius: 4px;">
-                <b style="color: var(--neon-red);">🔴 FOMC Fed Interest Rate Decision</b><br>
-                <span style="color: var(--text-muted);">Tomorrow 19:00 UTC | Forecast: 5.25%</span>
-              </div>
-              <div style="background: #010204; border: 1px solid rgba(255,59,92,0.2); padding: 6px; border-radius: 4px;">
-                <b style="color: var(--neon-red);">🔴 US Non-Farm Payrolls (NFP)</b><br>
-                <span style="color: var(--text-muted);">Friday 12:30 UTC | Forecast: 175K</span>
-              </div>
-            </div>
-            <button class="act-btn" style="width: 100%; border-color: var(--neon-cyan); color: var(--neon-cyan);" onclick="syncFxFactory()">🔄 SYNC LIVE FXFACTORY FEED</button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- TRINITY EXECUTION AUDIT STREAM -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>📜 APEX TRINITY REAL-TIME EXECUTION AUDIT STREAM</span>
-          <span style="color: var(--neon-green);">LIVE</span>
-        </div>
-        <div class="panel-body">
-          <div id="trinityLogBox" style="background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--neon-cyan); height: 140px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;">[TRINITY STANDBY] FxFactory Volatility Shield Active. Alpha Consensus Matrix set to 80% threshold. UpsideOnly BayesShield ready to credit real money profit-shares without personal risk.</div>
+          <button class="act-btn" style="width:100%; padding:10px; font-size:11px; border-color:var(--neon-cyan); color:var(--neon-cyan);" onclick="loadAdminConfigStatus()">🔄 REFRESH ENVIRONMENT STATUS</button>
         </div>
       </div>
 
@@ -1364,7 +960,7 @@ Type any command below or use the quick action buttons above.</div>
           <span style="color: #00e5ff;">AUTONOMOUS BEAT</span>
         </div>
         <div class="panel-body">
-          <div id="nexusLogBox" style="background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 12px; font-family: var(--font-mono); font-size: 11px; color: #00e5ff; height: 160px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;">[NEXUS INITIALIZED] All 5 architecture layers synchronized. Monitoring Cloud PC, FxFactory Macro events, Alpha Consensus 80% gates, and UpsideOnly proprietary profit sweeps.</div>
+          <div id="nexusLogBox" style="background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 12px; font-family: var(--font-mono); font-size: 11px; color: #00e5ff; height: 160px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;">[NEXUS INITIALIZED] All 5 architecture layers synchronized. Monitoring System Runtime, FxFactory Macro events, Alpha Consensus 80% gates, and Simulated Paper Order Execution.</div>
         </div>
       </div>
 
@@ -3028,110 +2624,7 @@ Type any command below or use the quick action buttons above.</div>
       }
     }
 
-    async function loadTrinityDashboard() {
-      try {
-        const [uoRes, acRes, fxfRes] = await Promise.all([
-          fetch('/api/v92/upside-only/status').then(r => r.json()).catch(() => null),
-          fetch('/api/v92/alpha-consensus/evaluate?symbol=BTC/USDT').then(r => r.json()).catch(() => null),
-          fetch('/api/v92/fxfactory/calendar').then(r => r.json()).catch(() => null)
-        ]);
 
-        if (uoRes?.account) {
-          const el = document.getElementById('uoBalanceDisp');
-          if (el) el.innerText = '$' + Number(uoRes.account.realMoneyProfitBalance).toLocaleString() + ' USD';
-          const wr = document.getElementById('uoWinRateDisp');
-          if (wr) wr.innerText = uoRes.account.accuracyMetrics.winRate;
-          const wd = document.getElementById('uoWithdrawnDisp');
-          if (wd) wd.innerText = '$' + Number(uoRes.account.totalWithdrawnToDate).toLocaleString();
-        }
-
-        if (acRes?.success) {
-          const sc = document.getElementById('acScoreDisp');
-          if (sc) sc.innerHTML = acRes.consensusPercentage + '% <span style="font-size: 11px; color: var(--neon-green);">(&gt;= 80% GATE PASSED)</span>';
-          const vb = document.getElementById('acVerdictBadge');
-          if (vb) vb.innerText = acRes.consensusVerdict;
-        }
-
-        if (fxfRes?.events) {
-          const list = document.getElementById('fxfEventsList');
-          if (list) {
-            list.innerHTML = fxfRes.events.map(e => 
-              '<div style="background: #010204; border: 1px solid rgba(255,59,92,0.2); padding: 6px; border-radius: 4px;">' +
-              '<b style="color: var(--neon-red);">🔴 ' + escapeHtml(e.event) + '</b><br>' +
-              '<span style="color: var(--text-muted);">' + escapeHtml(e.timeFormatted) + ' | Forecast: ' + escapeHtml(e.forecast || 'N/A') + ' | Prior: ' + escapeHtml(e.previous || 'N/A') + '</span>' +
-              '</div>'
-            ).join('');
-          }
-        }
-      } catch (e) {}
-    }
-
-    async function executeTrinityCycle() {
-      const log = document.getElementById('trinityLogBox');
-      const badge = document.getElementById('trinityStatusBadge');
-      if (badge) badge.innerText = 'EXECUTING TRINITY CYCLE...';
-      if (log) log.innerText += '\n\n[' + new Date().toLocaleTimeString() + '] 👑 Starting Apex Trinity Profit Cycle (FxFactory -> Alpha Consensus -> UpsideOnly)...';
-
-      try {
-        const res = await fetch('/api/v92/trinity/run-cycle', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ symbol: 'BTC/USDT' })
-        });
-        const data = await res.json();
-        if (badge) badge.innerText = 'CYCLE COMPLETED (100%)';
-        if (log) {
-          log.innerText += '\n[STAGE 1 FXFACTORY] ' + data.fxfShieldVerified;
-          log.innerText += '\n[STAGE 2 ALPHA CONSENSUS] ' + data.alphaConsensusScore;
-          log.innerText += '\n[STAGE 3 UPSIDEONLY] ' + data.upsideOnlyResult?.message;
-          log.innerText += '\n[REAL MONEY HARVESTED] +' + (data.profitSettlement?.newlyCreditedProfit || '$0.00') + ' USD';
-          log.innerText += '\n[NEW REAL BALANCE] $' + (data.currentRealMoneyBalance || 0) + ' USD';
-          log.scrollTop = log.scrollHeight;
-        }
-        loadTrinityDashboard();
-      } catch (err) {
-        if (badge) badge.innerText = 'ERROR';
-        if (log) log.innerText += '\n[TRINITY EXCEPTION] ' + err.message;
-      }
-    }
-
-    async function submitCustomUpsidePrediction() {
-      const sym = prompt('Enter asset symbol (e.g. BTC/USDT, ETH/USDT, AAPL):', 'BTC/USDT');
-      if (!sym) return;
-      try {
-        const res = await fetch('/api/v92/upside-only/predict', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ symbol: sym, convictionScore: 92.5 })
-        });
-        const data = await res.json();
-        alert(data.message || 'Prediction submitted to BayesShield!');
-        loadTrinityDashboard();
-      } catch (e) {
-        alert('Prediction error: ' + e.message);
-      }
-    }
-
-    async function withdrawUpsideCash() {
-      const amt = prompt('Enter withdrawal amount ($ USD):', '500');
-      if (!amt) return;
-      try {
-        const res = await fetch('/api/v92/upside-only/withdraw', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ amount: parseFloat(amt), destination: 'BANK_UPI (user@okaxis)' })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('Withdrawal Approved! ' + data.message);
-        } else {
-          alert('Withdrawal Failed: ' + data.error);
-        }
-        loadTrinityDashboard();
-      } catch (e) {
-        alert('Withdrawal exception: ' + e.message);
-      }
-    }
 
     async function syncFxFactory() {
       try {

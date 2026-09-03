@@ -12,40 +12,40 @@ import {
 test("getMasterNexusStatus returns comprehensive 5-layer telemetry", () => {
   const status = getMasterNexusStatus();
   assert.equal(status.success, true);
-  assert.equal(status.nexusVersion, "AIFIE_MASTER_NEXUS_V95");
-  assert.equal(status.nexusStatus, "ALL_5_LAYERS_SYNCHRONIZED");
+  assert.equal(status.nexusVersion, "AIFIE_QUANT_NEXUS_V100");
+  assert.equal(status.nexusStatus, "ALL_LAYERS_SYNCHRONIZED");
 
-  // Layer 1: Cloud Virtual Computer
-  assert.ok(status.layer1_CloudVirtualComputer.platform);
-  assert.equal(status.layer1_CloudVirtualComputer.desktopPort, 3000);
-  assert.equal(status.layer1_CloudVirtualComputer.terminalPort, 7681);
+  // Layer 1: System Runtime
+  assert.ok(status.layer1_SystemRuntime.platform);
+  assert.match(status.layer1_SystemRuntime.executionMode, /SIMULATED PAPER TRADING/);
 
-  // Layer 2: Autonomous Intelligence
-  assert.ok(status.layer2_AutonomousIntelligence.hermesAgent);
-  assert.ok(status.layer2_AutonomousIntelligence.fleetAgentsCount);
+  // Layer 2: Quantitative Research
+  assert.equal(status.layer2_QuantitativeResearch.activeStrategiesCount, 6);
+  assert.equal(status.layer2_QuantitativeResearch.backtestStatus, "VALIDATED");
 
-  // Layer 3: Risk & Macro
-  assert.ok(status.layer3_RiskAndMacro.fxfactoryShield);
+  // Layer 3: Risk Governance
+  assert.equal(status.layer3_RiskGovernance.maxDailyLossCap, "3.0%");
+  assert.equal(status.layer3_RiskGovernance.sizingMethodology, "Half-Kelly Optimization");
 
-  // Layer 4: Real Money Profit
-  assert.ok(status.layer4_RealMoneyProfit.realMoneyProfitBalance);
-  assert.match(status.layer4_RealMoneyProfit.riskBorneByUser, /Zero Capital Risk/);
+  // Layer 4: Simulated Paper Engine
+  assert.equal(status.layer4_PaperExecutionEngine.executionMode, "SIMULATED_PAPER");
+  assert.equal(status.layer4_PaperExecutionEngine.capitalRisk, "0.00% (Zero Real Capital at Risk)");
 
-  // Layer 5: Gateways
-  assert.ok(status.layer5_GatewaysAndReach.connectedChannels.length > 0);
+  // Layer 5: Gateways & Monitoring
+  assert.equal(status.layer5_GatewaysAndMonitoring.publicTunnel, "DISABLED (SECURITY POLICY)");
+  assert.ok(status.layer5_GatewaysAndMonitoring.localDashboard);
 });
 
 test("runMasterAutonomousNexusCycle coordinates all 5 layers sequentially", async () => {
   const res = await runMasterAutonomousNexusCycle({ targetSymbol: "BTC/USDT" });
   assert.equal(res.success, true);
-  assert.ok(res.message.includes("Master Autonomous Nexus Cycle"));
+  assert.ok(res.message.includes("Nexus cycle"));
   assert.ok(res.cycleReport);
   assert.equal(res.cycleReport.targetSymbol, "BTC/USDT");
-  assert.ok(res.cycleReport.logs.length >= 4);
-  assert.ok(res.cycleReport.logs.some(l => l.includes("[L1_CLOUD]")));
-  assert.ok(res.cycleReport.logs.some(l => l.includes("[L3_MACRO]")));
-  assert.ok(res.cycleReport.logs.some(l => l.includes("[L4_PROFIT]") || l.includes("[L4_ALPHA]")));
-  assert.ok(res.cycleReport.logs.some(l => l.includes("[L5_OPENCLAW]")));
+  assert.ok(res.cycleReport.logs.length >= 2);
+  assert.ok(res.cycleReport.logs.some(l => l.includes("[L1_SYSTEM]")));
+  assert.ok(res.cycleReport.logs.some(l => l.includes("[L3_RISK]")));
+  assert.ok(res.cycleReport.logs.some(l => l.includes("[L2_ALPHA]")));
 });
 
 test("startMasterAutonomousNexusDaemon and stop manage background timer cleanly", () => {

@@ -13,11 +13,11 @@ test("getHermesAgentStatus returns Hermes-3 architecture and active skills", () 
   assert.equal(status.success, true);
   assert.equal(status.agentName, "NousResearch/Hermes-3-Agent");
   assert.equal(status.status, "ONLINE_ACTIVE");
-  assert.ok(status.totalLearnedSkills >= 4);
-  assert.ok(status.availableTools.includes("cloud_terminal"));
+  assert.ok(status.totalLearnedSkills >= 2);
+  assert.ok(status.availableTools.includes("technical_analysis"));
   assert.ok(status.availableTools.includes("alpha_consensus"));
-  assert.ok(status.availableTools.includes("upside_predict"));
   assert.ok(status.availableTools.includes("fxfactory_shield"));
+  assert.equal(status.availableTools.includes("cloud_terminal"), false, "Security: cloud_terminal must be decoupled");
 });
 
 test("parseHermesOutput parses <thought> and <tool_call> JSON tokens", () => {
@@ -30,10 +30,10 @@ test("parseHermesOutput parses <thought> and <tool_call> JSON tokens", () => {
 });
 
 test("HERMES_TOOL_REGISTRY tools execute cleanly", async () => {
-  // Test cloud terminal tool
-  const termRes = await HERMES_TOOL_REGISTRY.cloud_terminal.handler({ command: "echo Hermes Online" });
-  assert.equal(termRes.success, true);
-  assert.match(termRes.stdout, /Hermes Online/);
+  // Test technical analysis tool
+  const taRes = await HERMES_TOOL_REGISTRY.technical_analysis.handler({ symbol: "BTC/USDT" });
+  assert.ok(taRes);
+  assert.ok(["BUY", "SELL", "HOLD"].includes(taRes.signal));
 
   // Test alpha consensus tool
   const acRes = await HERMES_TOOL_REGISTRY.alpha_consensus.handler({ symbol: "BTC/USDT" });
@@ -43,15 +43,6 @@ test("HERMES_TOOL_REGISTRY tools execute cleanly", async () => {
   // Test fxfactory shield tool
   const fxfRes = await HERMES_TOOL_REGISTRY.fxfactory_shield.handler({ asset: "BTC/USDT" });
   assert.equal(fxfRes.isShieldActive, false);
-
-  // Test upside predict tool
-  const uoRes = await HERMES_TOOL_REGISTRY.upside_predict.handler({
-    symbol: "BTC/USDT",
-    direction: "BULLISH",
-    convictionScore: 90.0
-  });
-  assert.equal(uoRes.success, true);
-  assert.equal(uoRes.prediction.bayesShieldApproval, "EXECUTED_WITH_PROP_CAPITAL");
 });
 
 test("runHermesAutonomousAgent executes multi-step reasoning loop and records memory", async () => {

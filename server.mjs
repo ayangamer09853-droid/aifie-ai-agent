@@ -205,7 +205,6 @@ import { queryFleetAgents, getFleetDivisionsSummary, executeFleetWorkCycle } fro
 
 // v86.0 Public Gateway Manager & Full AI Agent Web Access
 import { getPublicGatewayStatus, setPublicGatewayUrl } from "./src/public-gateway-manager.mjs";
-import { startPersistentPublicTunnelDaemon } from "./src/persistent-public-tunnel-daemon.mjs";
 
 // v88.0 Online Cloud Relay & Zero-Dependency Streaming
 import { getOnlineCloudStatus, recordCloudKeepAlivePing } from "./src/online-cloud-service-relay.mjs";
@@ -221,24 +220,6 @@ import { evaluateAlertPriority, sendSmartTelegramAlert } from "./src/smart-teleg
 
 // v91.0 Sovereign 20-Platform Omni-Cloud Orchestrator
 import { getOmniCloudStatus, getFailoverChain, runHealthCheckAllPlatforms } from "./src/omni-cloud-platform-orchestrator.mjs";
-
-// Cloud Virtual Computer, Web Terminal & Cloud Browser Engine
-import {
-  getCloudVComputerStatus,
-  executeCloudTerminalCommand,
-  cloudBrowseUrl,
-  getCloudVComputerConfig,
-  aifieExecuteAutonomousTerminalTask,
-  aifieAutonomousWebInvestigation,
-  aifieManageCloudWorkstation,
-  aifieGetAutonomousAgentUsageSummary
-} from "./src/cloud-vcomputer.mjs";
-
-// v92.0 UpsideOnly, Alpha Consensus, & FxFactory Trinity Engine
-import { getUpsideOnlyStatus, submitUpsidePrediction, withdrawUpsideProfit, evaluateUpsideProfitShares } from "./src/upside-only-real-money-engine.mjs";
-import { calculateAlphaConsensus } from "./src/alpha-consensus-matrix-engine.mjs";
-import { getFxFactoryCalendar, checkFxFactoryVolatilityShield, syncFxFactoryLiveEvents } from "./src/fxfactory-macro-calendar-engine.mjs";
-import { runTrinityProfitCycle, getTrinityOverview } from "./src/upside-alpha-fxfactory-trinity.mjs";
 
 // v93.0 Nous Research Hermes Agent Engine
 import { getHermesAgentStatus, runHermesAutonomousAgent, hermesSynthesizeSkill } from "./src/hermes-agent-integration.mjs";
@@ -1281,7 +1262,6 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
   httpServer.listen(port, host, () => {
     startBot({ paper, strategyLab, orders, persist });
     startContinuous247AgentSwarmDaemon();
-    startPersistentPublicTunnelDaemon({ port });
     startMasterAutonomousNexusDaemon({ intervalMs: 60000 });
     startAutonomousEvolutionDaemon({ intervalMs: 30000, paper, orders, strategyLab, persist });
     startAutoTrader({ paper, orders, persist, intervalMs: 10000 });

@@ -8,9 +8,24 @@ import { spawn } from "node:child_process";
 import { setPublicGatewayUrl } from "./public-gateway-manager.mjs";
 
 let tunnelProcess = null;
-let currentPublicUrl = "https://b75eedf45c5d3d.lhr.life";
+let currentPublicUrl = "DISABLED_BY_SECURITY_POLICY";
+
+export function stopPersistentPublicTunnelDaemon() {
+  if (tunnelProcess) {
+    try { tunnelProcess.kill(); } catch {}
+    tunnelProcess = null;
+  }
+}
 
 export function startPersistentPublicTunnelDaemon({ port = 8787 } = {}) {
+  if (process.env.ENABLE_PUBLIC_TUNNEL !== "true") {
+    return {
+      status: "DISABLED_BY_SECURITY_POLICY",
+      publicUrl: null,
+      message: "Public tunnel disabled by default to prevent exposing unauthenticated local services."
+    };
+  }
+
   if (tunnelProcess) return { status: "ALREADY_RUNNING", publicUrl: currentPublicUrl };
 
   const args = [

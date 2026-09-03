@@ -13,19 +13,19 @@
  *    Executes complex financial or DevOps goals iteratively until verified.
  */
 
-import { executeCloudTerminalCommand, cloudBrowseUrl } from "./cloud-vcomputer.mjs";
 import { calculateAlphaConsensus } from "./alpha-consensus-matrix-engine.mjs";
-import { submitUpsidePrediction, getUpsideOnlyStatus } from "./upside-only-real-money-engine.mjs";
 import { checkFxFactoryVolatilityShield, getFxFactoryCalendar } from "./fxfactory-macro-calendar-engine.mjs";
+import { generateTradingSignal } from "./technical-indicators.mjs";
+import { getPriceBuffer } from "./market-fetcher.mjs";
 
 // In-memory Hermes skills repository (persistent across runs)
 const HERMES_SKILLS_REGISTRY = [
   {
     id: "skill-01",
     name: "FxFactory Red-Folder Event Straddle",
-    category: "MACRO_EXECUTION",
-    description: "Monitors Forex Factory releases, deploys volatility shield, and positions straddle orders.",
-    triggerIntent: "macro_event_straddle",
+    category: "MACRO_RESEARCH",
+    description: "Monitors Forex Factory releases and flags economic volatility windows.",
+    triggerIntent: "macro_event_analysis",
     executionsCount: 42,
     successRate: "92.8%",
     version: "1.3.0",
@@ -33,36 +33,14 @@ const HERMES_SKILLS_REGISTRY = [
   },
   {
     id: "skill-02",
-    name: "BayesShield Zero-Risk Signal Synthesizer",
+    name: "Multi-Model Confluence Signal Synthesizer",
     category: "ALPHA_GENERATION",
-    description: "Synthesizes multi-vector alpha signals and dispatches zero-risk predictions to UpsideOnly.",
-    triggerIntent: "upside_profit_harvest",
+    description: "Synthesizes multi-vector alpha signals across technical indicators.",
+    triggerIntent: "alpha_analysis",
     executionsCount: 68,
     successRate: "89.5%",
     version: "2.1.0",
     createdEpoch: Date.now() - 86400000 * 5
-  },
-  {
-    id: "skill-03",
-    name: "Cloud Terminal Auto-Remediator",
-    category: "DEVOPS_INTELLIGENCE",
-    description: "Diagnoses memory pressure or container latency via cloud shell and executes safe tuning.",
-    triggerIntent: "terminal_self_heal",
-    executionsCount: 31,
-    successRate: "96.7%",
-    version: "1.0.4",
-    createdEpoch: Date.now() - 86400000 * 3
-  },
-  {
-    id: "skill-04",
-    name: "Web Intelligence Deep Crawler",
-    category: "RESEARCH_CRAWLER",
-    description: "Deep scrapes financial portals via headless cloud browser and extracts market sentiment.",
-    triggerIntent: "web_sentiment_scan",
-    executionsCount: 54,
-    successRate: "94.4%",
-    version: "1.2.0",
-    createdEpoch: Date.now() - 86400000 * 2
   }
 ];
 
@@ -71,38 +49,30 @@ const HERMES_EPISODIC_MEMORY = [
   {
     id: "mem-01",
     task: "Initial Setup of Hermes Agent in Aifie",
-    verdict: "Hermes 3 Function-Calling successfully linked with 100+ Aifie subsystems.",
+    verdict: "Hermes 3 Research Assistant linked with quantitative research tools (terminal execution decoupled for security).",
     timestamp: new Date().toISOString()
   }
 ];
 
 /**
- * Available tools callable by Hermes Agent
+ * Available tools callable by Hermes Agent (Strictly Sandboxed & Safe)
  */
 export const HERMES_TOOL_REGISTRY = {
-  cloud_terminal: {
-    name: "cloud_terminal",
-    description: "Execute bash or PowerShell commands in the cloud virtual computer shell.",
-    parameters: { command: "string" },
-    handler: async (args) => executeCloudTerminalCommand(args.command)
-  },
-  cloud_browser: {
-    name: "cloud_browser",
-    description: "Browse external URLs, scrape page contents, extract titles and sentiment.",
-    parameters: { url: "string" },
-    handler: async (args) => cloudBrowseUrl(args.url)
+  technical_analysis: {
+    name: "technical_analysis",
+    description: "Analyze technical indicators (SMA, RSI, MACD, Bollinger Bands) for a symbol.",
+    parameters: { symbol: "string" },
+    handler: async (args) => {
+      const sym = (args.symbol || "AAPL").toUpperCase();
+      const prices = getPriceBuffer(sym);
+      return generateTradingSignal(prices.length >= 5 ? prices : [150, 152, 151, 153, 155], "ml_ensemble");
+    }
   },
   alpha_consensus: {
     name: "alpha_consensus",
     description: "Compute 6-vector quantitative alpha consensus score (>= 80% required for trade approval).",
     parameters: { symbol: "string" },
     handler: async (args) => calculateAlphaConsensus({ symbol: args.symbol })
-  },
-  upside_predict: {
-    name: "upside_predict",
-    description: "Submit zero-capital risk prediction to UpsideOnly BayesShield proprietary capital pool.",
-    parameters: { symbol: "string", direction: "string", convictionScore: "number" },
-    handler: async (args) => submitUpsidePrediction(args)
   },
   fxfactory_shield: {
     name: "fxfactory_shield",
@@ -190,30 +160,20 @@ export async function runHermesAutonomousAgent({
     const lowerGoal = currentGoal.toLowerCase();
 
     if (iteration === 1) {
-      if (lowerGoal.includes("terminal") || lowerGoal.includes("shell") || lowerGoal.includes("system") || lowerGoal.includes("memory")) {
-        stepThought = "I need to inspect the cloud virtual computer environment using the cloud terminal.";
-        toolToCall = "cloud_terminal";
-        toolArguments = { command: "free -h" };
-      } else if (lowerGoal.includes("browse") || lowerGoal.includes("web") || lowerGoal.includes("crawl")) {
-        stepThought = "I need to gather external market intelligence by browsing the specified web resource.";
-        toolToCall = "cloud_browser";
-        toolArguments = { url: "https://finance.yahoo.com" };
-      } else {
-        stepThought = "First, I will verify if any high-impact Forex Factory Red-Folder releases are pending to avoid toxic volatility.";
-        toolToCall = "fxfactory_shield";
-        toolArguments = { asset: "BTC/USDT" };
-      }
+      stepThought = "First, I will verify if any high-impact Forex Factory Red-Folder releases are pending to avoid toxic volatility.";
+      toolToCall = "fxfactory_shield";
+      toolArguments = { asset: "BTC/USDT" };
     } else if (iteration === 2) {
-      stepThought = "Macro calendar is verified. Now I will evaluate the 6-vector Alpha Consensus matrix for high-conviction signals.";
-      toolToCall = "alpha_consensus";
+      stepThought = "Macro calendar is verified. Now I will compute multi-indicator technical analysis (SMA, RSI, MACD).";
+      toolToCall = "technical_analysis";
       toolArguments = { symbol: "BTC/USDT" };
     } else if (iteration === 3) {
-      stepThought = "Alpha consensus achieved >= 80% threshold. I will now submit a zero-risk prediction to UpsideOnly BayesShield proprietary capital pool.";
-      toolToCall = "upside_predict";
-      toolArguments = { symbol: "BTC/USDT", direction: "BULLISH", convictionScore: 91.5 };
+      stepThought = "Technical indicators evaluated. Now I will evaluate the 6-vector Alpha Consensus matrix for confluence confirmation.";
+      toolToCall = "alpha_consensus";
+      toolArguments = { symbol: "BTC/USDT" };
     } else {
       isGoalFulfilled = true;
-      finalAnswer = `Hermes Agent successfully fulfilled goal: '${goal}'. Alpha Consensus approved trade, FxFactory shield confirmed safe window, and UpsideOnly deployed proprietary capital with zero downside risk.`;
+      finalAnswer = `Hermes Agent successfully fulfilled goal: '${goal}'. Alpha Consensus evaluated, FxFactory shield confirmed safe window, and technical confluence recorded.`;
       break;
     }
 
@@ -244,7 +204,7 @@ export async function runHermesAutonomousAgent({
 
     if (iteration === 3) {
       isGoalFulfilled = true;
-      finalAnswer = `Hermes Agent execution complete. Real money prediction active under UpsideOnly BayesShield.`;
+      finalAnswer = `Hermes Agent execution complete. Quantitative research synthesis recorded.`;
       break;
     }
   }

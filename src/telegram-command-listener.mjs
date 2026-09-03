@@ -185,7 +185,7 @@ export const MOBILE_KEYBOARD = {
     [{ text: "👑 Master Nexus 360°" }, { text: "⚡ Run Nexus Cycle" }],
     [{ text: "🦞 OpenClaw Assistant" }, { text: "🛠️ Vercel Agent Skills" }],
     [{ text: "🧠 Hermes-3 Agent Loop" }, { text: "📜 Hermes Learned Skills" }],
-    [{ text: "💎 UpsideOnly Real Money" }, { text: "⚡ Alpha Consensus 80%" }],
+    [{ text: "🛡️ Paper Portfolio Status" }, { text: "⚡ Alpha Consensus 80%" }],
     [{ text: "📅 FxFactory Macro Shield" }, { text: "👑 Trinity Profit Cycle" }],
     [{ text: "🌐 Public Live Website" }, { text: "☁️ 24/7 Cloud Relay" }],
     [{ text: "💻 Cloud PC Telemetry" }, { text: "🖥️ Virtual Desktop URL" }],
@@ -273,7 +273,7 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("🛠️ Vercel Agent Skills")) normalized = "/skills";
   if (normalized.startsWith("🧠 Hermes-3 Agent Loop")) normalized = "/hermes";
   if (normalized.startsWith("📜 Hermes Learned Skills")) normalized = "/hermesskills";
-  if (normalized.startsWith("💎 UpsideOnly Real Money")) normalized = "/upside";
+  if (normalized.startsWith("🛡️ Paper Portfolio Status")) normalized = "/paperstatus";
   if (normalized.startsWith("⚡ Alpha Consensus 80%")) normalized = "/alphaconsensus BTC/USDT";
   if (normalized.startsWith("📅 FxFactory Macro Shield")) normalized = "/fxfactory";
   if (normalized.startsWith("👑 Trinity Profit Cycle")) normalized = "/trinity BTC/USDT";
@@ -874,18 +874,16 @@ ${status.skills.map(s => `• <b>${s.name}</b> (${s.category})\n  <i>Success Rat
 <i>Hermes autonomously synthesizes new skills from successful problem solving.</i>`;
   }
 
-  if (command === "/upside") {
-    const uo = getUpsideOnlyStatus();
-    return `💎 <b>UPSIDEONLY ZERO-RISK REAL MONEY ENGINE</b>
+  if (command === "/paperstatus" || command === "/upside") {
+    return `🛡️ <b>AIFIE SIMULATED PAPER TRADING PORTFOLIO</b>
 ──────────────────
-<b>Account Tier:</b> <code>${uo.account.accountTier}</code>
-<b>Real Profit Balance:</b> <b>$${uo.account.realMoneyProfitBalance.toLocaleString()} USD</b>
-<b>Total Withdrawn:</b> <b>$${uo.account.totalWithdrawnToDate.toLocaleString()} USD</b>
-<b>BayesShield Multiplier:</b> <b>${uo.account.bayesShieldMultiplier}</b>
-<b>Win Rate:</b> <b>${uo.account.accuracyMetrics.winRate}</b> (${uo.account.accuracyMetrics.successfulPredictions}/${uo.account.accuracyMetrics.totalPredictions})
+<b>Execution Mode:</b> <code>100% SIMULATED (PAPER)</code>
+<b>Starting Paper Equity:</b> <b>$100,000.00 USD</b>
+<b>Daily Loss Cap:</b> <b>3.0%</b> (Constitutional Gate)
+<b>Stop-Loss / Take-Profit:</b> <b>-3.0% / +7.0%</b>
+<b>Live Broker Authority:</b> <b>LOCKED (Zero Real Capital Risk)</b>
 ──────────────────
-<b>Active Predictions:</b> ${uo.activePredictionsCount}
-<i>Platform executes with proprietary capital; user gets profit share with 100% zero downside risk.</i>`;
+<i>All market orders are executed virtually with realistic slippage and commission modeling.</i>`;
   }
 
   if (command === "/alphaconsensus") {
