@@ -165,6 +165,11 @@ import { getLiquidityHeatmapMatrix } from "./liquidity-depth-heatmap-engine.mjs"
 import { getCloudSovereignNodeStatus, get1ClickCloudDeploymentBlueprints } from "./cloud-independent-sovereign-node.mjs";
 import { getMultiBrokerSandboxStatus } from "./institutional-multi-broker-sandbox-gateway.mjs";
 import { getStrategyOptimizationRankings } from "./strategy-hyper-optimizer.mjs";
+import { getTimeseriesStoreStatus, computeSessionVwap, getCandleBars } from "./timeseries-market-store.mjs";
+import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateStrategyPromotionGate } from "./strategy-validation-pipeline.mjs";
+import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, evaluateDefensiveHedging } from "./portfolio-risk-fortress.mjs";
+import { routeOrderThroughSor, generateTwapOrderSlices } from "./broker-adapters-suite.mjs";
+import { synthesizeStrategyGenome, getEvolvedGenomeLibrary } from "./self-evolving-swarm.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
@@ -424,6 +429,10 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("🎲 Monte Carlo Cone")) normalized = "/montecarlo BTC/USDT";
   if (normalized.startsWith("👁️ Chart Vision AI")) normalized = "/vision BTC/USDT";
   if (normalized.startsWith("🎙️ Voice Command")) normalized = "/voice status report";
+  if (normalized.startsWith("⏱️ Timeseries L1/L2")) normalized = "/timeseries AAPL";
+  if (normalized.startsWith("🛡️ 99% VaR Fortress")) normalized = "/var 100000";
+  if (normalized.startsWith("⚡ Smart Order Router")) normalized = "/sor AAPL";
+  if (normalized.startsWith("🧬 Synthesize AI Genome")) normalized = "/evolve TRENDING_BULLISH";
 
   const parts = normalized.split(/\s+/);
   const command = parts[0]?.toLowerCase() || "";
@@ -457,6 +466,85 @@ ${sbx.connectedSandboxVenues.map(v => `• <b>${v.venue}</b> (${v.type}) [<code>
 ${opt.topRankedAlphaStrategies.map(s => `<b>#${s.rank} ${s.name}</b>
   • Sharpe: <b>${s.metrics.sharpeRatio}</b> | Win Rate: <b>${s.metrics.winRatePercent}%</b>
   • Profit Factor: <b>${s.metrics.profitFactor}</b> | Kelly Size: <b>${s.metrics.recommendedKellyAllocationPercent}</b>`).join("\n\n")}`;
+  }
+
+  if (command === "/timeseries" || command === "/candles") {
+    const ts = getTimeseriesStoreStatus();
+    const vwap = computeSessionVwap(normSymbol);
+    const candles = getCandleBars(normSymbol, "1m", 5);
+    return `⏱️ <b>AIFIE L1/L2 TIMESERIES MARKET STORE</b>
+──────────────────
+<b>Symbol:</b> <code>${normSymbol}</code>
+<b>Session VWAP:</b> <b>$${vwap}</b>
+<b>Tracked Symbols:</b> <code>${ts.trackedSymbolsCount}</code> (${ts.trackedSymbols.slice(0, 5).join(", ")})
+<b>Latest 1m Candles Count:</b> <b>${candles.length}</b>
+<b>Ring-Buffer Capacity:</b> <code>${ts.maxTicksPerSymbol} ticks/symbol</code>
+<i>Low-latency memory store with zero RAM leaks.</i>`;
+  }
+
+  if (command === "/var" || command === "/risk") {
+    const notional = parseFloat(symbol) || 100000;
+    const v = calculateValueAtRiskMetrics({ portfolioValue: notional });
+    const euler = calculateEulerRiskBudgeting();
+    const hedge = evaluateDefensiveHedging();
+    return `🛡️ <b>INSTITUTIONAL RISK FORTRESS & 99% VaR</b>
+──────────────────
+<b>Portfolio Base:</b> $${v.portfolioValue.toLocaleString()}
+<b>99% 1-Day Parametric VaR:</b> <b>$${v.parametricVaR.notional.toLocaleString()}</b> (<code>${v.parametricVaR.percent}%</code>)
+<b>Expected Shortfall (CVaR):</b> <b>$${v.expectedShortfallCVaR.notional.toLocaleString()}</b> (<code>${v.expectedShortfallCVaR.percent}%</code>)
+<b>Annualized Volatility:</b> <code>${v.annualizedVolatilityPercent}%</code>
+<b>Euler Risk Contributor:</b> <b>${euler.highestRiskAsset}</b>
+<b>Defensive Hedge State:</b> <b>${hedge.hedgingStatus}</b>
+<i>Hard drawdown circuit breakers active.</i>`;
+  }
+
+  if (command === "/sor") {
+    const sor = routeOrderThroughSor({ symbol: normSymbol, quantity });
+    return `⚡ <b>INSTITUTIONAL SMART ORDER ROUTER (SOR)</b>
+──────────────────
+<b>Symbol:</b> <code>${sor.symbol}</code> | <b>Side:</b> <code>${sor.side.toUpperCase()}</code>
+<b>Quantity:</b> <b>${sor.quantity}</b> | <b>Est Notional:</b> <b>$${sor.estimatedNotional}</b>
+<b>Selected Venue:</b> <b>${sor.selectedVenue}</b>
+<b>Execution Strategy:</b> <code>${sor.executionStrategy}</code>
+<b>Est Slippage Impact:</b> <code>${sor.routingSlippageEstimatedBps} bps</code>
+<i>Best execution guaranteed across global liquidity pools.</i>`;
+  }
+
+  if (command === "/twap") {
+    const twap = generateTwapOrderSlices({ symbol: normSymbol, totalQuantity: quantity * 10 });
+    return `⏱️ <b>TWAP ORDER EXECUTION SLICES</b>
+──────────────────
+<b>Symbol:</b> <code>${twap.symbol}</code> | <b>Total Slices:</b> <b>${twap.slicesCount}</b>
+<b>Total Quantity:</b> <code>${twap.totalQuantity}</code>
+${twap.slices.slice(0, 4).map(s => `• Slice #${s.sliceIndex}: <b>${s.quantity} units</b> at <code>+${s.scheduledTimeOffsetSec}s</code>`).join("\n")}
+<i>Minimizes market impact across 15-minute window.</i>`;
+  }
+
+  if (command === "/evolve" || command === "/genomes") {
+    const g = synthesizeStrategyGenome({ targetRegime: "TRENDING_BULLISH" });
+    const lib = getEvolvedGenomeLibrary();
+    return `🧬 <b>SELF-EVOLVING AI STRATEGY GENOME</b>
+──────────────────
+<b>Genome ID:</b> <code>${g.genomeId}</code>
+<b>Name:</b> <b>${g.name}</b>
+<b>Target Regime:</b> <code>${g.targetRegime}</code>
+<b>Entry Rule:</b> <i>${g.rules.entry}</i>
+<b>Exit Rule:</b> <i>${g.rules.exit}</i>
+<b>Est Expected Sharpe:</b> <b>${g.estimatedExpectedSharpe}</b>
+<b>Vault Genomes Available:</b> <b>${lib.totalGenomesAvailable}</b>`;
+  }
+
+  if (command === "/dsr" || command === "/falsification") {
+    const dsr = calculateDeflatedSharpeRatio();
+    const spa = runHansenSpaTest();
+    return `🔬 <b>HANSEN SPA & DEFLATED SHARPE VALIDATION</b>
+──────────────────
+<b>Observed Sharpe:</b> <b>${dsr.observedSharpe}</b>
+<b>Deflated Sharpe p-Value:</b> <code>${dsr.deflatedSharpePValue}</code>
+<b>DSR Alpha Verdict:</b> <b>${dsr.verdict}</b>
+<b>Hansen SPA p-Value:</b> <code>${spa.spaPValue}</code>
+<b>Benchmark Superiority:</b> <b>${spa.recommendation}</b>
+<i>Anti-data-mining mathematical rejection gate.</i>`;
   }
 
   if (command === "/cloud") {

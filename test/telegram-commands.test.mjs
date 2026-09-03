@@ -55,3 +55,24 @@ test("MOBILE_KEYBOARD defines tap buttons for mobile screen", () => {
   assert.ok(Array.isArray(MOBILE_KEYBOARD.keyboard));
   assert.ok(MOBILE_KEYBOARD.keyboard.length >= 4);
 });
+
+test("processTelegramCommand handles future requirements commands (/timeseries, /var, /sor, /twap, /evolve, /dsr)", async () => {
+  const tsMsg = await processTelegramCommand({ command: "/timeseries", symbol: "AAPL" });
+  assert.ok(tsMsg.includes("AIFIE L1/L2 TIMESERIES"));
+
+  const varMsg = await processTelegramCommand({ command: "/var", symbol: "100000" });
+  assert.ok(varMsg.includes("INSTITUTIONAL RISK FORTRESS"));
+
+  const sorMsg = await processTelegramCommand({ command: "/sor", symbol: "BTC" });
+  assert.ok(sorMsg.includes("SMART ORDER ROUTER"));
+
+  const twapMsg = await processTelegramCommand({ command: "/twap", symbol: "TSLA", quantity: 5 });
+  assert.ok(twapMsg.includes("TWAP ORDER EXECUTION"));
+
+  const evolveMsg = await processTelegramCommand({ command: "/evolve" });
+  assert.ok(evolveMsg.includes("SELF-EVOLVING AI STRATEGY"));
+
+  const dsrMsg = await processTelegramCommand({ command: "/dsr" });
+  assert.ok(dsrMsg.includes("HANSEN SPA"));
+});
+
