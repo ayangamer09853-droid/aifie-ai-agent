@@ -261,8 +261,14 @@ import {
 
 // Market Data Provider, Audit Trail, and Sandboxed Adapters
 import { fetchMarketQuote, getMarketDataProviderStatus } from "./src/market-data-provider-adapter.mjs";
-import { recordOrderAuditTrail, queryAuditTrail, getAuditEvidenceByOrderId } from "./src/research-audit-trail-engine.mjs";
 import { getSandboxedAdaptersCatalog, executeSandboxedCcxtTicker, executeSandboxedSourceAdapter, runAllSourcesConsensus } from "./src/reviewed-source-adapters.mjs";
+
+// Future Requirements Engines (Phases 1 - 5)
+import { getTimeseriesStoreStatus, getCandleBars, recordMarketTick, computeSessionVwap } from "./src/timeseries-market-store.mjs";
+import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateCpcvPaths, evaluateStrategyPromotionGate } from "./src/strategy-validation-pipeline.mjs";
+import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, calculateHierarchicalRiskParity, evaluateDefensiveHedging } from "./src/portfolio-risk-fortress.mjs";
+import { routeOrderThroughSor, generateTwapOrderSlices, generateIcebergOrderPlan, verifyBrokerConnectivityStatus } from "./src/broker-adapters-suite.mjs";
+import { synthesizeStrategyGenome, adaptPolicyParametersFromRewards, getEvolvedGenomeLibrary } from "./src/self-evolving-swarm.mjs";
 
 const sources = getConnectedSourceStatus();
 
@@ -1111,6 +1117,96 @@ export function app(request, response) {
   if (request.method === "POST" && url.pathname === "/api/v100/optimizer/run") {
     readJsonBody(request, response).then(payload => {
       return respond(response, 200, runStrategyHyperOptimization(payload));
+    }).catch(() => {});
+    return;
+  }
+  // Future Requirements Endpoints (Phases 1 - 5)
+  // Phase 1: Timeseries
+  if (request.method === "GET" && url.pathname === "/api/v100/timeseries/status") {
+    return respond(response, 200, getTimeseriesStoreStatus());
+  }
+  if (request.method === "GET" && url.pathname === "/api/v100/timeseries/candles") {
+    const sym = url.searchParams.get("symbol") || "AAPL";
+    const tf = url.searchParams.get("tf") || "1m";
+    return respond(response, 200, { symbol: sym, timeframe: tf, candles: getCandleBars(sym, tf) });
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/timeseries/tick") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, recordMarketTick(payload));
+    }).catch(() => {});
+    return;
+  }
+
+  // Phase 2: Strategy Validation Pipeline
+  if (request.method === "GET" && url.pathname === "/api/v100/validation/dsr") {
+    const sharpe = Number(url.searchParams.get("sharpe") || 1.8);
+    const trials = Number(url.searchParams.get("trials") || 50);
+    return respond(response, 200, calculateDeflatedSharpeRatio({ observedSharpe: sharpe, numberOfTrials: trials }));
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/validation/spa") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, runHansenSpaTest(payload));
+    }).catch(() => {});
+    return;
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/validation/gate") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, evaluateStrategyPromotionGate(payload));
+    }).catch(() => {});
+    return;
+  }
+
+  // Phase 3: Portfolio Risk Fortress
+  if (request.method === "GET" && url.pathname === "/api/v100/risk/var") {
+    const val = Number(url.searchParams.get("value") || 100000);
+    return respond(response, 200, calculateValueAtRiskMetrics({ portfolioValue: val }));
+  }
+  if (request.method === "GET" && url.pathname === "/api/v100/risk/euler") {
+    return respond(response, 200, calculateEulerRiskBudgeting());
+  }
+  if (request.method === "GET" && url.pathname === "/api/v100/risk/hrp") {
+    return respond(response, 200, calculateHierarchicalRiskParity());
+  }
+  if (request.method === "GET" && url.pathname === "/api/v100/risk/hedge") {
+    return respond(response, 200, evaluateDefensiveHedging());
+  }
+
+  // Phase 4: Multi-Broker Suite
+  if (request.method === "GET" && url.pathname === "/api/v100/brokers/status") {
+    return respond(response, 200, verifyBrokerConnectivityStatus());
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/brokers/route-sor") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, routeOrderThroughSor(payload));
+    }).catch(() => {});
+    return;
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/brokers/twap-slices") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, generateTwapOrderSlices(payload));
+    }).catch(() => {});
+    return;
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/brokers/iceberg") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, generateIcebergOrderPlan(payload));
+    }).catch(() => {});
+    return;
+  }
+
+  // Phase 5: Self-Evolving Swarm
+  if (request.method === "GET" && url.pathname === "/api/v100/swarm/genomes") {
+    return respond(response, 200, getEvolvedGenomeLibrary());
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/swarm/synthesize") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, synthesizeStrategyGenome(payload));
+    }).catch(() => {});
+    return;
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/swarm/adapt-policy") {
+    readJsonBody(request, response).then(payload => {
+      return respond(response, 200, adaptPolicyParametersFromRewards(payload));
     }).catch(() => {});
     return;
   }
