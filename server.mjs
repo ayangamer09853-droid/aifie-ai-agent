@@ -277,6 +277,12 @@ import {
   startAutonomousEvolutionDaemon
 } from "./src/self-evolving-swarm.mjs";
 import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./src/trading-bot.mjs";
+import {
+  startAutoTrader,
+  stopAutoTrader,
+  getAutoTraderStatus,
+  executeAutonomousTradeCycle
+} from "./src/autonomous-auto-trader.mjs";
 
 const sources = getConnectedSourceStatus();
 
@@ -1235,6 +1241,23 @@ export function app(request, response) {
     const quote = paper.quotes[sym] || { price: 150 };
     return respond(response, 200, evaluateMultiGenomeConsensus(sym, quote));
   }
+  if (request.method === "GET" && url.pathname === "/api/v100/autotrade/status") {
+    return respond(response, 200, getAutoTraderStatus());
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/autotrade/start") {
+    return respond(response, 200, startAutoTrader({ paper, orders, persist }));
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/autotrade/stop") {
+    return respond(response, 200, stopAutoTrader());
+  }
+  if (request.method === "POST" && url.pathname === "/api/v100/autotrade/trigger-now") {
+    executeAutonomousTradeCycle({ paper, orders, persist, forceExecute: true }).then(result => {
+      return respond(response, 200, result);
+    }).catch(err => {
+      return respond(response, 500, { error: err.message });
+    });
+    return;
+  }
 
   return respond(response, 404, { error: "not found" });
   } catch (err) {
@@ -1261,6 +1284,7 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
     startPersistentPublicTunnelDaemon({ port });
     startMasterAutonomousNexusDaemon({ intervalMs: 60000 });
     startAutonomousEvolutionDaemon({ intervalMs: 30000, paper, orders, strategyLab, persist });
+    startAutoTrader({ paper, orders, persist, intervalMs: 10000 });
     console.log(`\n==================================================`);
     console.log(`🚀 AIFIE AI AGENT ONLINE & AUTONOMOUS 24/7`);
     console.log(`📊 Local Web Dashboard: http://localhost:${port}`);

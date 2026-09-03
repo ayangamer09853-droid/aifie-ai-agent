@@ -171,9 +171,11 @@ import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, evaluateDefen
 import { routeOrderThroughSor, generateTwapOrderSlices } from "./broker-adapters-suite.mjs";
 import { synthesizeStrategyGenome, getEvolvedGenomeLibrary, getEvolutionStatus, runEvolutionCycle } from "./self-evolving-swarm.mjs";
 import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./trading-bot.mjs";
+import { startAutoTrader, stopAutoTrader, getAutoTraderStatus, executeAutonomousTradeCycle } from "./autonomous-auto-trader.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
+    [{ text: "🤖 24/7 Auto-Trader ON" }, { text: "⚡ Auto-Trade Scan Now" }],
     [{ text: "🏦 Broker Sandbox Gateway" }, { text: "🏆 Top 5 Alpha Strategies" }],
     [{ text: "☁️ 24/7 Cloud Node" }, { text: "🚀 1-Click Blueprints" }],
     [{ text: "🌐 Multi-Node Mesh" }, { text: "🔥 Liquidity Heatmap" }],
@@ -436,6 +438,8 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("🧬 Synthesize AI Genome")) normalized = "/evolve TRENDING_BULLISH";
   if (normalized.startsWith("⚖️ Half-Kelly Sizing")) normalized = "/sizing AAPL";
   if (normalized.startsWith("🗳️ Multi-Genome Consensus")) normalized = "/consensus AAPL";
+  if (normalized.startsWith("🤖 24/7 Auto-Trader ON")) normalized = "/autotrade on";
+  if (normalized.startsWith("⚡ Auto-Trade Scan Now")) normalized = "/autotrade now";
 
   const parts = normalized.split(/\s+/);
   const command = parts[0]?.toLowerCase() || "";
@@ -583,6 +587,51 @@ ${twap.slices.slice(0, 4).map(s => `• Slice #${s.sliceIndex}: <b>${s.quantity}
 <b>Vote Split:</b> 🟢 BUY: <b>${con.buyVotes}</b> | 🔴 SELL: <b>${con.sellVotes}</b> | ⚪ HOLD: <b>${con.holdVotes}</b>
 ${con.votes.map(v => `• <b>${v.name}</b>: <code>${v.vote}</code> (Fitness: ${v.fitness}%)`).join("\n")}
 <i>Requires >=2/3 multi-model alignment to eliminate false breakouts.</i>`;
+  }
+
+  if (command === "/autotrade") {
+    const sub = (symbol || "status").toLowerCase();
+    if (sub === "on" || sub === "start") {
+      startAutoTrader({ paper, orders });
+      return `🤖 <b>24/7 AUTONOMOUS AUTO-TRADING ACTIVATED!</b>
+──────────────────
+<b>Status:</b> <b>ACTIVE (AUTONOMOUS_SWARM)</b>
+<b>Interval:</b> <b>Every 10 seconds</b>
+<b>Watchlist:</b> <code>BTC/USDT, ETH/USDT, AAPL, TSLA, NVDA</code>
+<b>Confluence Gate:</b> <b>>= 2/3 Multi-Genome Consensus</b>
+<b>Dynamic Risk:</b> <b>Half-Kelly Sizing | Stop-Loss: -3% | Take-Profit: +7%</b>
+<i>System will now scan continuously and take trades automatically 24/7!</i>`;
+    }
+    if (sub === "off" || sub === "stop" || sub === "pause") {
+      stopAutoTrader();
+      return `⏸️ <b>24/7 AUTONOMOUS AUTO-TRADING PAUSED</b>
+──────────────────
+<b>Status:</b> <b>STANDBY</b>
+<i>Automatic trade executions paused. Open positions are still protected by risk gates.</i>`;
+    }
+    if (sub === "now" || sub === "trigger" || sub === "scan") {
+      const cycle = await executeAutonomousTradeCycle({ paper, orders, forceExecute: true });
+      const status = getAutoTraderStatus();
+      const lastTrade = cycle.trades?.[0];
+      return `⚡ <b>INSTANT AUTO-TRADE CYCLE EXECUTED</b>
+──────────────────
+<b>Status:</b> <b>SUCCESS</b>
+<b>Trades Executed:</b> <b>${cycle.tradesExecutedCount} order(s)</b>
+${lastTrade ? `• Symbol: <code>${lastTrade.symbol}</code> | Side: <b>BUY</b>\n• Quantity: <b>${lastTrade.quantity}</b> | Fill: <b>$${lastTrade.fillPrice}</b>\n• Strategy: <i>${lastTrade.audit?.strategy || "Multi-Genome Ensemble"}</i>` : "• Scanned all assets. No setup met strict alpha threshold."}
+<b>Total Auto-Trades Ever:</b> <b>${status.totalAutoTradesExecuted}</b>`;
+    }
+    // Default: status
+    const status = getAutoTraderStatus();
+    return `📊 <b>24/7 AUTONOMOUS AUTO-TRADER STATUS</b>
+──────────────────
+<b>Status:</b> <b>${status.isRunning ? "🟢 ACTIVE (24/7 RUNNING)" : "⚪ STANDBY (PAUSED)"}</b>
+<b>Active Mode:</b> <code>${status.mode}</code>
+<b>Watchlist:</b> <code>${status.watchSymbols.join(", ")}</code>
+<b>Total Auto-Trades:</b> <b>${status.totalAutoTradesExecuted}</b>
+<b>Profitable Auto-Exits:</b> <b>${status.successfulProfitsCount}</b>
+<b>Active Champion:</b> <i>${status.championStrategy}</i>
+<b>Risk Gate:</b> SL <code>-${status.stopLossPercent}%</code> / TP <code>+${status.takeProfitPercent}%</code>
+<b>Commands:</b> <code>/autotrade on</code> | <code>/autotrade off</code> | <code>/autotrade now</code>`;
   }
 
   if (command === "/cloud") {
