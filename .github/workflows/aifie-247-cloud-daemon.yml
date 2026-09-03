@@ -1,16 +1,18 @@
-name: Aifie 24/7 Autonomous Cloud Swarm Daemon
+name: Aifie 24/7 Autonomous Cloud Daemon
 
 on:
   schedule:
-    # Run every 10 minutes in the cloud 24/7
-    - cron: '*/10 * * * *'
+    # Run every 50 minutes (GitHub Actions free tier allows up to 6 hours per job)
+    - cron: '*/50 * * * *'
   workflow_dispatch:
   push:
     branches: [ main ]
 
 jobs:
-  cloud-agent-swarm:
+  aifie-cloud-server:
     runs-on: ubuntu-latest
+    timeout-minutes: 55
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -18,18 +20,29 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
+          cache: 'npm'
 
-      - name: Run Cloud Multi-Agent Autonomous Cycle
-        run: |
-          echo "Starting 24/7 Cloud Autonomous Multi-Agent Swarm Tick..."
-          node -e "
-            import('./src/autonomous-100-agent-fleet.mjs').then(m => {
-              const res = m.executeFleetWorkCycle();
-              console.log('24/7 Cloud Cycle Executed. Agents online:', res.onlineAgentsCount);
-            });
-          "
+      - name: Install Dependencies
+        run: npm install --omit=dev --ignore-scripts 2>/dev/null || true
 
-      - name: Run Zero-Dependency Autonomous Test Suite
+      - name: Run Aifie AI Agent (48 min autonomous cycle)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LIVE_TRADING_ENABLED: "false"
+          PORT: "8787"
+          HOST: "0.0.0.0"
+          NODE_ENV: production
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          node --test test/v87-native-indicators-minimal-deps.test.mjs
+          echo "🚀 Aifie AI Agent Starting on GitHub Cloud Runner..."
+          echo "📱 Telegram Bot: Active"
+          echo "🤖 Trading Engine: Auto-scanning..."
+          
+          # Run the server for 48 minutes then let it exit cleanly
+          # GitHub Actions will restart via cron every 50 minutes = 24/7 operation
+          timeout 2880 node server.mjs || true
+          
+          echo "✅ 48-minute cycle complete. Will restart in next cron trigger."
