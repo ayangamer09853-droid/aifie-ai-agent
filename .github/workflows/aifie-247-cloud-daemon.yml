@@ -9,7 +9,7 @@ on:
     branches: [ main ]
 
 jobs:
-  aifie-cloud-server:
+  cloud-agent-swarm:
     runs-on: ubuntu-latest
     timeout-minutes: 55
 
@@ -37,12 +37,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          echo "🚀 Aifie AI Agent Starting on GitHub Cloud Runner..."
-          echo "📱 Telegram Bot: Active"
-          echo "🤖 Trading Engine: Auto-scanning..."
+          echo "Aifie AI Agent Starting on GitHub Cloud Runner..."
+          echo "Cloud Agent Swarm (cloud-agent-swarm): Initializing distributed processing..."
+          echo "ðŸ“± Telegram Bot: Active"
+          echo "ðŸ¤– Trading Engine: Auto-scanning..."
           
           # Run the server for 48 minutes then let it exit cleanly
           # GitHub Actions will restart via cron every 50 minutes = 24/7 operation
           timeout 2880 node server.mjs || true
           
-          echo "✅ 48-minute cycle complete. Will restart in next cron trigger."
+          echo "âœ… 48-minute cycle complete. Will restart in next cron trigger."
+
+
