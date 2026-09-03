@@ -26,7 +26,7 @@ const rateLimitStore = new Map();
 /**
  * Clean up expired entries (runs every minute)
  */
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, entries] of rateLimitStore) {
     const validEntries = entries.filter(e => now - e.timestamp < 60000);
@@ -37,6 +37,7 @@ setInterval(() => {
     }
   }
 }, 60000);
+cleanupTimer.unref?.();
 
 /**
  * Get rate limit config for an endpoint

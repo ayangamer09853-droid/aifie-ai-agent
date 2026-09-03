@@ -1701,6 +1701,24 @@ Type any command below or use the quick action buttons above.</div>
           </div>
         </div>
 
+        <!-- CARD 6: 24/7 AUTONOMOUS AUTO-TRADING ENGINE -->
+        <div class="panel" style="grid-column: span 2; border: 1px solid var(--neon-green); box-shadow: 0 0 15px rgba(0,255,157,0.15);">
+          <div class="panel-header" style="background: rgba(0,255,157,0.08);">
+            <span style="color: var(--neon-green); font-weight: bold;">🤖 24/7 AUTONOMOUS AUTOMATIC TRADING ENGINE</span>
+            <span id="autoTradeBadge" style="background: #00ff9d; color: #000; padding: 2px 8px; border-radius: 3px; font-weight: bold; font-size: 10px;">AUTO-TRADER ACTIVE</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+              <button onclick="startAutoTradeUi()" style="background:var(--neon-green); color:#000; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:7px 16px; border-radius:4px; cursor:pointer;">▶️ START 24/7 AUTO-TRADING</button>
+              <button onclick="stopAutoTradeUi()" style="background:rgba(255,75,75,0.2); border:1px solid #ff4b4b; color:#ff4b4b; font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:7px 14px; border-radius:4px; cursor:pointer;">⏸️ PAUSE</button>
+              <button onclick="triggerAutoTradeNowUi()" style="background:linear-gradient(90deg, #00e5ff, #00ff9d); color:#000; font-family:var(--font-mono); font-size:11px; font-weight:bold; border:none; padding:7px 16px; border-radius:4px; cursor:pointer;">⚡ EXECUTE AUTO-TRADE NOW</button>
+              <button onclick="loadAutoTradeStatusUi()" style="background:rgba(255,255,255,0.1); border:1px solid #fff; color:#fff; font-family:var(--font-mono); font-size:11px; font-weight:bold; padding:7px 12px; border-radius:4px; cursor:pointer;">🔄 REFRESH TELEMETRY</button>
+              <span style="margin-left:auto; color:var(--text-muted); font-size:10px; font-family:var(--font-mono);">Risk Guards: -3.0% Stop-Loss | +7.0% Take-Profit</span>
+            </div>
+            <div id="autoTradeResults" style="background:#010204; border:1px solid var(--border-panel); border-radius:4px; padding:12px; font-family:var(--font-mono); font-size:11px; color:#fff; min-height:100px; white-space:pre-wrap; line-height:1.6;">Click "START 24/7 AUTO-TRADING" or "EXECUTE AUTO-TRADE NOW" to run autonomous market scans and automated order execution.</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -2033,6 +2051,81 @@ Type any command below or use the quick action buttons above.</div>
           voteLines;
       } catch (err) {
         box.textContent = 'Consensus Error: ' + err.message;
+      }
+    }
+
+    async function startAutoTradeUi() {
+      const box = document.getElementById('autoTradeResults');
+      box.textContent = 'Starting 24/7 Autonomous Automatic Trading System...';
+      try {
+        const res = await fetch('/api/v100/autotrade/start', { method: 'POST' });
+        const data = await res.json();
+        document.getElementById('autoTradeBadge').textContent = 'AUTO-TRADER ACTIVE';
+        document.getElementById('autoTradeBadge').style.background = '#00ff9d';
+        document.getElementById('autoTradeBadge').style.color = '#000';
+        box.textContent = '=== 🟢 24/7 AUTONOMOUS AUTO-TRADING ENGINE STARTED ===\n' +
+          'Status: ACTIVE (Scanning every ' + (data.intervalMs / 1000) + 's)\n' +
+          'Watchlist: ' + data.watchSymbols.join(', ') + '\n' +
+          'Active Champion: ' + data.championStrategy + '\n' +
+          'Risk Gates: Stop-Loss -' + data.stopLossPercent + '% | Take-Profit +' + data.takeProfitPercent + '%\n' +
+          'Total Auto-Trades: ' + data.totalAutoTradesExecuted + ' | Profitable Auto-Exits: ' + data.successfulProfitsCount;
+      } catch (err) {
+        box.textContent = 'Start Error: ' + err.message;
+      }
+    }
+
+    async function stopAutoTradeUi() {
+      const box = document.getElementById('autoTradeResults');
+      try {
+        const res = await fetch('/api/v100/autotrade/stop', { method: 'POST' });
+        const data = await res.json();
+        document.getElementById('autoTradeBadge').textContent = 'STANDBY';
+        document.getElementById('autoTradeBadge').style.background = '#ff4b4b';
+        document.getElementById('autoTradeBadge').style.color = '#fff';
+        box.textContent = '=== ⏸️ 24/7 AUTONOMOUS AUTO-TRADING PAUSED ===\n' +
+          'Auto-trade executions paused. Open positions are still guarded by risk gates.\n' +
+          'Total Auto-Trades Executed: ' + data.totalAutoTradesExecuted;
+      } catch (err) {
+        box.textContent = 'Stop Error: ' + err.message;
+      }
+    }
+
+    async function triggerAutoTradeNowUi() {
+      const box = document.getElementById('autoTradeResults');
+      box.textContent = 'Scanning multi-asset market feeds & executing immediate autonomous trade...';
+      try {
+        const res = await fetch('/api/v100/autotrade/trigger-now', { method: 'POST' });
+        const data = await res.json();
+        const trade = data.trades && data.trades[0];
+        box.textContent = '=== ⚡ INSTANT AUTONOMOUS TRADE EXECUTION ===\n' +
+          'Scan Timestamp: ' + data.scanTimestamp + '\n' +
+          'Trades Executed: ' + data.tradesExecutedCount + ' order(s)\n' +
+          (trade ? ('• Symbol: ' + trade.symbol + ' | Side: BUY\n' +
+                    '• Quantity: ' + trade.quantity + ' | Fill Price: $' + trade.fillPrice + '\n' +
+                    '• Strategy: ' + (trade.audit?.strategy || 'Multi-Genome Ensemble') + '\n' +
+                    '• Rationale: ' + (trade.audit?.rationale || 'Consensus Confirmed') + '\n')
+                 : '• Scanned all assets. No setups met strict entry criteria.\n') +
+          'Total Auto-Trades Ever: ' + data.totalAutoTradesEver;
+      } catch (err) {
+        box.textContent = 'Execution Error: ' + err.message;
+      }
+    }
+
+    async function loadAutoTradeStatusUi() {
+      const box = document.getElementById('autoTradeResults');
+      try {
+        const res = await fetch('/api/v100/autotrade/status');
+        const data = await res.json();
+        box.textContent = '=== 📊 24/7 AUTONOMOUS AUTO-TRADER TELEMETRY ===\n' +
+          'Engine Status: ' + (data.isRunning ? '🟢 24/7 RUNNING' : '⚪ STANDBY') + '\n' +
+          'Watchlist: ' + data.watchSymbols.join(', ') + '\n' +
+          'Active Champion: ' + data.championStrategy + '\n' +
+          'Total Auto-Trades Executed: ' + data.totalAutoTradesExecuted + '\n' +
+          'Profitable Take-Profit Exits: ' + data.successfulProfitsCount + '\n' +
+          'Stop-Loss Defensive Exits: ' + data.stopLossCount + '\n' +
+          'Risk Safeguards: SL -' + data.stopLossPercent + '% | TP +' + data.takeProfitPercent + '%';
+      } catch (err) {
+        box.textContent = 'Status Error: ' + err.message;
       }
     }
 

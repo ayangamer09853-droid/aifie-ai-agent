@@ -18,7 +18,7 @@ import { placePaperOrder, setQuote, accountSnapshot } from "./paper-engine.mjs";
 import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./trading-bot.mjs";
 import { getEvolutionStatus } from "./self-evolving-swarm.mjs";
 import { generateTradingSignal } from "./technical-indicators.mjs";
-import { recordTransaction } from "./real-pnl-accounting-ledger.mjs";
+import { recordLedgerTransaction } from "./real-pnl-accounting-ledger.mjs";
 import { sendTradeAlert } from "./telegram-notifier.mjs";
 
 const autoTraderState = {
@@ -99,13 +99,12 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         };
         orders.push(closeOrder);
         autoTraderState.successfulProfitsCount++;
-        recordTransaction({
-          orderId: closeOrder.id,
+        recordLedgerTransaction({
           symbol: sym,
           side: "SELL",
           quantity: pos.quantity,
-          executionPrice: fill.fillPrice,
-          realizedPnL: Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2))
+          fillPrice: fill.fillPrice,
+          realizedPnLUSD: Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2))
         });
         const msg = `🎯 AUTO TAKE-PROFIT: Closed ${pos.quantity} ${sym} at $${fill.fillPrice} (PnL: +${pnlPct.toFixed(2)}%)`;
         logAutoTraderEvent(msg);
@@ -133,13 +132,12 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         };
         orders.push(closeOrder);
         autoTraderState.stopLossCount++;
-        recordTransaction({
-          orderId: closeOrder.id,
+        recordLedgerTransaction({
           symbol: sym,
           side: "SELL",
           quantity: pos.quantity,
-          executionPrice: fill.fillPrice,
-          realizedPnL: Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2))
+          fillPrice: fill.fillPrice,
+          realizedPnLUSD: Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2))
         });
         const msg = `🛡️ AUTO STOP-LOSS: Closed ${pos.quantity} ${sym} at $${fill.fillPrice} (PnL: ${pnlPct.toFixed(2)}%)`;
         logAutoTraderEvent(msg);
@@ -177,7 +175,13 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
       const shouldBuy = forceExecute || (consensus.consensusPassed && consensus.buyVotes >= 2);
 
       if (shouldBuy && held < autoTraderState.maxTradeQuantity) {
-        const qtyToBuy = Math.min(autoTraderState.maxTradeQuantity - held, sizing.calculatedLotSize || 1);
+        const maxNotional = paper.risk?.maxPositionNotional || 50000;
+        let qtyToBuy = Math.min(autoTraderState.maxTradeQuantity - held, sizing.calculatedLotSize || 1);
+        if (quote.price * qtyToBuy > maxNotional) {
+          qtyToBuy = Math.max(0, Math.floor(maxNotional / quote.price));
+        }
+        if (qtyToBuy < 1) continue;
+
         const fill = placePaperOrder(paper, { symbol, side: "buy", quantity: qtyToBuy });
 
         const autoOrder = {
@@ -196,13 +200,12 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         orders.push(autoOrder);
         autoTraderState.totalAutoTradesExecuted++;
 
-        recordTransaction({
-          orderId: autoOrder.id,
+        recordLedgerTransaction({
           symbol,
           side: "BUY",
           quantity: qtyToBuy,
-          executionPrice: fill.fillPrice,
-          realizedPnL: 0
+          fillPrice: fill.fillPrice,
+          realizedPnLUSD: 0
         });
 
         autoTraderState.recentAutoTrades.unshift({
