@@ -1,5 +1,9 @@
 # Aifie AI Agent
 
+[![Aifie 24/7 Cloud Daemon](https://github.com/ayangamer09853-droid/aifie-ai-agent/actions/workflows/aifie-247-cloud-daemon.yml/badge.svg)](https://github.com/ayangamer09853-droid/aifie-ai-agent/actions/workflows/aifie-247-cloud-daemon.yml)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ayangamer09853-droid/aifie-ai-agent)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/deploy?template=https://github.com/ayangamer09853-droid/aifie-ai-agent)
+
 Aifie is a paper-trading research agent assembled around the capabilities represented by the repositories in `sources/`. It keeps research, signal formation, risk approval, and simulated execution separate so live broker connectivity can be added deliberately later.
 
 ## Run
