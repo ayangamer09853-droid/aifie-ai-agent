@@ -6,6 +6,7 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
 
 const SOURCES_DIR = join(process.cwd(), "sources");
 
@@ -308,15 +309,11 @@ export function executeSandboxedNautilusBacktest({ strategy = "EMA_MOMENTUM", sy
 /**
  * Sandboxed geopolitical and macroeconomic intelligence through worldmonitor
  */
-export function executeSandboxedWorldMonitorIntel() {
+export function executeSandboxedWorldMonitorIntel(params = {}) {
+  const snapshot = worldmonitorAdapter.getGeopoliticalSnapshot();
   return {
-    success: true,
-    adapter: "worldmonitor_sandboxed",
-    globalRiskIndex: 32.4,
-    geopoliticalRisk: "LOW",
-    marketSentimentScore: 0.74,
-    trackedHotspotsCount: 8,
-    isolationBound: "READ_ONLY_INTELLIGENCE"
+    ...snapshot,
+    requestedParams: params
   };
 }
 

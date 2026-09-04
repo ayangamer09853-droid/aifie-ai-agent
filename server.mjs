@@ -123,11 +123,11 @@ import {
   memoryGuard
 } from "./src/quantum-resistant-vault.mjs";
 
-// Constitutional Guard & Phases 9-10
 import { constitutionalGuard } from "./src/constitutional-constraints-guard.mjs";
 import { orderFlowTracker } from "./src/order-flow-whale-tape.mjs";
 import { crossExchangeArbitrage } from "./src/cross-exchange-arbitrage.mjs";
 import { leanEngineAdapter } from "./src/lean-engine-adapter.mjs";
+import { worldmonitorAdapter, GEOPOLITICAL_HOTSPOTS, STRATEGIC_CHOKEPOINTS } from "./src/worldmonitor-intelligence-adapter.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1186,6 +1186,46 @@ export function app(request, response) {
         }
       }).catch(() => {});
       return;
+    }
+
+    // WorldMonitor Geopolitical Intelligence & Macro Risk Governor Endpoints
+    if (request.method === "GET" && url.pathname === "/api/worldmonitor/status") {
+      return respond(response, 200, {
+        success: true,
+        hasSourceRepo: worldmonitorAdapter.hasSourceRepo,
+        sourcePath: worldmonitorAdapter.sourcePath,
+        status: "APPROVED_ACTIVE",
+        snapshot: worldmonitorAdapter.getGeopoliticalSnapshot(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/worldmonitor/briefing") {
+      return respond(response, 200, { success: true, ...worldmonitorAdapter.getGeopoliticalBriefing() });
+    }
+    if (request.method === "GET" && url.pathname === "/api/worldmonitor/cii-matrix") {
+      return respond(response, 200, { success: true, ...worldmonitorAdapter.getCiiMatrix() });
+    }
+    if (request.method === "GET" && url.pathname === "/api/worldmonitor/hotspots") {
+      return respond(response, 200, {
+        success: true,
+        hotspots: GEOPOLITICAL_HOTSPOTS,
+        strategicChokepoints: STRATEGIC_CHOKEPOINTS,
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/worldmonitor/asset-impact") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const impact = worldmonitorAdapter.evaluateAssetImpact(payload.symbol || "BTC");
+          return respond(response, 200, { success: true, ...impact });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/worldmonitor/risk-governor") {
+      return respond(response, 200, { success: true, ...worldmonitorAdapter.calculateDynamicRiskGovernor() });
     }
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {

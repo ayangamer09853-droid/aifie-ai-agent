@@ -181,11 +181,12 @@ import { alpacaBroker } from "./live-broker-alpaca.mjs";
 import { fetchCoingeckoQuote } from "./market-fetcher-crypto.mjs";
 import { fetchPolygonQuote } from "./market-fetcher-polygon.mjs";
 import { leanEngineAdapter } from "./lean-engine-adapter.mjs";
+import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
-    [{ text: "📐 QuantConnect Lean" }, { text: "⚖️ Constitution Rules" }],
-    [{ text: "🐳 Whale Orderflow" }, { text: "⚡ Cross-Exchange Arb" }],
+    [{ text: "🌍 WorldMonitor Intel" }, { text: "📐 QuantConnect Lean" }],
+    [{ text: "⚖️ Constitution Rules" }, { text: "🐳 Whale Orderflow" }],
     [{ text: "⚡ Cross-Exchange Arb" }, { text: "🏦 Alpaca Account ($100k)" }],
     [{ text: "🔐 Quantum Vault" }, { text: "📈 Polygon & CoinGecko" }],
     [{ text: "🤖 Auto-Trader Status" }, { text: "⚡ Auto-Trade Scan Now" }],
@@ -204,6 +205,7 @@ export const MOBILE_KEYBOARD = {
 export function parseTelegramCommand(text = "") {
   let normalized = text.trim();
 
+  if (normalized.startsWith("🌍 WorldMonitor Intel")) normalized = "/worldmonitor";
   if (normalized.startsWith("📐 QuantConnect Lean")) normalized = "/lean";
   if (normalized.startsWith("⚖️ Constitution Rules")) normalized = "/constitution";
   if (normalized.startsWith("🐳 Whale Orderflow")) normalized = "/orderflow";
@@ -502,6 +504,41 @@ ${lastWhale ? `• <b>${lastWhale.side || 'WHALE'}</b> $${(lastWhale.notional ||
 • <b>Signatures:</b> ML-DSA-65 Dilithium Lattice Signatures
 • <b>Secret Sharing:</b> Galois-Field Polynomial Shamir (3-of-5 Threshold)
 • <b>Memory Guard:</b> Active Zeroization (Tamper-Resistant)`;
+  }
+
+  if (command === "/worldmonitor" || command === "/geopolitics" || command === "/intel") {
+    const asset = (symbol || "BTC").toUpperCase();
+    const briefing = worldmonitorAdapter.getGeopoliticalBriefing();
+    const impact = worldmonitorAdapter.evaluateAssetImpact(asset);
+    const governor = briefing.governor;
+
+    const topCountries = briefing.topVulnerableNations.map(c => `• <b>${c.name}</b> (${c.code}): <code>${c.score}/100</code> [${c.level.toUpperCase()}]`).join("\n");
+    const chokepoints = briefing.strategicWaterways.slice(0, 3).map(cp => `• <b>${cp.name}:</b> <code>${cp.threatLevel}</code> (${cp.oilFlowBarrelsDaily}/day)`).join("\n");
+
+    return `🌍 <b>WORLDMONITOR GEOPOLITICAL & MACRO INTEL</b>
+──────────────────
+🛡️ <b>ALERT POSTURE:</b> <b>${briefing.threatPosture}</b>
+🚨 <b>DEFCON LEVEL:</b> <code>DEFCON ${briefing.defconLevel}</code>
+📊 <b>Global Composite Stress:</b> <b>${briefing.globalRiskIndex}/100</b> (${briefing.level})
+🌐 <b>Average Country Instability (CII):</b> <b>${briefing.averageCii}/100</b>
+
+🏛️ <b>TOP UNSTABLE NATIONS (CII v8):</b>
+${topCountries}
+
+⚓ <b>STRATEGIC MARITIME CHOKEPOINTS:</b>
+${chokepoints}
+
+📈 <b>ASSET IMPACT TRANSMISSION (${impact.symbol}):</b>
+• <b>Directional Bias:</b> <code>${impact.direction}</code> (Beta: ${impact.geopoliticalBeta})
+• <b>Recommendation:</b> <code>${impact.recommendedAction}</code>
+• <b>Logic:</b> <i>${impact.rationale}</i>
+
+⚖️ <b>MACRO RISK GOVERNOR ENFORCEMENT:</b>
+• <b>Portfolio Leverage Throttle:</b> <b>${(governor.leverageMultiplier * 100).toFixed(0)}%</b> (Max: ${governor.maxAllowedPortfolioLeverage}x)
+• <b>Stop-Loss Tightener:</b> <b>${(governor.stopLossDistanceFactor * 100).toFixed(0)}%</b> of standard width
+• <b>Aggressive Longs Veto:</b> <b>${governor.vetoAggressiveLongs ? "⛔ ACTIVE (VETOED)" : "✅ PERMITTED"}</b>
+──────────────────
+<i>Use /worldmonitor &lt;SYMBOL&gt; to analyze specific commodities, equities, or crypto.</i>`;
   }
 
   if (command === "/lean" || command === "/quantconnect" || command === "/leanbacktest") {

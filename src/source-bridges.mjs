@@ -5,6 +5,7 @@
 
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
 
 const SOURCE_REPOSITORIES = Object.freeze([
   { repository: "TradingAgents", category: "research", role: "Multi-agent research workflows" },
@@ -57,7 +58,15 @@ export function runFullIntelligenceScan(symbol = "AAPL", sourcesDir = join(proce
   const signals = {
     TradingAgents: { status: "active", insight: `Multi-agent consensus bullish for ${normSymbol}` },
     "Vibe-Trading": { status: "active", momentum: "positive", score: 0.78 },
-    worldmonitor: { status: "active", eventSentiment: "neutral-positive", geopoliticalRisk: "low" },
+    worldmonitor: {
+      status: "active",
+      eventSentiment: "neutral-positive",
+      geopoliticalRisk: worldmonitorAdapter.computeGlobalRiskIndex().level.toLowerCase(),
+      defconLevel: worldmonitorAdapter.computeGlobalRiskIndex().defconLevel,
+      threatPosture: worldmonitorAdapter.computeGlobalRiskIndex().threatPosture,
+      compositeRisk: worldmonitorAdapter.computeGlobalRiskIndex().compositeRisk,
+      assetImpact: worldmonitorAdapter.evaluateAssetImpact(normSymbol).direction
+    },
     OpenBB: { status: "active", provider: "financial_data_api", dataPoints: 42 },
     paperclip: { status: "active", lanesActive: 4, taskHealth: 100 },
     Kronos: { status: "active", forecastTrend: "bullish", volatilityProjection: "moderate" },

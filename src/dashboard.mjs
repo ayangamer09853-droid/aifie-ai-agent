@@ -1381,7 +1381,7 @@ export const DASHBOARD = `<!DOCTYPE html>
     <div style="display: flex; flex-direction: column; gap: 14px; padding: 14px;">
       
       <!-- TOP STATUS ROW -->
-      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+      <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
         <div class="panel" style="border-left: 3px solid #ff9800;">
           <div class="panel-header" style="font-size: 11px;"><span>CONSTITUTIONAL GUARD</span><span style="color: #ff9800;">ACTIVE</span></div>
           <div class="panel-body">
@@ -1415,6 +1415,13 @@ export const DASHBOARD = `<!DOCTYPE html>
           <div class="panel-body">
             <div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: var(--neon-purple);" id="cgVaultTile">KYBER + DILITHIUM</div>
             <div style="font-size: 10px; color: var(--text-muted);">Post-Quantum Sovereign Storage</div>
+          </div>
+        </div>
+        <div class="panel" style="border-left: 3px solid #ff4081;">
+          <div class="panel-header" style="font-size: 11px;"><span>WORLDMONITOR INTEL</span><span style="color: #ff4081;" id="cgWmBadge">DEFCON 3</span></div>
+          <div class="panel-body">
+            <div style="font-size: 16px; font-weight: 800; font-family: var(--font-mono); color: #ff4081;" id="cgWmStressTile">STRESS: 52.8</div>
+            <div style="font-size: 10px; color: var(--text-muted);" id="cgWmSubtext">CII v8 & Chokepoints</div>
           </div>
         </div>
       </div>
@@ -1524,6 +1531,28 @@ export const DASHBOARD = `<!DOCTYPE html>
             </div>
 
             <div id="cgLeanResults" style="background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #fff; min-height: 120px; white-space: pre-wrap; line-height: 1.5; overflow-y: auto; max-height: 250px;">Click "RUN LEAN BACKTEST" or "GENERATE PYTHON QCALGORITHM" to execute event-driven backtesting or inspect generated QuantConnect strategy code.</div>
+          </div>
+        </div>
+
+        <!-- CARD 6: WORLDMONITOR GEOPOLITICAL INTELLIGENCE & MACRO RISK GOVERNOR -->
+        <div class="panel" style="grid-column: span 2; border: 1px solid #ff4081; box-shadow: 0 0 15px rgba(255, 64, 129, 0.15);">
+          <div class="panel-header" style="background: rgba(255, 64, 129, 0.08);">
+            <span style="color: #ff4081; font-weight: 900;">🌍 WORLDMONITOR: REAL-TIME GEOPOLITICAL INTELLIGENCE & MACRO RISK GOVERNOR</span>
+            <span id="cgWmHeaderBadge" style="background: #ff4081; color: #000; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; font-family: var(--font-mono);">ACTIVE (sources/worldmonitor)</span>
+          </div>
+          <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <button onclick="scanWorldMonitorHotspotsUi()" style="background: #ff4081; color: #000; border: none; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 3px; cursor: pointer;">🌍 SCAN CONFLICT HOTSPOTS</button>
+              <button onclick="scanWorldMonitorCiiUi()" style="background: rgba(255, 152, 0, 0.2); border: 1px solid #ff9800; color: #ff9800; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 3px; cursor: pointer;">🏛️ REFRESH CII MATRIX (v8)</button>
+              <button onclick="scanWorldMonitorChokepointsUi()" style="background: rgba(0, 210, 255, 0.2); border: 1px solid var(--neon-cyan); color: var(--neon-cyan); font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 3px; cursor: pointer;">⚓ MARITIME CHOKEPOINTS</button>
+              <button onclick="simulateAssetImpactUi('OIL')" style="background: rgba(255, 215, 0, 0.15); border: 1px solid #ffd700; color: #ffd700; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 3px; cursor: pointer;">🛢️ OIL / WTI</button>
+              <button onclick="simulateAssetImpactUi('GOLD')" style="background: rgba(255, 215, 0, 0.15); border: 1px solid #ffd700; color: #ffd700; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 3px; cursor: pointer;">🥇 GOLD / XAU</button>
+              <button onclick="simulateAssetImpactUi('BTC')" style="background: rgba(0, 255, 157, 0.15); border: 1px solid var(--neon-green); color: var(--neon-green); font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 3px; cursor: pointer;">🪙 BTC / CRYPTO</button>
+              <button onclick="simulateAssetImpactUi('NVDA')" style="background: rgba(157, 78, 221, 0.15); border: 1px solid var(--neon-purple); color: var(--neon-purple); font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 10px; border-radius: 3px; cursor: pointer;">💻 NVDA / TSM</button>
+              <button onclick="evaluateRiskGovernorUi()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid #fff; color: #fff; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 3px; cursor: pointer;">⚖️ RISK GOVERNOR VETO</button>
+            </div>
+
+            <div id="cgWorldMonitorResults" style="background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 12px; font-family: var(--font-mono); font-size: 11px; color: #fff; min-height: 130px; white-space: pre-wrap; line-height: 1.5; overflow-y: auto; max-height: 260px;">Click buttons above to query real-time Country Instability Index (CII), evaluate critical maritime arteries (Hormuz, Bab-el-Mandeb, Taiwan Strait), or simulate geopolitical asset transmission.</div>
           </div>
         </div>
 
@@ -3223,6 +3252,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       loadArbOpportunitiesUi();
       inspectAlpacaAccountUi();
       loadLeanEngineUi();
+      loadWorldMonitorUi();
     }
 
     async function refreshConstitutionStatus() {
@@ -3643,6 +3673,119 @@ export const DASHBOARD = `<!DOCTYPE html>
         }
       } catch (err) {
         if (resultsEl) resultsEl.innerText = 'Config export error: ' + err.message;
+      }
+    }
+
+    // WORLDMONITOR GEOPOLITICAL INTELLIGENCE & MACRO RISK GOVERNOR CLIENT HANDLERS
+    async function loadWorldMonitorUi() {
+      try {
+        const res = await fetch('/api/worldmonitor/briefing');
+        const data = await res.json();
+        const badge = document.getElementById('cgWmBadge');
+        const stressTile = document.getElementById('cgWmStressTile');
+        const subtext = document.getElementById('cgWmSubtext');
+        if (badge && data.defconLevel) {
+          badge.innerText = 'DEFCON ' + data.defconLevel;
+          badge.style.color = data.defconLevel <= 2 ? 'var(--neon-red)' : '#ff4081';
+        }
+        if (stressTile && data.globalRiskIndex !== undefined) {
+          stressTile.innerText = 'STRESS: ' + data.globalRiskIndex;
+        }
+        if (subtext && data.threatPosture) {
+          subtext.innerText = data.threatPosture;
+        }
+      } catch (err) {}
+    }
+
+    async function scanWorldMonitorHotspotsUi() {
+      const resultsEl = document.getElementById('cgWorldMonitorResults');
+      if (resultsEl) resultsEl.innerText = 'Scanning live global geopolitical conflict hotspots...';
+      try {
+        const res = await fetch('/api/worldmonitor/hotspots');
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '🌍 WORLDMONITOR ACTIVE CONFLICT HOTSPOTS (' + (data.hotspots ? data.hotspots.length : 0) + ' Monitored):\n' +
+            (data.hotspots || []).map(h => '• ' + h.name + ' [' + h.theater + ']: Score ' + h.escalationScore + '/5 (' + h.trend + ')\n  Primary Drivers: ' + h.primaryDrivers.join(', ') + '\n  Affected Assets: ' + h.affectedAssets.join(', ')).join('\n\n');
+        }
+        loadWorldMonitorUi();
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Hotspots error: ' + err.message;
+      }
+    }
+
+    async function scanWorldMonitorCiiUi() {
+      const resultsEl = document.getElementById('cgWorldMonitorResults');
+      if (resultsEl) resultsEl.innerText = 'Computing Country Instability Index (CII v8) matrix...';
+      try {
+        const res = await fetch('/api/worldmonitor/cii-matrix');
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '🏛️ COUNTRY INSTABILITY INDEX (CII v8) MATRIX (Avg: ' + data.averageCii + '/100 | ' + data.highRiskCount + ' High Risk):\n' +
+            (data.countries || []).slice(0, 8).map(c => '• ' + c.name + ' (' + c.code + ') [' + c.theater + ']: Score ' + c.score + '/100 [' + c.level + '] | Trend: ' + c.trend + ' (Base: ' + c.baselineRisk + ', Multiplier: ' + c.eventMultiplier + 'x)').join('\n') +
+            '\n\n[Real-time CII weights matching sources/worldmonitor/shared/cii-weights.ts]';
+        }
+        loadWorldMonitorUi();
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'CII error: ' + err.message;
+      }
+    }
+
+    async function scanWorldMonitorChokepointsUi() {
+      const resultsEl = document.getElementById('cgWorldMonitorResults');
+      if (resultsEl) resultsEl.innerText = 'Querying strategic maritime waterways and oil transit arteries...';
+      try {
+        const res = await fetch('/api/worldmonitor/hotspots');
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '⚓ STRATEGIC MARITIME CHOKEPOINTS & SUPPLY ARTERIES:\n' +
+            (data.strategicChokepoints || []).map(cp => '• ' + cp.name + ' [' + cp.threatLevel + ' Threat]:\n  Flow: ' + cp.dailyFlowMillionBarrels + 'M bbl/day (' + cp.pctGlobalOilTrade + '% global petroleum) | Commodity: ' + cp.primaryCommodity + '\n  Risk Logic: ' + cp.description).join('\n\n');
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Chokepoints error: ' + err.message;
+      }
+    }
+
+    async function simulateAssetImpactUi(symbol = 'BTC') {
+      const resultsEl = document.getElementById('cgWorldMonitorResults');
+      if (resultsEl) resultsEl.innerText = 'Simulating geopolitical transmission & risk impact for ' + symbol + '...';
+      try {
+        const res = await fetch('/api/worldmonitor/asset-impact', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol })
+        });
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '📈 GEOPOLITICAL ASSET TRANSMISSION ANALYSIS (' + data.symbol + '):\n' +
+            '• Directional Bias: ' + data.direction + ' (Geopolitical Beta: ' + data.geopoliticalBeta + ')\n' +
+            '• Global Environment: DEFCON ' + data.defconLevel + ' (' + data.threatPosture + ' | Composite Stress: ' + data.compositeStress + '/100)\n' +
+            '• Recommendation: ' + data.recommendedAction + ' (Confidence: ' + data.confidence + ')\n' +
+            '• Fundamental Logic: ' + data.rationale + '\n\n' +
+            '⛓️ Transmission Chain:\n' +
+            (data.transmissionChain || []).map(node => '  → [' + node.node + ']: ' + (node.impact || node.impactType || '')).join('\n');
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Asset simulation error: ' + err.message;
+      }
+    }
+
+    async function evaluateRiskGovernorUi() {
+      const resultsEl = document.getElementById('cgWorldMonitorResults');
+      if (resultsEl) resultsEl.innerText = 'Evaluating Macro Risk Governor execution bounds...';
+      try {
+        const res = await fetch('/api/worldmonitor/risk-governor');
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '⚖️ DYNAMIC MACRO RISK GOVERNOR ENFORCEMENT:\n' +
+            '• Macro Defense State: ' + data.macroState + ' (DEFCON ' + data.defconLevel + ' - ' + data.threatPosture + ')\n' +
+            '• Composite Stress Index: ' + data.compositeStressIndex + '/100\n' +
+            '• Leverage Multiplier: ' + (data.leverageMultiplier * 100).toFixed(0) + '% (Max Permitted Leverage: ' + data.maxAllowedPortfolioLeverage + 'x)\n' +
+            '• Stop-Loss Distance Factor: ' + (data.stopLossDistanceFactor * 100).toFixed(0) + '% (Tightened against black swan gap risk)\n' +
+            '• Aggressive Longs Veto: ' + (data.vetoAggressiveLongs ? '🛑 VETOED (DO NOT OPEN NEW LONG RISK)' : '✅ PERMITTED (WITHIN NORMAL BOUNDS)') + '\n' +
+            '• Risk Fortress Summary: ' + data.riskBufferSummary;
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Risk governor error: ' + err.message;
       }
     }
 
