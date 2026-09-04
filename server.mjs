@@ -129,6 +129,7 @@ import { crossExchangeArbitrage } from "./src/cross-exchange-arbitrage.mjs";
 import { leanEngineAdapter } from "./src/lean-engine-adapter.mjs";
 import { worldmonitorAdapter, GEOPOLITICAL_HOTSPOTS, STRATEGIC_CHOKEPOINTS } from "./src/worldmonitor-intelligence-adapter.mjs";
 import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./src/vibe-trading-adapter.mjs";
+import { autonomousSelfLearningEngine } from "./src/autonomous-self-learning-engine.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1290,6 +1291,36 @@ export function app(request, response) {
     if (request.method === "GET" && url.pathname === "/api/vibe/shadow-account") {
       const shadow = vibeTradingAdapter.reconcileShadowAccount();
       return respond(response, 200, { success: true, ...shadow });
+    }
+
+    // Autonomous 24/7 Self-Learning & Continuous Improvement Engine Endpoints
+    if (request.method === "GET" && url.pathname === "/api/learning/dashboard") {
+      return respond(response, 200, autonomousSelfLearningEngine.getDailyLearningReportDashboard());
+    }
+    if (request.method === "GET" && url.pathname === "/api/learning/modules-status") {
+      return respond(response, 200, autonomousSelfLearningEngine.getModulesStatusMatrix());
+    }
+    if (request.method === "POST" && url.pathname === "/api/learning/run-cycle") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const result = await autonomousSelfLearningEngine.runAutonomousLearningCycle(payload.trigger || "MANUAL_UI");
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/learning/ingest-trade-outcome") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = autonomousSelfLearningEngine.ingestTradeOutcome(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
     }
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {

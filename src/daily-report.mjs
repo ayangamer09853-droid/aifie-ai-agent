@@ -6,6 +6,7 @@
 import { calculateTradePerformance } from "./performance-evaluator.mjs";
 import { getPriceBuffer } from "./market-fetcher.mjs";
 import { accountSnapshot } from "./paper-engine.mjs";
+import { autonomousSelfLearningEngine } from "./autonomous-self-learning-engine.mjs";
 
 export function calculateTrendStrength(prices) {
   if (!Array.isArray(prices) || prices.length < 5) {
@@ -85,6 +86,10 @@ export function generateDailyReport(orders = [], paper = {}) {
       bestTrade,
       worstTrade
     },
-    trendStrengths
+    trendStrengths,
+    learningDashboard: autonomousSelfLearningEngine.getDailyLearningReportDashboard(),
+    executiveSummary: autonomousSelfLearningEngine.getDailyLearningReportDashboard().executiveSummary,
+    executiveBriefing: autonomousSelfLearningEngine.getDailyLearningReportDashboard().executiveSummary,
+    modulesHealthMatrix: autonomousSelfLearningEngine.getModulesStatusMatrix()
   };
 }
