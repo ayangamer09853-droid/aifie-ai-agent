@@ -127,6 +127,7 @@ import {
 import { constitutionalGuard } from "./src/constitutional-constraints-guard.mjs";
 import { orderFlowTracker } from "./src/order-flow-whale-tape.mjs";
 import { crossExchangeArbitrage } from "./src/cross-exchange-arbitrage.mjs";
+import { leanEngineAdapter } from "./src/lean-engine-adapter.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1144,6 +1145,47 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/arbitrage/status") {
       return respond(response, 200, { success: true, ...crossExchangeArbitrage.getStatus(), timestamp: new Date().toISOString() });
+    }
+
+    // QuantConnect / Lean Algorithmic Trading Engine Endpoints
+    if (request.method === "GET" && url.pathname === "/api/lean/status") {
+      return respond(response, 200, leanEngineAdapter.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/lean/generate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = leanEngineAdapter.generateAlgorithm(payload.strategyType, payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/lean/backtest") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = leanEngineAdapter.runBacktest(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/lean/indicators") {
+      return respond(response, 200, { success: true, indicators: leanEngineAdapter.getIndicatorCatalog() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/lean/export-config") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = leanEngineAdapter.exportLeanConfig(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
     }
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {

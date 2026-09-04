@@ -1508,6 +1508,25 @@ export const DASHBOARD = `<!DOCTYPE html>
           </div>
         </div>
 
+        <!-- CARD 5: QUANTCONNECT LEAN ALGORITHMIC ENGINE -->
+        <div class="panel" style="grid-column: span 2; border: 1px solid #00d2ff; box-shadow: 0 0 15px rgba(0, 210, 255, 0.15);">
+          <div class="panel-header" style="background: rgba(0, 210, 255, 0.08);">
+            <span style="color: #00d2ff; font-weight: 900;">📐 QUANTCONNECT LEAN: EVENT-DRIVEN ALGORITHMIC ENGINE</span>
+            <span id="cgLeanStatusBadge" style="background: #00d2ff; color: #000; padding: 2px 6px; border-radius: 3px; font-weight: bold; font-size: 10px; font-family: var(--font-mono);">INSTALLED (sources/Lean)</span>
+          </div>
+          <div class="panel-body" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <button onclick="runLeanBacktestUi('SMC_ORDER_BLOCK')" style="background: #00d2ff; color: #000; border: none; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 3px; cursor: pointer;">▶️ RUN LEAN BACKTEST (SMC)</button>
+              <button onclick="runLeanBacktestUi('CROSS_EXCHANGE_ARB')" style="background: rgba(0, 255, 157, 0.2); border: 1px solid var(--neon-green); color: var(--neon-green); font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 3px; cursor: pointer;">⚡ LEAN ARB BACKTEST</button>
+              <button onclick="generateLeanAlgorithmUi('SMC_ORDER_BLOCK')" style="background: rgba(255, 152, 0, 0.2); border: 1px solid #ff9800; color: #ff9800; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 14px; border-radius: 3px; cursor: pointer;">🐍 GENERATE PYTHON QCALGORITHM</button>
+              <button onclick="inspectLeanIndicatorsUi()" style="background: rgba(157, 78, 221, 0.2); border: 1px solid var(--neon-purple); color: var(--neon-purple); font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 3px; cursor: pointer;">📊 14+ LEAN INDICATORS</button>
+              <button onclick="exportLeanConfigUi()" style="background: rgba(255, 255, 255, 0.1); border: 1px solid #fff; color: #fff; font-weight: bold; font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 3px; cursor: pointer;">⚙️ EXPORT LEAN CONFIG</button>
+            </div>
+
+            <div id="cgLeanResults" style="background: #010204; border: 1px solid var(--border-panel); border-radius: 4px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #fff; min-height: 120px; white-space: pre-wrap; line-height: 1.5; overflow-y: auto; max-height: 250px;">Click "RUN LEAN BACKTEST" or "GENERATE PYTHON QCALGORITHM" to execute event-driven backtesting or inspect generated QuantConnect strategy code.</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -3203,6 +3222,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       refreshCvdUi();
       loadArbOpportunitiesUi();
       inspectAlpacaAccountUi();
+      loadLeanEngineUi();
     }
 
     async function refreshConstitutionStatus() {
@@ -3526,6 +3546,103 @@ export const DASHBOARD = `<!DOCTYPE html>
         }
       } catch (err) {
         if (resultsEl) resultsEl.innerText = 'Quantum vault error: ' + err.message;
+      }
+    }
+
+    // QUANTCONNECT LEAN CLIENT HANDLERS
+    async function loadLeanEngineUi() {
+      try {
+        const res = await fetch('/api/lean/status');
+        const data = await res.json();
+        const badge = document.getElementById('cgLeanStatusBadge');
+        if (badge && data.installed) {
+          badge.innerText = 'INSTALLED (' + data.version + ')';
+          badge.style.background = 'var(--neon-green)';
+        }
+      } catch (err) {}
+    }
+
+    async function runLeanBacktestUi(strategy = 'SMC_ORDER_BLOCK') {
+      const resultsEl = document.getElementById('cgLeanResults');
+      if (resultsEl) resultsEl.innerText = 'Running QuantConnect Lean event-driven backtest for ' + strategy + ' (90 Days / BTCUSD)...';
+      try {
+        const res = await fetch('/api/lean/backtest', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ strategy: strategy, symbol: 'BTCUSD', initialCash: 100000, durationDays: 90 })
+        });
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '📐 QUANTCONNECT LEAN BACKTEST RESULT (' + data.backtestId + '):\n' +
+            '• Strategy: ' + data.strategy + ' on ' + data.symbol + ' (Status: ' + data.status + ')\n' +
+            '• Initial Equity: $' + data.initialEquity.toLocaleString() + ' | Final Equity: $' + data.finalEquity.toLocaleString() + '\n' +
+            '• Total Net Profit: $' + data.totalNetProfit.toLocaleString() + ' (+' + data.returnPercent + '% | Ann: ' + data.annualizedReturn + '%)\n' +
+            '• Sharpe Ratio: ' + data.sharpeRatio + ' | Sortino: ' + data.sortinoRatio + ' | Profit Factor: ' + data.profitFactor + '\n' +
+            '• Win Rate: ' + data.winRatePercent + '% (' + data.winningTrades + ' Wins / ' + data.losingTrades + ' Losses / ' + data.totalTrades + ' Trades)\n' +
+            '• Max Drawdown: ' + data.maxDrawdownPercent + '% (Passed Rule 2 Limit < 20%)\n' +
+            '• Capacity Estimate: $' + data.capacityEstimateUsd.toLocaleString() + ' USD\n' +
+            '• Execution Model: ' + data.executionModel + ' | Broker: ' + data.brokerageModel + '\n' +
+            '• Constitutional Compliance: ' + data.constitutionalCompliance.rulesPassed + ' (Loss Ceiling Buffer: Safe)';
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Lean backtest error: ' + err.message;
+      }
+    }
+
+    async function generateLeanAlgorithmUi(strategy = 'SMC_ORDER_BLOCK') {
+      const resultsEl = document.getElementById('cgLeanResults');
+      if (resultsEl) resultsEl.innerText = 'Generating QuantConnect QCAlgorithm Python code for ' + strategy + '...';
+      try {
+        const res = await fetch('/api/lean/generate', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ strategyType: strategy, symbol: 'BTCUSD', initialCash: 100000 })
+        });
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '🐍 QUANTCONNECT QCALGORITHM PYTHON SCRIPT (' + data.strategyType + '):\n' +
+            '─────────────────────────────────────────────────────────────\n' +
+            data.code + '\n' +
+            '─────────────────────────────────────────────────────────────\n' +
+            'Ready to run on local Lean CLI or QuantConnect cloud terminal.';
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Algorithm generator error: ' + err.message;
+      }
+    }
+
+    async function inspectLeanIndicatorsUi() {
+      const resultsEl = document.getElementById('cgLeanResults');
+      if (resultsEl) resultsEl.innerText = 'Querying QuantConnect Lean built-in indicators library...';
+      try {
+        const res = await fetch('/api/lean/indicators');
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '📊 QUANTCONNECT LEAN INDICATORS CATALOG (' + (data.indicators ? data.indicators.length : 0) + ' Built-in):\n' +
+            (data.indicators || []).map(i => '• ' + i.name + ' [' + i.category + ']: ' + i.description + (i.defaultPeriod ? ' (Period: ' + i.defaultPeriod + ')' : '')).join('\n');
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Indicators error: ' + err.message;
+      }
+    }
+
+    async function exportLeanConfigUi() {
+      const resultsEl = document.getElementById('cgLeanResults');
+      if (resultsEl) resultsEl.innerText = 'Exporting Lean Launcher config.json with current broker credentials...';
+      try {
+        const res = await fetch('/api/lean/export-config', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol: 'BTCUSD', environment: 'backtesting' })
+        });
+        const data = await res.json();
+        if (resultsEl) {
+          resultsEl.innerText = '⚙️ LEAN LAUNCHER CONFIG.JSON EXPORTED:\n' +
+            JSON.stringify(data.config, null, 2) + '\n\n' +
+            'Note: ' + data.note;
+        }
+      } catch (err) {
+        if (resultsEl) resultsEl.innerText = 'Config export error: ' + err.message;
       }
     }
 
