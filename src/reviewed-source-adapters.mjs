@@ -7,6 +7,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
+import { vibeTradingAdapter } from "./vibe-trading-adapter.mjs";
 
 const SOURCES_DIR = join(process.cwd(), "sources");
 
@@ -318,6 +319,18 @@ export function executeSandboxedWorldMonitorIntel(params = {}) {
 }
 
 /**
+ * Sandboxed quantitative momentum & alpha factor evaluation through Vibe-Trading
+ */
+export function executeSandboxedVibeTradingIntel(params = {}) {
+  const symbol = params.symbol || params.ticker || "BTC/USDT";
+  const snapshot = vibeTradingAdapter.getVibeTradingSnapshot(symbol);
+  return {
+    ...snapshot,
+    requestedParams: params
+  };
+}
+
+/**
  * Sandboxed scenario shock testing through MiroFish
  */
 export function executeSandboxedMiroFishScenario({ scenario = "RISING_RATES_50BP" } = {}) {
@@ -380,6 +393,8 @@ export function executeSandboxedSourceAdapter(sourceName, params = {}) {
       return executeSandboxedMiroFishScenario(params);
     case "QuantDinger":
       return executeSandboxedQuantDingerFactor(params);
+    case "Vibe-Trading":
+      return executeSandboxedVibeTradingIntel(params);
     default:
       return {
         success: true,

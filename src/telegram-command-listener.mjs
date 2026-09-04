@@ -182,9 +182,11 @@ import { fetchCoingeckoQuote } from "./market-fetcher-crypto.mjs";
 import { fetchPolygonQuote } from "./market-fetcher-polygon.mjs";
 import { leanEngineAdapter } from "./lean-engine-adapter.mjs";
 import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
+import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./vibe-trading-adapter.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
+    [{ text: "⚡ Vibe-Trading Alpha" }, { text: "🦁 Alpha Zoo (101 Factors)" }],
     [{ text: "🌍 WorldMonitor Intel" }, { text: "📐 QuantConnect Lean" }],
     [{ text: "⚖️ Constitution Rules" }, { text: "🐳 Whale Orderflow" }],
     [{ text: "⚡ Cross-Exchange Arb" }, { text: "🏦 Alpaca Account ($100k)" }],
@@ -205,6 +207,8 @@ export const MOBILE_KEYBOARD = {
 export function parseTelegramCommand(text = "") {
   let normalized = text.trim();
 
+  if (normalized.startsWith("⚡ Vibe-Trading Alpha")) normalized = "/vibetrading";
+  if (normalized.startsWith("🦁 Alpha Zoo (101 Factors)")) normalized = "/alphazoo";
   if (normalized.startsWith("🌍 WorldMonitor Intel")) normalized = "/worldmonitor";
   if (normalized.startsWith("📐 QuantConnect Lean")) normalized = "/lean";
   if (normalized.startsWith("⚖️ Constitution Rules")) normalized = "/constitution";
@@ -567,6 +571,44 @@ ${chokepoints}
 • <b>Execution:</b> <code>${backtest.executionModel}</code>
 ──────────────────
 <i>QCAlgorithm Python & C# code generators available.</i>`;
+  }
+
+  if (command === "/vibetrading" || command === "/alphazoo" || command === "/quantlib") {
+    const sym = (symbol || "BTCUSDT").toUpperCase();
+    const snap = vibeTradingAdapter.getVibeTradingSnapshot(sym);
+    const topAlphas = snap.alphaZoo.topRankedFactors.map(f => `• <b>[${f.id}] ${f.name}:</b> IC <code>${f.ic}</code> | IR <code>${f.ir}</code> (${f.category})`).join("\n");
+    const g = snap.quantLib.sampleBlackScholesGreeks;
+    const v = snap.quantLib.samplePortfolioVaR99;
+    const shadow = snap.shadowAccount;
+
+    return `🦁 <b>VIBE-TRADING QUANTITATIVE AGENT & ALPHA ZOO</b>
+──────────────────
+📊 <b>ASSET AUDIT:</b> <code>${snap.symbol}</code>
+⚡ <b>Trend Regime:</b> <b>${snap.signals.trendRegime}</b> (Score: <b>${snap.signals.score}/100</b>)
+🎯 <b>Directional Bias:</b> <code>${snap.signals.action}</code> (Conviction: ${(snap.signals.confidence * 100).toFixed(0)}%)
+🔬 <b>Primary Alpha Factor:</b> <code>${snap.signals.primaryAlphaFactor}</code> (Rank IC: ${snap.signals.rankInformationCoefficient})
+🌊 <b>Volatility Regime:</b> <code>${snap.signals.volatilityRegime}</code> | Momentum: <b>${snap.signals.momentum}</b>
+
+🦁 <b>TOP ALPHA ZOO FACTORS (WORLDQUANT 101):</b>
+${topAlphas}
+
+⚡ <b>QUANTLIB BLACK-SCHOLES GREEKS (Call, 30 DTE):</b>
+• <b>Delta (Δ):</b> <code>${g.delta}</code> | <b>Gamma (Γ):</b> <code>${g.gamma}</code>
+• <b>Vega (𝒱):</b> <code>$${g.vega}</code> | <b>Theta (Θ):</b> <code>-$${Math.abs(g.theta)}/day</code>
+
+🛡️ <b>INSTITUTIONAL TAIL RISK (99% 1-DAY VaR):</b>
+• <b>Parametric VaR:</b> <b>$${v.parametricVaR.toFixed(2)}</b> (${(v.parametricVaRPct * 100).toFixed(2)}%)
+• <b>Historical VaR:</b> <b>$${v.historicalVaR.toFixed(2)}</b> (${(v.historicalVaRPct * 100).toFixed(2)}%)
+• <b>Cornish-Fisher VaR:</b> <b>$${v.cornishFisherVaR.toFixed(2)}</b> (${(v.cornishFisherVaRPct * 100).toFixed(2)}%)
+• <b>Expected Shortfall (CVaR):</b> <b>$${v.cvarExpectedShortfall.toFixed(2)}</b> (${(v.cvarExpectedShortfallPct * 100).toFixed(2)}%)
+
+💼 <b>SHADOW ACCOUNT RECONCILIATION:</b>
+• <b>Status:</b> <code>${shadow.status}</code> (Drift: <b>${shadow.driftPercent}%</b> | Max: ${shadow.thresholdPercent}%)
+• <b>Simulated Paper Cash:</b> <b>$${shadow.simulatedCash.toLocaleString()}</b>
+• <b>Discrepancies:</b> ${shadow.discrepancies.length === 0 ? "0 Detected (Clean Sync)" : shadow.discrepancies.join(", ")}
+• <b>Audit Hash:</b> <code>${shadow.auditReceipt.slice(0, 16)}...</code>
+──────────────────
+<i>Use /alphazoo to scan factor zoo or /vibetrading &lt;SYMBOL&gt; for live evaluation.</i>`;
   }
 
   if (command === "/analyst" || command === "/chartanalyst" || command === "/setup") {

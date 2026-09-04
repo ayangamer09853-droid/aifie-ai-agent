@@ -128,6 +128,7 @@ import { orderFlowTracker } from "./src/order-flow-whale-tape.mjs";
 import { crossExchangeArbitrage } from "./src/cross-exchange-arbitrage.mjs";
 import { leanEngineAdapter } from "./src/lean-engine-adapter.mjs";
 import { worldmonitorAdapter, GEOPOLITICAL_HOTSPOTS, STRATEGIC_CHOKEPOINTS } from "./src/worldmonitor-intelligence-adapter.mjs";
+import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./src/vibe-trading-adapter.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1226,6 +1227,69 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/worldmonitor/risk-governor") {
       return respond(response, 200, { success: true, ...worldmonitorAdapter.calculateDynamicRiskGovernor() });
+    }
+
+    // Vibe-Trading: Alpha Zoo, QuantLib & Shadow Account Endpoints
+    if (request.method === "GET" && url.pathname === "/api/vibe/status") {
+      const snap = vibeTradingAdapter.getVibeTradingSnapshot("BTC/USDT");
+      return respond(response, 200, {
+        success: true,
+        initialized: true,
+        hasSourceRepo: vibeTradingAdapter.hasSourceRepo,
+        sourcePath: vibeTradingAdapter.sourcePath,
+        status: "APPROVED_ACTIVE",
+        alphaZooCount: ALPHA_ZOO_REGISTRY.length,
+        ...snap,
+        snapshot: snap,
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/vibe/alpha-zoo") {
+      return respond(response, 200, {
+        success: true,
+        total: ALPHA_ZOO_REGISTRY.length,
+        totalAlphas: ALPHA_ZOO_REGISTRY.length,
+        factors: ALPHA_ZOO_REGISTRY,
+        catalog: ALPHA_ZOO_REGISTRY,
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/vibe/evaluate-alpha") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const evalRes = vibeTradingAdapter.evaluateAlphaFactor(payload.alphaId || "Alpha#101", { symbol: payload.symbol || "BTC/USDT" });
+          return respond(response, 200, { success: true, alphaId: evalRes.alphaId, evaluation: evalRes, ...evalRes });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/vibe/quantlib/greeks") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const greeks = vibeTradingAdapter.calculateBlackScholesGreeks(payload);
+          return respond(response, 200, { success: true, ...greeks, greeks });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/vibe/quantlib/var") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const varReport = vibeTradingAdapter.calculateInstitutionalVaR(payload);
+          return respond(response, 200, { success: true, ...varReport, varMetrics: varReport });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/vibe/shadow-account") {
+      const shadow = vibeTradingAdapter.reconcileShadowAccount();
+      return respond(response, 200, { success: true, ...shadow });
     }
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {

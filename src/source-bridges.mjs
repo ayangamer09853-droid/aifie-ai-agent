@@ -6,6 +6,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
+import { vibeTradingAdapter } from "./vibe-trading-adapter.mjs";
 
 const SOURCE_REPOSITORIES = Object.freeze([
   { repository: "TradingAgents", category: "research", role: "Multi-agent research workflows" },
@@ -57,7 +58,14 @@ export function runFullIntelligenceScan(symbol = "AAPL", sourcesDir = join(proce
   // Aggregate signals across all 22 connected sources
   const signals = {
     TradingAgents: { status: "active", insight: `Multi-agent consensus bullish for ${normSymbol}` },
-    "Vibe-Trading": { status: "active", momentum: "positive", score: 0.78 },
+    "Vibe-Trading": {
+      status: "active",
+      momentum: vibeTradingAdapter.getVibeTradingSnapshot(normSymbol).momentum,
+      score: vibeTradingAdapter.getVibeTradingSnapshot(normSymbol).score,
+      trendRegime: vibeTradingAdapter.getVibeTradingSnapshot(normSymbol).trendRegime,
+      rankInformationCoefficient: vibeTradingAdapter.getVibeTradingSnapshot(normSymbol).rankInformationCoefficient,
+      primaryAlphaFactor: vibeTradingAdapter.getVibeTradingSnapshot(normSymbol).primaryAlphaFactor
+    },
     worldmonitor: {
       status: "active",
       eventSentiment: "neutral-positive",
