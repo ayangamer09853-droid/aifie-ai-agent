@@ -218,3 +218,35 @@ export function getTimeseriesStoreStatus() {
     timestamp: new Date().toISOString()
   };
 }
+
+/**
+ * Purges ticks older than maxAgeMs from the active store
+ */
+export function purgeStaleTicks(symbol = "AAPL", maxAgeMs = 86400000, now = Date.now()) {
+  const normalized = String(symbol).trim().toUpperCase();
+  const ring = symbolTickBuffers.get(normalized);
+  if (!ring) return { purged: 0, remaining: 0 };
+
+  const validTicks = ring.toArray().filter(t => now - t.timestamp <= maxAgeMs);
+  const purged = ring.length - validTicks.length;
+
+  const newRing = new RingBuffer(MAX_TICKS_PER_SYMBOL);
+  for (const t of validTicks) newRing.push(t);
+  symbolTickBuffers.set(normalized, newRing);
+
+  return { purged, remaining: newRing.length, symbol: normalized };
+}
+
+/**
+ * Resets timeseries data for testing or symbol decommission
+ */
+export function clearTimeseriesStore(symbol = null) {
+  if (symbol) {
+    const normalized = String(symbol).trim().toUpperCase();
+    symbolTickBuffers.delete(normalized);
+    symbolCandleBars.delete(normalized);
+  } else {
+    symbolTickBuffers.clear();
+    symbolCandleBars.clear();
+  }
+}

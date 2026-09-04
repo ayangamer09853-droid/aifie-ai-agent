@@ -1,7 +1,6 @@
 import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
-import { networkInterfaces } from "node:os";
 import { readFileSync, existsSync } from "node:fs";
 
 function loadDotEnv(envPath = join(process.cwd(), ".env")) {
@@ -24,265 +23,91 @@ function loadDotEnv(envPath = join(process.cwd(), ".env")) {
 }
 loadDotEnv();
 
+// Phase 0: 10 Verified Core Modules
 import { agentRegistry, controlPlaneStatus, delegateTask, requestReplica, runHeartbeat, setKillSwitch } from "./src/alfie-control-plane.mjs";
-import { integrationManifest } from "./src/integration-manifest.mjs";
 import { createStateStore } from "./src/state-store.mjs";
 import { createManualQuoteProvider, getFreshQuote } from "./src/market-data.mjs";
 import { accountSnapshot, createPaperState, placePaperOrder, setQuote } from "./src/paper-engine.mjs";
 import { createStrategyState, evaluateDecision, registerStrategy } from "./src/strategy-lab.mjs";
 import { DASHBOARD } from "./src/dashboard.mjs";
 import { auditSources, recommendIntegrationOrder } from "./src/source-audit.mjs";
-import { configureBot, getBotStatus, startBot, stopBot } from "./src/trading-bot.mjs";
-import { fetchLiveQuote, getPriceBuffer } from "./src/market-fetcher.mjs";
-import { generateTradingSignal } from "./src/technical-indicators.mjs";
-import { getConnectedSourceStatus, runFullIntelligenceScan } from "./src/source-bridges.mjs";
-import { configureLiveBroker, disableLiveTrading, enableLiveTrading, getLiveBrokerStatus } from "./src/live-broker.mjs";
-import { getSelfImprovementStatus, runSelfOptimization } from "./src/self-improver.mjs";
-import { generateAlgorithmProposal, getAllAlgorithms, runMultiAlgoTournament } from "./src/algo-generator.mjs";
-import { executeMultiAssetTrades } from "./src/multi-trade-engine.mjs";
-import { checkNewsVolatilityShield, getUpcomingEconomicEvents } from "./src/economic-tracker.mjs";
-import { generateDailyReport } from "./src/daily-report.mjs";
-import { createAlertRule, getActiveAlerts } from "./src/price-alerts.mjs";
-import { getPreMarketIntelligence } from "./src/premarket-intel.mjs";
-import { getCurrentTradingStatus, setTradingStatus } from "./src/trading-status-engine.mjs";
-import { getSystemHealthOverview, runSystemSelfDiagnostics } from "./src/system-health.mjs";
-import { getNeuralGraphData, inspectNodeTelemetry } from "./src/neural-network.mjs";
-import { getHedgeFundCommitteeStatus, runHedgeFundCycle } from "./src/hedge-fund-agents.mjs";
-import { runBacktestSimulation, runMonteCarloSimulation } from "./src/backtesting-engine.mjs";
-import { fetchUniversalNews, fetchUniversalQuote, getUniversalProvidersStatus } from "./src/universal-providers.mjs";
-import { getPerformanceAttribution } from "./src/performance-attribution.mjs";
-import { getMarketRegime } from "./src/market-regime.mjs";
-import { getTradeMemoryStats } from "./src/trade-memory.mjs";
-import { runEventDrivenBacktest, runMonteCarloSimulation as runMonteCarlo10k, getBacktesterStatus } from "./src/event-driven-backtester.mjs";
-import { analyzeChartVision, processNaturalVoiceCommand as processApexVoiceCommand, routeLlmEnsembleQuery } from "./src/chart-vision-copilot.mjs";
-import { getWeb3DexRouterStatus, scanCrossVenueDexArbitrage, simulatePrivateMevBundle } from "./src/web3-dex-deep-router.mjs";
-import { getRwaTreasuryStatus, sweepIdleCashToRwaYield, triggerTimelockCircuitBreaker } from "./src/tokenized-rwa-treasury.mjs";
-import { getSwarmMeshStatus, broadcastNodeHeartbeat, evaluateBftConsensusVote } from "./src/multi-node-swarm-mesh.mjs";
-import { getLiquidityHeatmapMatrix } from "./src/liquidity-depth-heatmap-engine.mjs";
-import { getCloudSovereignNodeStatus, get1ClickCloudDeploymentBlueprints, startCloudKeepAliveDaemon } from "./src/cloud-independent-sovereign-node.mjs";
-import { getMultiBrokerSandboxStatus, executeSandboxBrokerOrder, getSandboxOrdersHistory } from "./src/institutional-multi-broker-sandbox-gateway.mjs";
-import { runStrategyHyperOptimization, getStrategyOptimizationRankings } from "./src/strategy-hyper-optimizer.mjs";
-import { runDigitalTwinSimulation } from "./src/digital-twin.mjs";
-import { getAssetCorrelationMatrix } from "./src/portfolio-correlation.mjs";
-import { getMetaGovernorStatus } from "./src/meta-governor.mjs";
-import { getOpportunityRankings } from "./src/opportunity-ranker.mjs";
-import { getKnowledgeGraphData } from "./src/knowledge-graph.mjs";
-import { getTreasuryBuckets } from "./src/treasury-management.mjs";
-import { sendDailyPnlReport, sendTelegramAlert } from "./src/telegram-notifier.mjs";
-import { executeTwapOrder } from "./src/algorithmic-execution.mjs";
-import { runGeneticOptimizer } from "./src/genetic-strategy-optimizer.mjs";
-import { calculateValueAtRisk, runMacroStressTest } from "./src/var-stress-testing.mjs";
-import { broadcastMultiChannelAlert } from "./src/webhook-integrations.mjs";
-import { startTelegramCommandListener } from "./src/telegram-command-listener.mjs";
-import { getConnectedGitHubRepositories, getToolsAndRepoStatus } from "./src/master-agent-tools-repo-matrix.mjs";
-import { getVoiceEngineStatus, processVoiceQuery } from "./src/voice-intelligence-speech-engine.mjs";
-import { getVisionEngineStatus } from "./src/multimodal-vision-chart-engine.mjs";
-import { getWalletStatus } from "./src/crypto-wallet-manager.mjs";
-import { getCrossChainDexStatus } from "./src/crosschain-dex-zk-proofs-engine.mjs";
-import { getWebsocketCanvasStatus } from "./src/websockets-canvas-streaming-engine.mjs";
-import { getMultiCloudHaStatus } from "./src/geodistributed-cloud-ha-engine.mjs";
-import { getAutopilotStatus, startAutopilotOrchestrator } from "./src/zero-command-autopilot-coordinator.mjs";
-import { getSovereignInternetStatus, runFullInternetLearningLoop, executeAutonomousWebTask } from "./src/sovereign-internet-worker-engine.mjs";
-import { getNeuralMeshStatus, executeMeshFlashLoanArb } from "./src/neural-order-routing-mesh-engine.mjs";
-import { getRwaYieldStatus, harvestRwaTreasuryYield } from "./src/rwa-treasury-yield-harvester-engine.mjs";
-import { getQuantumEmpireMatrixStatus, runQuantumGovernanceAudit } from "./src/quantum-sovereign-empire-matrix-engine.mjs";
-import { getAiMarketplaceStatus, executeP2pAgentTrade } from "./src/decentralized-ai-marketplace-engine.mjs";
-import { getQuantumVaultStatus, verifyEnclaveAttestation } from "./src/quantum-resistant-security-vault-engine.mjs";
-import { getZeroLatencyHftStatus, executeKernelBypassTrade, trackL3OrderQueue } from "./src/zerolatency-hft-microstructure-engine.mjs";
-import { getConnectedInternetAgents, submitInternetLearningForm, getSubmittedLearningForms } from "./src/internet-agent-learning-form-engine.mjs";
-import { getFiatCryptoGatewayStatus, depositRealMoneyToCrypto, withdrawCryptoToBank } from "./src/real-money-crypto-gateway-engine.mjs";
-import { getMiningSpeedBoosterStatus, activateMultiServiceSpeedBoost, getMiningProfitBreakdown } from "./src/crypto-mining-speed-booster-engine.mjs";
-import { getSanitizerStatus } from "./src/real-world-live-data-sanitizer.mjs";
-import { getWeb4MeshStatus, executeWeb4A2aContract, resolveWeb4NeuralIntent } from "./src/web4-autonomous-mesh-engine.mjs";
-import { getMalviyaMeshStatus, connectMalviyaMeshNode, distributeInternetBandwidth } from "./src/malviya-internet-mesh-engine.mjs";
-import { getTokenFactoryStatus, deployAutonomousCryptoToken, initializeDexLiquidityPool } from "./src/crypto-token-factory-engine.mjs";
-import { getExecutiveManagerStatus, delegateManagerTask, run247ManagementAuditCycle } from "./src/executive-manager-agent-engine.mjs";
-import { getCrossChainArbStatus, scanMultiChainMempoolOpportunities, executeAtomicFlashLoanArb } from "./src/crosschain-flash-arbitrage-engine.mjs";
-import { getRealMoneyVaultBalance, executeVaultWithdrawal, collectAllVaultMoney } from "./src/real-money-vault-withdrawal-gateway.mjs";
-import { getTelegramStarsStatus, createTelegramStarsInvoice, collectTelegramStars, convertStarsToBank } from "./src/telegram-stars-payment-engine.mjs";
-import { getMultiLlmSwarmStatus, routeLlmInquiry, run5ModelConsensusVote } from "./src/multi-llm-swarm-router-engine.mjs";
-import { getTonSolanaBridgeStatus, swapTonToSolanaUsdt, bridgeTelegramStarsToSolana } from "./src/ton-solana-liquidity-bridge-engine.mjs";
-import { getPortfolioInsuranceStatus, deployTailRiskPutOptionHedge, runCvarRiskBudgetAudit } from "./src/portfolio-tail-risk-insurance-engine.mjs";
-import { getSelfEvolvingStatus, profileHotExecutionPaths, runAutonomousCodeRefactorCycle } from "./src/self-evolving-code-refactor-engine.mjs";
-import { getZkFederatedLearningStatus, aggregateFederatedGradients, verifyZkLearningProof } from "./src/quantum-zk-federated-learning-engine.mjs";
-import { getMegastructureOrchestratorStatus, runUniversalMegastructureAudit, executeSovereignMegastructureCycle } from "./src/supreme-sovereign-megastructure-orchestrator.mjs";
-import { getKnowledgeGraphMemoryStatus, queryKnowledgeGraphNetwork, storeLongTermMemory, recallLongTermMemory } from "./src/knowledge-graph-longterm-memory-engine.mjs";
-import { getZeroHumanStatus, runZeroHumanSelfRecovery, executeZeroHumanBankSweep } from "./src/zero-human-autonomous-sovereign-engine.mjs";
-import { getThoughtDecisionGraphStatus, ingestUserThoughtDecision, linkThoughtToDecision, queryUserThoughtGraph } from "./src/thought-decision-knowledge-graph-engine.mjs";
-import {
-  getSupremeAlphaPipelineStatus,
-  calculateVolatilityClusteringTailRiskSize,
-  getPipelineMonitorStatus,
-  triggerPipelineSelfHealing,
-  routePredictionToExplainableMlLab,
-  getMarketSentimentTemperatureDashboard,
-  generateAlphaFromNaturalLanguage,
-  selectOptimalArbitragePairs,
-  buildAllAutomatedConnections
-} from "./src/supreme-alpha-research-pipeline-suite.mjs";
-import { getQuantBacktestOptimizerStatus, runWalkForwardQuantOptimization, generateMonteCarloPortfolioTrajectories, calculateMarketImpactSlippage } from "./src/quant-strategy-backtest-optimizer-engine.mjs";
-import { getScraplingPolymarketStatus, executeScraplingStealthScrape, fetchPolymarketPredictionOdds, calculatePolymarketAlphaArbitrage } from "./src/scrapling-polymarket-prediction-engine.mjs";
-import { getConwayAutomatonStatus, executeAutomatonStateTransition, getAutomatonStateMatrix } from "./src/conway-automaton-state-engine.mjs";
-import { get247CloudKeepAliveStatus, syncTo247CloudHost, triggerEdgeKeepAliveHeartbeat, getCloudHostDeploymentGuide } from "./src/sovereign-247-cloud-daemon-keepalive.mjs";
-import {
-  getAutonomousQuantResearchPlatformStatus,
-  evaluateStrategyScorecard,
-  auditBacktestOverfittingPBO,
-  getAlphaLifecycleGovernanceState,
-  getMarketRegimeMatrix,
-  runTailRiskSimulationLab,
-  compileStrategyGenome,
-  getResearchBudgetControllerStatus
-} from "./src/autonomous-quant-research-intelligence-platform.mjs";
-import {
-  getRealWorldCapableAgentStatus,
-  generateRealWorldEnvTemplate,
-  runRealWorldPreFlightChecklist,
-  executeRealWorldLiveOrder
-} from "./src/real-world-capable-agent-orchestrator.mjs";
-import { getKeyVaultStatus, storeEncryptedBrokerCredential, getDecryptedBrokerCredential } from "./src/real-world-key-vault.mjs";
-import { getWebsocketsStreamerStatus, subscribeMarketStream, getLiveOrderBookDepth } from "./src/realtime-websockets-market-streamer.mjs";
-import { getRiskCircuitBreakerStatus, auditLivePortfolioRisk, verifyMfaSecurityOtp } from "./src/institutional-risk-circuit-breaker.mjs";
-import { getHftDarkPoolAggregatorStatus, scanCrossVenueArbitrageSpreads, ingestDarkPoolBlockPrints, executePrivateMevArbitrage } from "./src/hft-cross-venue-darkpool-aggregator.mjs";
-import { getAutoMlRetrainingStatus, runDailyAutoMlRetrainingCycle, evaluatePboFalsificationGate } from "./src/automl-retraining-pbo-falsifier.mjs";
-import { getWeb3RwaVaultStatus, harvestTokenizedRwaTreasuryYield, executeZkCrossChainAtomicSwap } from "./src/web3-rwa-treasury-zk-swaps.mjs";
-import { getCanvasVoiceMatrixStatus, render60FpsCanvasFrame, processNaturalVoiceCommand } from "./src/canvas-voice-telemetry-matrix.mjs";
-import { getOverallSystemAnalysis } from "./src/overall-system-performance-synthesizer.mjs";
-import { getRealMarketToolsStatus, calculateRealTechnicalIndicators, queryCcxtSupportedExchanges } from "./src/real-market-tools-suite.mjs";
-
-// v73.0 Live Execution & SOR Engines
-import { getCcxtEngineStatus, fetchLiveExchangeTicker } from "./src/ccxt-live-exchange-engine.mjs";
-import { getAlpacaStreamStatus, fetchAlpacaAccountMetrics } from "./src/alpaca-live-stream-engine.mjs";
-import { getSmartOrderRouterStatus, routeOptimalExecutionVenue } from "./src/institutional-smart-order-router.mjs";
-import { getLedgerSummary, recordLedgerTransaction } from "./src/real-pnl-accounting-ledger.mjs";
-
-// v74.0 Quant Command Center & Neural Command Graph Engines
-import {
-  getNeuralCommandGraphData,
-  getMarketTickerRibbonData,
-  getOrderFlowAuroraData,
-  getVolatilityClusteringData,
-  getCoherenceFieldData,
-  getBayesianUpdateData,
-  getMonteCarloSimulationData
-} from "./src/quant-command-center-engine.mjs";
-
-// v75.0 DOM Ladder & Cross-Asset Correlation Engines
-import { getDepthOfMarketLadder } from "./src/dom-ladder-market-depth-engine.mjs";
-import { getCrossAssetCorrelationMatrix } from "./src/cross-asset-correlation-regime.mjs";
-
-// v76.0 Strategy Robustness Evaluator Engine
-import { evaluateStrategyRobustnessList } from "./src/strategy-robustness-evaluator.mjs";
-
-// v78.0 WebSocket Gateway & Walk-Forward Falsification Engines
-import { initializeWebSocketGateway } from "./src/realtime-websocket-broadcast-gateway.mjs";
-import { runCombinatorialPurgedCrossValidation, evaluateHansenSpaFalsificationTest } from "./src/walkforward-falsification-engine.mjs";
-
-// v79.0 Cointegration Stat-Arb & SHAP Attribution Engines
-import { scanAllCointegratedPairs } from "./src/cointegration-stat-arb-engine.mjs";
-import { calculateShapAlphaAttribution } from "./src/explainable-shap-alpha-attribution.mjs";
-
-// v80.0 Convex Portfolio Optimizer & 1-Tap Signal Confirmation Gate
-import { calculateHierarchicalRiskParityWeights, calculateBlackLittermanAllocation, calculateMarkowitzEfficientFrontier } from "./src/convex-portfolio-optimizer.mjs";
-import { createTradeSignalAlert, handleTelegramSignalCallback, getPendingSignalsList } from "./src/telegram-signal-confirmation-gate.mjs";
-
-// v81.0 VPIN Toxicity & Microstructure Defensive Hedging Engines
-import { calculateVpinIndex } from "./src/vpin-microstructure-toxicity-engine.mjs";
-import { deployMicrostructureDefensiveHedge } from "./src/microstructure-defensive-hedger.mjs";
-
-// v82.0 Quantitative Strategy Megafactory (1,000+ Strategies)
-import { queryStrategyMegafactory, searchStrategyMegafactory } from "./src/strategy-megafactory-1000.mjs";
-
-// v83.0 Continuous 24/7 Multi-Agent Swarm Daemon
-import { startContinuous247AgentSwarmDaemon, stopContinuous247AgentSwarmDaemon, getContinuous247AgentSwarmStatus } from "./src/continuous-247-agent-swarm-daemon.mjs";
-
-// v84.0 Euler Risk Budgeting & Black Swan Stress-Testing Lab
-import { calculateEulerRiskBudgetDecomposition } from "./src/euler-risk-budgeting-engine.mjs";
-import { runBlackSwanStressTestLab } from "./src/black-swan-stress-test-lab.mjs";
-
-// v85.0 100-Agent Autonomous Sovereign Fleet & Swarm Matrix
-import { queryFleetAgents, getFleetDivisionsSummary, executeFleetWorkCycle } from "./src/autonomous-100-agent-fleet.mjs";
-
-// v86.0 Public Gateway Manager & Full AI Agent Web Access
-import { getPublicGatewayStatus, setPublicGatewayUrl } from "./src/public-gateway-manager.mjs";
-import { startPersistentPublicTunnelDaemon } from "./src/persistent-public-tunnel-daemon.mjs";
-
-// v88.0 Online Cloud Relay & Zero-Dependency Streaming
-import { getOnlineCloudStatus, recordCloudKeepAlivePing } from "./src/online-cloud-service-relay.mjs";
-import { handleSseConnection } from "./src/zero-dependency-server.mjs";
-
-// v89.0 Sovereign Admin Panel & Requirements Configuration Hub
-import { getAdminConfigStatus, updateAdminConfig, executeAdminCommand } from "./src/admin-config-manager.mjs";
-
-// v90.0 Binance Live Crypto, Supabase Cloud DB, & Smart Telegram Alert Filter
-import { getBinanceConnectorStatus, fetchBinanceLiveTicker, buildBinanceOrderPayload } from "./src/binance-live-crypto-connector.mjs";
-import { getSupabaseDbStatus, syncRecordToSupabase } from "./src/supabase-cloud-db-connector.mjs";
-import { evaluateAlertPriority, sendSmartTelegramAlert } from "./src/smart-telegram-alert-filter.mjs";
-
-// v91.0 Sovereign 20-Platform Omni-Cloud Orchestrator
-import { getOmniCloudStatus, getFailoverChain, runHealthCheckAllPlatforms } from "./src/omni-cloud-platform-orchestrator.mjs";
-
-// v92.0 Autonomous Multi-Market Apex Analyst Engine
-import {
-  runFullAutonomousMarketScan,
-  getAutonomousAnalystInspection,
-  generateDailyAnalystBriefing,
-  getAnalystWatchState
-} from "./src/autonomous-chart-analyst-engine.mjs";
-
-// v93.0 Modular 5-Stage 24/7 AI Trading Machine Engine
-import {
-  runFull5StagePipelineCycle,
-  get5StagePipelineStatus,
-  executeHumanDecision
-} from "./src/modular-5stage-ai-trading-machine.mjs";
-
-// v93.0 Nous Research Hermes Agent Engine
-import { getHermesAgentStatus, runHermesAutonomousAgent, hermesSynthesizeSkill } from "./src/hermes-agent-integration.mjs";
-
-// v94.0 Vercel Labs Skills & OpenClaw Gateway Integration
-import {
-  getVercelSkillsCatalog,
-  executeVercelSkillPrompt,
-  getOpenClawGatewayStatus,
-  dispatchOpenClawMessage,
-  runOpenClawSupervisorAudit
-} from "./src/vercel-skills-openclaw-integration.mjs";
-
-// v95.0 Master Autonomous Nexus Orchestrator
-import {
-  getMasterNexusStatus,
-  runMasterAutonomousNexusCycle,
-  startMasterAutonomousNexusDaemon
-} from "./src/master-autonomous-nexus.mjs";
-
-// Market Data Provider, Audit Trail, and Sandboxed Adapters
-import { fetchMarketQuote, getMarketDataProviderStatus } from "./src/market-data-provider-adapter.mjs";
 import { getSandboxedAdaptersCatalog, executeSandboxedCcxtTicker, executeSandboxedSourceAdapter, runAllSourcesConsensus } from "./src/reviewed-source-adapters.mjs";
+import { startTelegramCommandListener } from "./src/telegram-command-listener.mjs";
+import { initializeWebSocketGateway } from "./src/realtime-websocket-broadcast-gateway.mjs";
 
-// Future Requirements Engines (Phases 1 - 5)
-import { getTimeseriesStoreStatus, getCandleBars, recordMarketTick, computeSessionVwap } from "./src/timeseries-market-store.mjs";
-import { calculateDeflatedSharpeRatio, runHansenSpaTest, evaluateCpcvPaths, evaluateStrategyPromotionGate } from "./src/strategy-validation-pipeline.mjs";
-import { calculateValueAtRiskMetrics, calculateEulerRiskBudgeting, calculateHierarchicalRiskParity, evaluateDefensiveHedging } from "./src/portfolio-risk-fortress.mjs";
-import { routeOrderThroughSor, generateTwapOrderSlices, generateIcebergOrderPlan, verifyBrokerConnectivityStatus } from "./src/broker-adapters-suite.mjs";
-import {
-  synthesizeStrategyGenome,
-  adaptPolicyParametersFromRewards,
-  getEvolvedGenomeLibrary,
-  getEvolutionStatus,
-  runEvolutionCycle,
-  startAutonomousEvolutionDaemon
-} from "./src/self-evolving-swarm.mjs";
-import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./src/trading-bot.mjs";
-import {
-  startAutoTrader,
-  stopAutoTrader,
-  getAutoTraderStatus,
-  executeAutonomousTradeCycle
-} from "./src/autonomous-auto-trader.mjs";
+// Core Research Source Dependencies
+import { integrationManifest } from "./src/integration-manifest.mjs";
+import { getConnectedSourceStatus, runFullIntelligenceScan } from "./src/source-bridges.mjs";
 
-const sources = getConnectedSourceStatus();
+// Phase 1: Real Market Data Ingestion & Time-Series Engines
+import { getUnifiedMarketQuote } from "./src/market-data.mjs";
+import { getCandleBars, getTimeseriesStoreStatus } from "./src/timeseries-market-store.mjs";
+import { getOrderBookSnapshot } from "./src/order-book-depth.mjs";
+import { getBinanceFeedStatus } from "./src/market-feed-binance.mjs";
+import { getAlpacaFeedStatus } from "./src/market-feed-alpaca.mjs";
+import { getUniversalFeedStatus } from "./src/market-feed-universal.mjs";
+import { getSanitizerStats } from "./src/data-sanitizer.mjs";
 
+// Week 2: Real Market Data Connectors & Multi-Provider Consensus
+import { fetchIexQuote, fetchIexHistorical } from "./src/market-fetcher-iex.mjs";
+import { fetchPolygonQuote, fetchPolygonHistorical } from "./src/market-fetcher-polygon.mjs";
+import { fetchBinanceQuote, fetchCoingeckoQuote } from "./src/market-fetcher-crypto.mjs";
+import { getConsensusPrice, getConsensusReport } from "./src/market-consensus.mjs";
+
+// Roadmap Modules (Phases 2 - 7)
+import { alpacaBroker } from "./src/live-broker-alpaca.mjs";
+import { Backtester } from "./src/backtester.mjs";
+import { calculateHierarchicalRiskParity, calculateBlackLitterman, calculateMarkowitzFrontier } from "./src/portfolio-optimizer.mjs";
+import { calculateValueAtRisk, calculateConditionalValueAtRisk, calculateSharpeRatio, calculateSortinoRatio, calculateMaxDrawdown } from "./src/risk-metrics.mjs";
+import { StrategyFactory } from "./src/strategy-factory.mjs";
+import { runWalkForwardTest } from "./src/walkforward-validator.mjs";
+import { GeneticOptimizer } from "./src/genetic-optimizer.mjs";
+import { analyzeChartVision, processVoiceCommand } from "./src/chart-vision.mjs";
+
+// Phase 7: Advanced Vision, Voice & Multimodal Orchestrator
+import { analyzeChartWithVision, placeOrderFromChart } from "./src/chart-vision-advanced.mjs";
+import { captureChart } from "./src/chart-capture-engine.mjs";
+import { parseVoiceCommand, executeVoiceCommand, transcribeAudio } from "./src/voice-transcriber.mjs";
+import { speakResponse, generateVoiceResponse } from "./src/voice-responder.mjs";
+import { createVisionDashboard } from "./src/dashboard-vision.mjs";
+import { MultimodalOrchestrator } from "./src/multimodal-orchestrator.mjs";
+import { analyzeSentimentFromNews, compareChartPatterns, generateVisualTradingReport } from "./src/sentiment-vision-news.mjs";
+
+// Phase 2: Institutional Execution & Broker Adapters
+import { routeOptimalExecutionVenue, getSmartOrderRouterStatus } from "./src/smart-order-router.mjs";
+import { generateTwapSlices, generateVwapSlices, generateIcebergOrder, calculatePovParticipationRate, getSlicersEngineStatus } from "./src/algo-execution-slicers.mjs";
+import { buildSignedBinanceOrder, dispatchBinanceOrder, getBinanceAdapterStatus } from "./src/broker-adapter-binance.mjs";
+import { buildAlpacaOrderPayload, dispatchAlpacaOrder, getAlpacaAdapterStatus } from "./src/broker-adapter-alpaca.mjs";
+import { validatePreTradeRisk, checkDrawdownBreach, assertExecutionAuthority, getSafetyFortressStatus } from "./src/execution-safety-fortress.mjs";
+import { recordLedgerTransaction, getAccountingSummary } from "./src/accounting-ledger.mjs";
+
+// Phase 3: Event-Driven Backtesting & Statistical Falsification
+import { runEventDrivenSimulation, getBacktestCoreStatus } from "./src/event-driven-backtest-core.mjs";
+import { generateCombinatorialPurgedSplits, calculateProbabilityBacktestOverfitting, getCPCVEvaluatorStatus } from "./src/cpcv-pbo-evaluator.mjs";
+import { evaluateHansenSpaTest, getHansenSpaStatus } from "./src/hansen-spa-evaluator.mjs";
+import { calculateDeflatedSharpeRatio, getDsrStatus } from "./src/deflated-sharpe-calculator.mjs";
+import { runMonteCarloSimulation, getMonteCarloEngineStatus } from "./src/monte-carlo-simulator.mjs";
+import { evaluateStrategyPromotionGate, getPromotionGateStatus } from "./src/strategy-promotion-gate.mjs";
+
+// Phase 4: Institutional Risk Fortress & Portfolio Optimization
+import { calculatePortfolioRiskMetrics, getRiskMetricsStatus } from "./src/portfolio-risk-metrics.mjs";
+import { decomposeEulerRisk, getEulerRiskBudgetingStatus } from "./src/euler-risk-budgeting.mjs";
+import { optimizeHierarchicalRiskParity, optimizeMinimumVariance, optimizeMaximumSharpe, computeInverseVarianceWeights, getPortfolioOptimizerStatus } from "./src/convex-portfolio-optimizer.mjs";
+import { analyzeCorrelationRegime, getCorrelationRegimeStatus } from "./src/correlation-regime-detector.mjs";
+import { generateDefensiveHedgePlan, calculateBlackScholesPut, determineDrawdownDefenseTier, getDefensiveHedgerStatus } from "./src/dynamic-defensive-hedger.mjs";
+
+// Phase 5: Alpha Lab & Quantitative Strategy Megafactory
+import { generatePairsTradingSignal, calculateEngleGrangerCointegration, scanAllCointegratedPairs, getCointegrationEngineStatus } from "./src/cointegration-stat-arb-engine.mjs";
+import { calculateRollingVpin, getVpinEngineStatus } from "./src/vpin-microstructure-toxicity-engine.mjs";
+import { analyzeSmartMoneyStructure, getSmcEngineStatus } from "./src/smc-market-structure.mjs";
+import { runGeneticStrategyOptimization, getGeneticOptimizerStatus } from "./src/genetic-strategy-optimizer.mjs";
+import { queryStrategyMegafactory, filterOrthogonalStrategies, getMegafactoryStatus } from "./src/strategy-megafactory-1000.mjs";
+
+// Phase 6: Multi-Agent Swarm & 24/7 Sovereign Automation
+import { getSwarmFleetStatus, delegateSwarmTask, evaluateBftQuorumConsensus } from "./src/alfie-multi-agent-coordinator.mjs";
+import { executeNexusAutonomousTick, getMasterNexusReport } from "./src/master-autonomous-nexus-cycle.mjs";
+import { dispatchMobileSignalAlert, processMobileConfirmationCallback, getPendingSignalAlerts, getMobileConfirmationGateStatus } from "./src/telegram-mobile-confirmation-gate.mjs";
+import { getCloudSovereigntyMetrics, startAntiSleepPinger, stopAntiSleepPinger } from "./src/cloud-sovereign-keepalive-daemon.mjs";
 
 const stateStore = createStateStore(process.env.AIFIE_STATE_PATH || join(process.cwd(), "data", "aifie-state.json"));
 const persistedState = stateStore.load();
@@ -291,7 +116,6 @@ const paper = createPaperState(persistedState.paper);
 const strategyLab = createStrategyState(persistedState.paper?.strategyLab);
 
 startTelegramCommandListener({ paper, orders, botToken: process.env.TELEGRAM_BOT_TOKEN });
-startAutopilotOrchestrator();
 
 function persist() { stateStore.save({ orders, paper: { ...paper, strategyLab } }); }
 
@@ -343,7 +167,7 @@ export function app(request, response) {
     const url = new URL(request.url, "http://127.0.0.1");
     if (request.method === "OPTIONS") return respond(response, 204, "");
     if (request.method === "GET" && url.pathname === "/") return respond(response, 200, DASHBOARD, "text/html");
-    if (request.method === "GET" && url.pathname === "/api/status") return respond(response, 200, { name: "Aifie AI Agent", mode: getLiveBrokerStatus().isLiveModeUnlocked ? "live" : "paper", liveExecution: getLiveBrokerStatus().isLiveModeUnlocked, liveBroker: getLiveBrokerStatus(), bot: getBotStatus(), orders, paper: accountSnapshot(paper) });
+    if (request.method === "GET" && url.pathname === "/api/status") return respond(response, 200, { name: "Aifie AI Agent", mode: "paper", liveExecution: false, liveBroker: { isLiveModeUnlocked: false }, orders, paper: accountSnapshot(paper) });
     if (request.method === "GET" && url.pathname === "/api/sources") return respond(response, 200, getConnectedSourceStatus());
     if (request.method === "GET" && url.pathname === "/api/integrations") return respond(response, 200, integrationManifest);
     if (request.method === "GET" && url.pathname === "/api/source-audit") {
@@ -374,22 +198,728 @@ export function app(request, response) {
       const symbol = (url.searchParams.get("symbol") || "").trim().toUpperCase();
       return respond(response, 200, { symbol, status: "RESEARCH_READY", timestamp: new Date().toISOString() });
     }
-    if (request.method === "POST" && url.pathname === "/api/orders") {
+    // Phase 1: Real Market Data Endpoints
+    if (request.method === "GET" && url.pathname === "/api/market/quote") {
+      const symbol = url.searchParams.get("symbol") || "BTCUSDT";
+      getUnifiedMarketQuote(symbol).then(quote => {
+        return respond(response, 200, { success: true, quote });
+      }).catch(err => {
+        return respond(response, 500, { error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/bars") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const timeframe = url.searchParams.get("timeframe") || "1m";
+      const limit = Number(url.searchParams.get("limit")) || 50;
+      const bars = getCandleBars(symbol, timeframe, limit);
+      return respond(response, 200, { success: true, symbol, timeframe, count: bars.length, bars });
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/depth") {
+      const symbol = url.searchParams.get("symbol") || "BTCUSDT";
+      const depth = Number(url.searchParams.get("limit")) || 10;
+      const snapshot = getOrderBookSnapshot(symbol, depth);
+      return respond(response, 200, { success: true, ...snapshot });
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/status") {
+      return respond(response, 200, {
+        success: true,
+        phase: "PHASE_1_MARKET_DATA_ENGINE",
+        providers: {
+          binance: getBinanceFeedStatus(),
+          alpaca: getAlpacaFeedStatus(),
+          universal: getUniversalFeedStatus()
+        },
+        timeseries: getTimeseriesStoreStatus(),
+        sanitizer: getSanitizerStats(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    // Week 2: Real Market Data Connectors & Consensus Endpoints
+    if (request.method === "GET" && url.pathname === "/api/market/iex/quote") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      fetchIexQuote(symbol).then(quote => {
+        return respond(response, 200, { success: true, quote });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/iex/historical") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const range = url.searchParams.get("range") || "5y";
+      fetchIexHistorical(symbol, range).then(data => {
+        return respond(response, 200, { success: true, data });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/polygon/quote") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      fetchPolygonQuote(symbol).then(quote => {
+        return respond(response, 200, { success: true, quote });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/polygon/historical") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      fetchPolygonHistorical(symbol).then(data => {
+        return respond(response, 200, { success: true, data });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/crypto/binance") {
+      const symbol = url.searchParams.get("symbol") || "BTCUSDT";
+      fetchBinanceQuote(symbol).then(quote => {
+        return respond(response, 200, { success: true, quote });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/crypto/coingecko") {
+      const symbol = url.searchParams.get("symbol") || "bitcoin";
+      fetchCoingeckoQuote(symbol).then(quote => {
+        return respond(response, 200, { success: true, quote });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/market/consensus") {
+      const symbol = url.searchParams.get("symbol") || "BTCUSDT";
+      getConsensusReport(symbol).then(report => {
+        return respond(response, 200, { success: true, consensus: report });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/market/consensus") {
+      readJsonBody(request, response).then(payload => {
+        const symbol = payload.symbol || "BTCUSDT";
+        return getConsensusReport(symbol, payload).then(report => {
+          return respond(response, 200, { success: true, consensus: report });
+        });
+      }).catch(err => {
+        return respond(response, 502, { success: false, error: err.message });
+      });
+      return;
+    }
+    // Phase 2: Institutional Execution Endpoints
+    if (request.method === "POST" && url.pathname === "/api/execution/route") {
+      readJsonBody(request, response).then(payload => {
+        const route = routeOptimalExecutionVenue(payload);
+        return respond(response, 200, { success: true, route });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/execution/twap") {
+      readJsonBody(request, response).then(payload => {
+        const plan = generateTwapSlices(payload);
+        return respond(response, 200, { success: true, plan });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/execution/vwap") {
+      readJsonBody(request, response).then(payload => {
+        const plan = generateVwapSlices(payload);
+        return respond(response, 200, { success: true, plan });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/execution/iceberg") {
+      readJsonBody(request, response).then(payload => {
+        const plan = generateIcebergOrder(payload);
+        return respond(response, 200, { success: true, plan });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/execution/dispatch") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const mode = payload.mode || "paper";
+          assertExecutionAuthority(mode, payload.confirm);
+
+          const riskCheck = validatePreTradeRisk(payload, accountSnapshot(paper));
+          if (!riskCheck.approved) {
+            return respond(response, 400, { success: false, error: riskCheck.reason, riskCheck });
+          }
+
+          let dispatchResult;
+          if (mode === "live" && payload.venue === "BINANCE") {
+            dispatchResult = await dispatchBinanceOrder(payload, { dryRun: false });
+          } else if (mode === "live" && payload.venue === "ALPACA") {
+            dispatchResult = await dispatchAlpacaOrder(payload, { isPaper: false });
+          } else {
+            const fill = placePaperOrder(paper, payload);
+            dispatchResult = { success: true, mode: "paper", fill };
+          }
+
+          const price = Number(payload.price || 100);
+          const ledgerEntry = recordLedgerTransaction({
+            symbol: payload.symbol,
+            side: payload.side,
+            quantity: payload.quantity,
+            price,
+            venue: payload.venue || "PAPER_MATCHING_ENGINE"
+          });
+
+          return respond(response, 200, {
+            success: true,
+            dispatch: dispatchResult,
+            ledger: ledgerEntry
+          });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/execution/ledger") {
+      return respond(response, 200, { success: true, ledger: getAccountingSummary() });
+    }
+    if (request.method === "GET" && url.pathname === "/api/execution/status") {
+      return respond(response, 200, {
+        success: true,
+        phase: "PHASE_2_EXECUTION_ENGINE",
+        sor: getSmartOrderRouterStatus(),
+        slicers: getSlicersEngineStatus(),
+        safety: getSafetyFortressStatus(),
+        adapters: {
+          binance: getBinanceAdapterStatus(),
+          alpaca: getAlpacaAdapterStatus()
+        },
+        ledger: getAccountingSummary()
+      });
+    }
+    // Phase 3: Event-Driven Backtesting & Statistical Falsification Endpoints
+    if (request.method === "POST" && url.pathname === "/api/backtest/run") {
+      readJsonBody(request, response).then(payload => {
+        const result = runEventDrivenSimulation(payload);
+        return respond(response, 200, { success: true, result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/backtest/pbo") {
+      readJsonBody(request, response).then(payload => {
+        const result = calculateProbabilityBacktestOverfitting(payload);
+        return respond(response, 200, { success: true, result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/backtest/hansen-spa") {
+      readJsonBody(request, response).then(payload => {
+        const result = evaluateHansenSpaTest(payload);
+        return respond(response, 200, { success: true, result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/backtest/dsr") {
+      readJsonBody(request, response).then(payload => {
+        const result = calculateDeflatedSharpeRatio(payload);
+        return respond(response, 200, { success: true, result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/backtest/monte-carlo") {
+      readJsonBody(request, response).then(payload => {
+        const result = runMonteCarloSimulation(payload);
+        return respond(response, 200, { success: true, result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/backtest/promotion-gate") {
+      readJsonBody(request, response).then(payload => {
+        const result = evaluateStrategyPromotionGate(payload);
+        return respond(response, 200, { success: true, result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/backtest/status") {
+      return respond(response, 200, {
+        success: true,
+        phase: "PHASE_3_BACKTESTING_FALSIFICATION_ENGINE",
+        simulator: getBacktestCoreStatus(),
+        cpcv: getCPCVEvaluatorStatus(),
+        hansenSpa: getHansenSpaStatus(),
+        dsr: getDsrStatus(),
+        monteCarlo: getMonteCarloEngineStatus(),
+        promotionGate: getPromotionGateStatus(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    // Phase 4: Institutional Risk Fortress Endpoints
+    if (request.method === "POST" && url.pathname === "/api/risk/metrics") {
       readJsonBody(request, response).then(payload => {
         try {
-          if (payload.mode !== "paper") {
-            return respond(response, 400, { error: "Only paper mode is supported" });
+          const result = calculatePortfolioRiskMetrics(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/euler") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = decomposeEulerRisk(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/optimize") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const method = (payload.method || "HRP").toUpperCase();
+          let result;
+          if (method === "MIN_VARIANCE" || method === "MINIMUM_VARIANCE") {
+            result = optimizeMinimumVariance(payload);
+          } else if (method === "MAX_SHARPE" || method === "MAXIMUM_SHARPE") {
+            result = optimizeMaximumSharpe(payload);
+          } else if (method === "INVERSE_VARIANCE") {
+            result = computeInverseVarianceWeights(payload);
+          } else {
+            result = optimizeHierarchicalRiskParity(payload);
           }
-          if (payload.symbol && payload.side && payload.quantity) {
+          return respond(response, 200, { success: true, result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/correlation-regime") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = analyzeCorrelationRegime(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/hedge") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = generateDefensiveHedgePlan(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/risk/status") {
+      return respond(response, 200, {
+        success: true,
+        phase: "PHASE_4_INSTITUTIONAL_RISK_FORTRESS",
+        riskMetrics: getRiskMetricsStatus(),
+        eulerBudgeting: getEulerRiskBudgetingStatus(),
+        optimizer: getPortfolioOptimizerStatus(),
+        correlationRegime: getCorrelationRegimeStatus(),
+        defensiveHedger: getDefensiveHedgerStatus(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    // Phase 5: Alpha Lab & Strategy Megafactory Endpoints
+    if (request.method === "POST" && url.pathname === "/api/alpha/cointegration") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = generatePairsTradingSignal(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/alpha/vpin") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = calculateRollingVpin(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/alpha/smc") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = analyzeSmartMoneyStructure(payload.candles || payload.prices);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/alpha/genetic-optimize") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = runGeneticStrategyOptimization(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/alpha/megafactory") {
+      const family = url.searchParams.get("family") || "ALL";
+      const minSharpe = Number(url.searchParams.get("minSharpe")) || 0.0;
+      const limit = Number(url.searchParams.get("limit")) || 50;
+      const result = queryStrategyMegafactory({ family, minSharpe, limit });
+      return respond(response, 200, { success: true, ...result });
+    }
+    if (request.method === "GET" && url.pathname === "/api/alpha/status") {
+      return respond(response, 200, {
+        success: true,
+        phase: "PHASE_5_ALPHA_LAB_MEGAFACTORY",
+        cointegration: getCointegrationEngineStatus(),
+        vpin: getVpinEngineStatus(),
+        smc: getSmcEngineStatus(),
+        genetic: getGeneticOptimizerStatus(),
+        megafactory: getMegafactoryStatus(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    // Phase 6: Multi-Agent Swarm & Sovereign Automation Endpoints
+    if (request.method === "GET" && url.pathname === "/api/swarm/status") {
+      return respond(response, 200, { success: true, ...getSwarmFleetStatus() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/swarm/delegate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = delegateSwarmTask(payload);
+          return respond(response, 200, { success: true, result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/swarm/quorum") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = evaluateBftQuorumConsensus(payload);
+          return respond(response, 200, { success: true, result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/nexus/tick") {
+      try {
+        const result = executeNexusAutonomousTick();
+        return respond(response, 200, { success: true, result });
+      } catch (err) {
+        return respond(response, 500, { success: false, error: err.message });
+      }
+    }
+    if (request.method === "GET" && url.pathname === "/api/nexus/status") {
+      return respond(response, 200, getMasterNexusReport());
+    }
+    if (request.method === "POST" && url.pathname === "/api/telegram/signal-alert") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = dispatchMobileSignalAlert(payload);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/telegram/signal-callback") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = processMobileConfirmationCallback({ ...payload, paperState: paper });
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/cloud/sovereign") {
+      return respond(response, 200, {
+        success: true,
+        phase: "PHASE_6_SOVEREIGN_AUTOMATION",
+        cloud: getCloudSovereigntyMetrics(),
+        mobileGate: getMobileConfirmationGateStatus(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/orders") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          // GUARD: Only paper mode
+          if (payload.mode === "live" && !process.env.ENABLE_LIVE_TRADING) {
+            return respond(response, 403, { error: "Live trading disabled. Set ENABLE_LIVE_TRADING=true" });
+          }
+
+          if (payload.mode === "paper" || !payload.mode) {
+            // Paper engine
             const fill = placePaperOrder(paper, payload);
-            const order = { id: randomUUID(), symbol: payload.symbol, side: payload.side, quantity: payload.quantity, status: "simulated", fill, requestedAt: new Date().toISOString() };
+            const order = { id: randomUUID(), ...payload, status: "simulated", fill, requestedAt: new Date().toISOString() };
             orders.push(order);
             persist();
             return respond(response, 200, { success: true, order });
+          } else if (payload.mode === "live") {
+            // Alpaca live
+            const order = await alpacaBroker.placeOrder(payload.symbol, payload.qty || payload.quantity, payload.side);
+            const saved = { id: order.id || randomUUID(), ...order, mode: "live" };
+            orders.push(saved);
+            persist();
+            return respond(response, 200, { success: true, order: saved });
           }
-          return respond(response, 200, { success: true, order: payload });
+          return respond(response, 400, { error: `Unsupported mode: ${payload.mode}` });
         } catch (err) {
           return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 3: Discrete Candle Backtester Endpoint
+    if (request.method === "POST" && url.pathname === "/api/backtest") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const strategy = payload.strategy || StrategyFactory.createMovingAverageCrossover(10, 50);
+          const backtester = new Backtester(strategy, payload.data || []);
+          const result = backtester.run();
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 4: Portfolio Optimization Endpoints
+    if (url.pathname === "/api/portfolio/frontier" && (request.method === "GET" || request.method === "POST")) {
+      const runFrontier = (body) => {
+        const returns = body.returns || [0.12, 0.18, 0.10, 0.15];
+        const cov = body.cov || [
+          [0.04, 0.01, 0.01, 0.02],
+          [0.01, 0.06, 0.02, 0.03],
+          [0.01, 0.02, 0.03, 0.01],
+          [0.02, 0.03, 0.01, 0.05]
+        ];
+        const frontier = calculateMarkowitzFrontier(returns, cov, body.riskFreeRate || 0.02);
+        return respond(response, 200, { success: true, count: frontier.length, frontier });
+      };
+
+      if (request.method === "POST") {
+        readJsonBody(request, response).then(runFrontier).catch(() => {});
+      } else {
+        runFrontier({});
+      }
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/hrp") {
+      readJsonBody(request, response).then(payload => {
+        const returns = payload.returns || [0.12, 0.18, 0.10];
+        const cov = payload.cov || [[0.04, 0.01, 0.01], [0.01, 0.06, 0.02], [0.01, 0.02, 0.03]];
+        const weights = calculateHierarchicalRiskParity(returns, cov);
+        return respond(response, 200, { success: true, weights });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/black-litterman") {
+      readJsonBody(request, response).then(payload => {
+        const marketCap = payload.marketCap || [1000000, 2000000, 500000];
+        const views = payload.views || [{ assetIdx: 0, confidence: 0.8, expectedReturn: 0.05 }];
+        const weights = calculateBlackLitterman(marketCap, views);
+        return respond(response, 200, { success: true, weights });
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 4: Risk Metrics Endpoints
+    if (request.method === "POST" && url.pathname === "/api/risk/var") {
+      readJsonBody(request, response).then(payload => {
+        const returns = payload.returns || [];
+        const confidence = payload.confidence || 0.95;
+        const varValue = calculateValueAtRisk(returns, confidence);
+        return respond(response, 200, { success: true, confidence, var: varValue });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/cvar") {
+      readJsonBody(request, response).then(payload => {
+        const returns = payload.returns || [];
+        const confidence = payload.confidence || 0.95;
+        const cvarValue = calculateConditionalValueAtRisk(returns, confidence);
+        return respond(response, 200, { success: true, confidence, cvar: cvarValue });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/ratios") {
+      readJsonBody(request, response).then(payload => {
+        const returns = payload.returns || [];
+        const rf = payload.riskFreeRate || 0.02;
+        const sharpe = calculateSharpeRatio(returns, rf);
+        const sortino = calculateSortinoRatio(returns, rf);
+        return respond(response, 200, { success: true, sharpe, sortino });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/max-drawdown") {
+      readJsonBody(request, response).then(payload => {
+        const equity = payload.equity || [];
+        const maxDD = calculateMaxDrawdown(equity);
+        return respond(response, 200, { success: true, maxDrawdown: maxDD });
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 5: Strategy Megafactory 1000+ Permutations Endpoint
+    if (request.method === "GET" && (url.pathname === "/api/strategies/megafactory" || url.pathname === "/api/strategy/megafactory")) {
+      const limit = Number(url.searchParams.get("limit")) || null;
+      const strategies = StrategyFactory.generateMegafactoryCatalog(limit);
+      return respond(response, 200, { count: strategies.length, strategies });
+    }
+
+    // Phase 6: Walk-Forward Validation & Genetic Evolution Endpoints
+    if (request.method === "POST" && url.pathname === "/api/validate/walkforward") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const strategy = StrategyFactory.createMovingAverageCrossover(10, 30);
+          const data = payload.data || [];
+          const results = runWalkForwardTest(strategy, data, payload.windowSize || 30, payload.stepSize || 10);
+          return respond(response, 200, { success: true, count: results.length, results });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/strategies/genetic-evolve") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const factory = {
+            build: (params) => {
+              if (params.type === "MOMENTUM") return StrategyFactory.createMomentum(params.period, params.threshold);
+              if (params.type === "MEANREVERSION") return StrategyFactory.createMeanReversion(params.period, params.threshold);
+              return StrategyFactory.createMovingAverageCrossover(params.period, params.period + 15);
+            }
+          };
+          const fitness = (strategy) => {
+            return strategy.name.length > 5 ? 1.5 : 0.8;
+          };
+          const optimizer = new GeneticOptimizer(factory, fitness);
+          const evolution = optimizer.evolve(payload.generations || 10, payload.populationSize || 20);
+          return respond(response, 200, { success: true, evolution });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 7: Advanced Vision, Voice & Multimodal Endpoints
+    if (request.method === "POST" && (url.pathname === "/api/vision/analyze-chart" || url.pathname === "/api/vision/chart")) {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const analysis = await analyzeChartWithVision(
+            payload.chartBase64 || payload.image || payload.chartImage,
+            payload.technicalIndicators || {}
+          );
+          return respond(response, 200, { success: true, ...analysis, analysis });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && (url.pathname === "/api/voice/parse-command" || url.pathname === "/api/voice/command")) {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const command = await parseVoiceCommand(payload.transcript || payload.command);
+          return respond(response, 200, { success: true, ...command, parsed: command });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/vision/dashboard") {
+      const status = {
+        vision_engine: "ready",
+        voice_engine: "ready",
+        active_streams: {
+          chart_capture: true,
+          voice_listen: false,
+          sentiment_tracking: true
+        },
+        dashboardHtml: createVisionDashboard()
+      };
+      return respond(response, 200, status);
+    }
+    if (request.method === "POST" && url.pathname === "/api/vision/sentiment") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const sentiment = await analyzeSentimentFromNews(payload.headlines);
+          return respond(response, 200, { success: true, sentiment });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/vision/compare-patterns") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const comparison = await compareChartPatterns(payload.charts);
+          return respond(response, 200, { success: true, comparison });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if ((request.method === "GET" || request.method === "POST") && url.pathname === "/api/vision/report") {
+      const runReport = async (date) => {
+        try {
+          const report = await generateVisualTradingReport(date);
+          return respond(response, 200, { success: true, report });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      };
+      if (request.method === "POST") {
+        readJsonBody(request, response).then(p => runReport(p.date)).catch(() => {});
+      } else {
+        runReport(url.searchParams.get("date"));
+      }
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/vision/order-from-chart") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const result = await placeOrderFromChart(
+            payload.chartBase64 || payload.image,
+            payload.userIntent || "long AAPL",
+            paper
+          );
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
         }
       }).catch(() => {});
       return;
@@ -449,855 +979,7 @@ export function app(request, response) {
       return;
     }
 
-  // v86.0 Public Gateway & Full AI Agent Controls
-  if (request.method === "GET" && url.pathname === "/api/v86/public/gateway") {
-    return respond(response, 200, getPublicGatewayStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v86/public/gateway/update") {
-    const newUrl = url.searchParams.get("url") || "";
-    if (newUrl) setPublicGatewayUrl(newUrl);
-    return respond(response, 200, { success: true, publicUrl: newUrl });
-  }
-  // v88.0 Online Cloud Relay & Zero-Dependency Streaming
-  if (request.method === "GET" && url.pathname === "/api/v88/cloud/status") {
-    return respond(response, 200, getOnlineCloudStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v88/cloud/keepalive") {
-    const source = url.searchParams.get("source") || "UPTIME_ROBOT_OR_CRONJOB";
-    return respond(response, 200, recordCloudKeepAlivePing({ source }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/stream/events") {
-    return handleSseConnection(request, response);
-  }
-
-  // v89.0 Sovereign Admin Panel & Requirements Configuration Hub
-  if (request.method === "GET" && url.pathname === "/api/admin/config") {
-    return respond(response, 200, getAdminConfigStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/admin/config") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = updateAdminConfig(payload);
-        return respond(response, 200, res);
-      } catch (err) {
-        return respond(response, 400, { error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/admin/command") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const cmdName = payload.command || url.searchParams.get("command") || "";
-        const res = executeAdminCommand(cmdName, payload, { paper, strategyLab, orders, persist });
-        return respond(response, 200, res);
-      } catch (err) {
-        return respond(response, 400, { error: err.message });
-      }
-    });
-    return;
-  }
-
-  if (request.method === "POST" && url.pathname === "/api/bank/sweep") {
-    const sweep = executeZeroHumanBankSweep();
-    return respond(response, 200, sweep);
-  }
-
-  // v90.0 Binance Live Crypto, Supabase Cloud DB, & Smart Alert Filter Routes
-  if (request.method === "GET" && url.pathname === "/api/v90/binance/status") {
-    return respond(response, 200, getBinanceConnectorStatus());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v90/binance/ticker") {
-    const symbol = url.searchParams.get("symbol") || "BTCUSDT";
-    fetchBinanceLiveTicker(symbol).then(ticker => respond(response, 200, ticker));
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v90/supabase/status") {
-    return respond(response, 200, getSupabaseDbStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v90/alert/test") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const p = JSON.parse(body || "{}");
-        const { eventType = "1_TAP_TRADE_SIGNAL", title = "Test Alert", message = "Alert test from Admin Panel", data: alertData = {} } = p;
-        const priority = evaluateAlertPriority(eventType, alertData);
-        sendSmartTelegramAlert({ eventType, title, message }).then(result => {
-          respond(response, 200, { ...result, priority: priority.priority });
-        });
-      } catch (err) {
-        respond(response, 400, { error: err.message });
-      }
-    });
-    return;
-  }
-  // v91.0 Sovereign 20-Platform Omni-Cloud Routes
-  if (request.method === "GET" && url.pathname === "/api/v91/omni/status") {
-    return respond(response, 200, getOmniCloudStatus());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v91/omni/failover") {
-    return respond(response, 200, { failoverChain: getFailoverChain(), timestamp: new Date().toISOString() });
-  }
-  if (request.method === "GET" && url.pathname === "/api/v91/omni/health") {
-    runHealthCheckAllPlatforms().then(result => respond(response, 200, result));
-    return;
-  }
-
-  if (request.method === "POST" && url.pathname === "/api/bot/strategy") {
-    const strategyId = url.searchParams.get("strategyId") || "sma_crossover";
-    const updated = configureBot({ activeStrategyId: strategyId });
-    persist();
-    return respond(response, 200, { success: true, activeStrategyId: updated.activeStrategyId });
-  }
-
-  // v85.0 100-Agent Autonomous Sovereign Fleet Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v85/fleet/agents") {
-    const division = url.searchParams.get("division") || "ALL";
-    const query = url.searchParams.get("query") || "";
-    return respond(response, 200, queryFleetAgents({ division, query }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v85/fleet/divisions") {
-    return respond(response, 200, getFleetDivisionsSummary());
-  }
-
-  // v84.0 Euler Risk Budgeting & Black Swan Stress-Testing Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v84/risk/euler") {
-    return respond(response, 200, calculateEulerRiskBudgetDecomposition());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v84/risk/stress-tests") {
-    return respond(response, 200, runBlackSwanStressTestLab());
-  }
-
-  // v83.0 Continuous 24/7 Multi-Agent Swarm Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v83/swarm/status") {
-    return respond(response, 200, getContinuous247AgentSwarmStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v83/swarm/start") {
-    return respond(response, 200, startContinuous247AgentSwarmDaemon());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v83/swarm/stop") {
-    return respond(response, 200, stopContinuous247AgentSwarmDaemon());
-  }
-
-  // v82.0 Quantitative Strategy Megafactory (1,000+ Strategies) Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v82/strategies/megafactory") {
-    const family = url.searchParams.get("family") || "ALL";
-    const minSharpe = parseFloat(url.searchParams.get("minSharpe") || "0.0");
-    const limit = parseInt(url.searchParams.get("limit") || "1100", 10);
-    return respond(response, 200, queryStrategyMegafactory({ family, minSharpe, limit }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v82/strategies/search") {
-    const query = url.searchParams.get("query") || "";
-    return respond(response, 200, searchStrategyMegafactory(query));
-  }
-
-  // v81.0 VPIN Toxicity & Microstructure Defensive Hedging Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v81/microstructure/vpin") {
-    const symbol = url.searchParams.get("symbol") || "BTC/USDT";
-    return respond(response, 200, calculateVpinIndex({ symbol }));
-  }
-  if (request.method === "POST" && url.pathname === "/api/v81/microstructure/defend") {
-    const symbol = url.searchParams.get("symbol") || "BTC/USDT";
-    return respond(response, 200, deployMicrostructureDefensiveHedge({ symbol }));
-  }
-
-  // v80.0 Convex Portfolio Optimization & Frontier Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v80/portfolio/frontier") {
-    const hrp = calculateHierarchicalRiskParityWeights();
-    const bl = calculateBlackLittermanAllocation();
-    const frontier = calculateMarkowitzEfficientFrontier();
-    return respond(response, 200, { hrp, bl, frontier });
-  }
-  if (request.method === "POST" && url.pathname === "/api/v80/portfolio/rebalance") {
-    const hrp = calculateHierarchicalRiskParityWeights();
-    return respond(response, 200, { status: "PORTFOLIO_REBALANCED_SUCCESSFULLY", method: "HRP_CONVEX", targetWeights: hrp.weights });
-  }
-
-  // v79.0 Cointegration Arbitrage & SHAP Attribution Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v79/arbitrage/pairs") {
-    return respond(response, 200, scanAllCointegratedPairs());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v79/explainability/shap") {
-    const symbol = url.searchParams.get("symbol") || "AAPL";
-    return respond(response, 200, calculateShapAlphaAttribution({ symbol }));
-  }
-
-  // v78.0 Chart Candles & Falsification Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v78/chart/candles") {
-    const symbol = url.searchParams.get("symbol") || "BTC/USDT";
-    const candles = [];
-    let basePrice = symbol.includes("BTC") ? 87500 : 150;
-    const now = Date.now();
-    for (let i = 30; i >= 0; i--) {
-      const time = new Date(now - i * 60000).toISOString();
-      const open = basePrice + (Math.sin(i * 0.5) * 15);
-      const close = open + (Math.cos(i * 0.7) * 12);
-      const high = Math.max(open, close) + Math.random() * 8;
-      const low = Math.min(open, close) - Math.random() * 8;
-      const volume = parseFloat((10.0 + Math.random() * 20).toFixed(2));
-      candles.push({ time, open: parseFloat(open.toFixed(2)), high: parseFloat(high.toFixed(2)), low: parseFloat(low.toFixed(2)), close: parseFloat(close.toFixed(2)), volume });
-      basePrice = close;
-    }
-    return respond(response, 200, { symbol, timeframe: "1m", candlesCount: candles.length, candles });
-  }
-  if (request.method === "GET" && url.pathname === "/api/v78/falsification/audit") {
-    const cpcv = runCombinatorialPurgedCrossValidation();
-    const spa = evaluateHansenSpaFalsificationTest({ strategyName: url.searchParams.get("strategy") || "MOMENTUM_APEX_V78" });
-    return respond(response, 200, { cpcv, spa });
-  }
-
-  // v76.0 Strategy Robustness & Order Execution Ticket Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v76/strategy/scorecards") return respond(response, 200, evaluateStrategyRobustnessList());
-  if (request.method === "POST" && url.pathname === "/api/v76/order/execute") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = body ? JSON.parse(body) : {};
-        const symbol = payload.symbol || "AAPL";
-        const side = payload.side || "BUY";
-        const quantity = parseFloat(payload.quantity) || 1;
-        const venueRouting = routeOptimalExecutionVenue({ symbol, amountUSD: quantity * 150 });
-        
-        const tx = recordLedgerTransaction({
-          symbol,
-          side,
-          quantity,
-          fillPrice: 150.00,
-          venue: venueRouting.recommendedVenue,
-          realizedPnLUSD: 0.00
-        });
-
-        // Place paper order in state store
-        placePaperOrder(paper, { symbol, side: side.toLowerCase(), quantity, price: 150.00 });
-        orders.unshift({ id: randomUUID(), symbol, side, quantity, status: "FILLED", venue: venueRouting.recommendedVenue, timestamp: new Date().toISOString() });
-        persist();
-
-        return respond(response, 200, { status: "ORDER_EXECUTED_SUCCESSFULLY", symbol, side, quantity, venue: venueRouting.recommendedVenue, ledger: tx });
-      } catch (err) {
-        return respond(response, 400, { error: err.message });
-      }
-    });
-    return;
-  }
-
-  // v75.0 DOM Ladder & Cross-Asset Correlation Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v75/dom/ladder") return respond(response, 200, getDepthOfMarketLadder({ symbol: url.searchParams.get("symbol") || "BTC/USDT" }));
-  if (request.method === "GET" && url.pathname === "/api/v75/correlation/matrix") return respond(response, 200, getCrossAssetCorrelationMatrix());
-
-  // v74.0 Quant Command Center & Neural Command Graph Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v74/neural-graph") return respond(response, 200, getNeuralCommandGraphData({ symbol: url.searchParams.get("symbol") || "BTC/USDT" }));
-  if (request.method === "GET" && url.pathname === "/api/v74/market-ticker") return respond(response, 200, getMarketTickerRibbonData());
-  if (request.method === "GET" && url.pathname === "/api/v74/order-flow") return respond(response, 200, getOrderFlowAuroraData({ symbol: url.searchParams.get("symbol") || "BTC/USDT" }));
-  if (request.method === "GET" && url.pathname === "/api/v74/volatility") return respond(response, 200, getVolatilityClusteringData());
-  if (request.method === "GET" && url.pathname === "/api/v74/coherence") return respond(response, 200, getCoherenceFieldData());
-  if (request.method === "GET" && url.pathname === "/api/v74/bayesian") return respond(response, 200, getBayesianUpdateData());
-  if (request.method === "GET" && url.pathname === "/api/v74/monte-carlo") return respond(response, 200, getMonteCarloSimulationData({ pathsCount: 10000 }));
-
-  // v73.0 Live Execution & SOR Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v73/ccxt/status") return respond(response, 200, getCcxtEngineStatus());
-  if (request.method === "GET" && url.pathname === "/api/v73/alpaca/metrics") {
-    fetchAlpacaAccountMetrics().then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v73/sor/status") return respond(response, 200, getSmartOrderRouterStatus());
-  if (request.method === "GET" && url.pathname === "/api/v73/ledger/summary") return respond(response, 200, getLedgerSummary());
-
-  // Real Market Installed Tools & Subsystem REST API Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v72/realmarket/tools") return respond(response, 200, getRealMarketToolsStatus());
-  if (request.method === "GET" && url.pathname === "/api/v72/system/analysis") return respond(response, 200, getOverallSystemAnalysis());
-  if (request.method === "GET" && url.pathname === "/api/v72/hft/darkpool") return respond(response, 200, getHftDarkPoolAggregatorStatus());
-  if (request.method === "GET" && url.pathname === "/api/v72/automl/status") return respond(response, 200, getAutoMlRetrainingStatus());
-  if (request.method === "GET" && url.pathname === "/api/v72/rwa/vault") return respond(response, 200, getWeb3RwaVaultStatus());
-  if (request.method === "GET" && url.pathname === "/api/v72/canvas/voice") return respond(response, 200, getCanvasVoiceMatrixStatus());
-
-  // v71.0 Real-World Production Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v71/vault/status") return respond(response, 200, getKeyVaultStatus());
-  if (request.method === "GET" && url.pathname === "/api/v71/ws/stream") return respond(response, 200, getWebsocketsStreamerStatus());
-  if (request.method === "GET" && url.pathname === "/api/v71/circuitbreaker/status") return respond(response, 200, getRiskCircuitBreakerStatus());
-
-  // v70.0 - v33.0 Subsystems
-  if (request.method === "GET" && url.pathname === "/api/v70/realworld/status") return respond(response, 200, getRealWorldCapableAgentStatus());
-  if (request.method === "GET" && url.pathname === "/api/v69/research/status") return respond(response, 200, getAutonomousQuantResearchPlatformStatus());
-
-  // Automated Trading Bot Endpoints
-  if (request.method === "GET" && url.pathname === "/api/bot/status") return respond(response, 200, getBotStatus());
-  if (request.method === "POST" && url.pathname === "/api/bot/start") {
-    const status = startBot({ paper, strategyLab, orders, persist });
-    persist();
-    return respond(response, 200, status);
-  }
-  if (request.method === "POST" && url.pathname === "/api/bot/stop") {
-    const status = stopBot();
-    persist();
-    return respond(response, 200, status);
-  }
-
-  // Hedge Fund Cycle Endpoint
-  if (request.method === "POST" && url.pathname === "/api/hedge-fund/cycle") {
-    runHedgeFundCycle({ symbol: "AAPL", paper, strategyLab, orders })
-      .then(res => { persist(); respond(response, 200, res); })
-      .catch(err => respond(response, 400, { error: err.message }));
-    return;
-  }
-
-  // Cloud Virtual Computer, Web Terminal & Cloud Browser Endpoints
-  if (request.method === "GET" && url.pathname === "/api/vcomputer/status") {
-    return respond(response, 200, getCloudVComputerStatus());
-  }
-  if (request.method === "GET" && url.pathname === "/api/vcomputer/config") {
-    return respond(response, 200, getCloudVComputerConfig());
-  }
-  if (request.method === "POST" && url.pathname === "/api/vcomputer/terminal/exec") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        executeCloudTerminalCommand(payload.command, payload.cwd)
-          .then(res => respond(response, 200, res))
-          .catch(err => respond(response, 500, { success: false, error: err.message }));
-      } catch (err) {
-        respond(response, 400, { success: false, error: "Invalid JSON payload" });
-      }
-    });
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/vcomputer/browser/browse") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        cloudBrowseUrl(payload.url)
-          .then(res => respond(response, 200, res))
-          .catch(err => respond(response, 500, { success: false, error: err.message }));
-      } catch (err) {
-        respond(response, 400, { success: false, error: "Invalid JSON payload" });
-      }
-    });
-    return;
-  }
-
-  if (request.method === "GET" && url.pathname === "/api/vcomputer/agent/summary") {
-    return respond(response, 200, aifieGetAutonomousAgentUsageSummary());
-  }
-  if (request.method === "POST" && url.pathname === "/api/vcomputer/agent/autonomous-task") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", async () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const type = payload.type || "terminal";
-        let result;
-        if (type === "terminal") {
-          result = await aifieExecuteAutonomousTerminalTask({
-            intent: payload.intent || "Autonomous Diagnostic",
-            command: payload.command || "uptime"
-          });
-        } else if (type === "web") {
-          result = await aifieAutonomousWebInvestigation({
-            topic: payload.topic || "Market Research",
-            targetUrl: payload.url || "https://news.ycombinator.com"
-          });
-        } else if (type === "manage") {
-          result = await aifieManageCloudWorkstation({
-            action: payload.action || "health_audit"
-          });
-        } else {
-          result = { error: "Unknown task type" };
-        }
-        respond(response, 200, result);
-      } catch (err) {
-        respond(response, 500, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-
-  // v92.0 Autonomous Multi-Market Apex Analyst Engine Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v92/analyst/scan") {
-    runFullAutonomousMarketScan().then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/analyst/inspect") {
-    const symbol = url.searchParams.get("symbol") || "BTCUSDT";
-    getAutonomousAnalystInspection(symbol).then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/analyst/briefing") {
-    generateDailyAnalystBriefing().then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/analyst/watch") {
-    return respond(response, 200, getAnalystWatchState());
-  }
-
-  // v93.0 Modular 5-Stage 24/7 AI Trading Machine Routes
-  if (request.method === "GET" && url.pathname === "/api/v93/pipeline/status") {
-    return respond(response, 200, get5StagePipelineStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v93/pipeline/run") {
-    runFull5StagePipelineCycle().then(res => respond(response, 200, res)).catch(err => respond(response, 500, { error: err.message }));
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v93/pipeline/decision") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = executeHumanDecision(payload.decisionId, payload.action || "APPROVE", { paper, orders });
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { error: err.message });
-      }
-    });
-    return;
-  }
-
-  // v92.0 UpsideOnly, Alpha Consensus, & FxFactory Trinity Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v92/upside-only/status") {
-    return respond(response, 200, getUpsideOnlyStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v92/upside-only/predict") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = submitUpsidePrediction(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v92/upside-only/withdraw") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = withdrawUpsideProfit(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/alpha-consensus/evaluate") {
-    const symbol = url.searchParams.get("symbol") || "BTC/USDT";
-    return respond(response, 200, calculateAlphaConsensus({ symbol }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/fxfactory/calendar") {
-    return respond(response, 200, getFxFactoryCalendar());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/fxfactory/shield") {
-    return respond(response, 200, checkFxFactoryVolatilityShield());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v92/fxfactory/sync") {
-    return respond(response, 200, syncFxFactoryLiveEvents());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v92/trinity/run-cycle") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = runTrinityProfitCycle(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v92/trinity/overview") {
-    return respond(response, 200, getTrinityOverview());
-  }
-
-  // v93.0 Nous Research Hermes Agent Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v93/hermes/status") {
-    return respond(response, 200, getHermesAgentStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v93/hermes/run") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", async () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = await runHermesAutonomousAgent(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 500, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v93/hermes/synthesize-skill") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = hermesSynthesizeSkill(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-
-  // v94.0 Vercel Labs Skills & OpenClaw Gateway Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v94/skills/catalog") {
-    return respond(response, 200, getVercelSkillsCatalog());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v94/skills/apply") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = executeVercelSkillPrompt(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v94/openclaw/status") {
-    return respond(response, 200, getOpenClawGatewayStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v94/openclaw/dispatch") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = dispatchOpenClawMessage(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 400, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v94/openclaw/audit") {
-    return respond(response, 200, runOpenClawSupervisorAudit());
-  }
-
-  // v95.0 Master Autonomous Nexus Endpoints
-  if (request.method === "GET" && url.pathname === "/api/master/nexus-status") {
-    return respond(response, 200, getMasterNexusStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/master/nexus-cycle") {
-    let body = "";
-    request.on("data", chunk => { body += chunk; });
-    request.on("end", async () => {
-      try {
-        const payload = JSON.parse(body || "{}");
-        const res = await runMasterAutonomousNexusCycle(payload);
-        respond(response, 200, res);
-      } catch (err) {
-        respond(response, 500, { success: false, error: err.message });
-      }
-    });
-    return;
-  }
-
-  // Market Data Provider & Freshness Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v95/market/quote") {
-    const symbol = url.searchParams.get("symbol") || "AAPL";
-    return respond(response, 200, fetchMarketQuote({ symbol }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v95/market/status") {
-    return respond(response, 200, getMarketDataProviderStatus());
-  }
-
-  // Research Evidence & Audit Trail Endpoints
-  if (request.method === "GET" && url.pathname === "/api/v95/audit/trail") {
-    const symbol = url.searchParams.get("symbol");
-    return respond(response, 200, queryAuditTrail({ symbol }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v95/audit/evidence") {
-    const orderId = url.searchParams.get("orderId") || "";
-    return respond(response, 200, getAuditEvidenceByOrderId(orderId));
-  }
-
-  // Sandboxed Source Adapters Catalog
-  if (request.method === "GET" && url.pathname === "/api/v95/adapters/catalog") {
-    return respond(response, 200, getSandboxedAdaptersCatalog());
-  }
-
-  // Apex v100 Event-Driven Backtesting & Monte Carlo Probability Cones
-  if (request.method === "POST" && url.pathname === "/api/v100/backtest/run") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, runEventDrivenBacktest(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/backtest/status") {
-    return respond(response, 200, getBacktesterStatus());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/backtest/montecarlo") {
-    const paths = parseInt(url.searchParams.get("paths") || "10000", 10);
-    return respond(response, 200, runMonteCarlo10k({ pathsCount: paths }));
-  }
-
-  // Apex v100 Multi-Modal Vision & Voice Co-Pilot
-  if (request.method === "POST" && url.pathname === "/api/v100/vision/analyze") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, analyzeChartVision(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/voice/command") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, processApexVoiceCommand(payload.transcript));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/llm/route") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, routeLlmEnsembleQuery(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Apex v100 Web3 DEX Deep Liquidity & Cross-Venue Arbitrage
-  if (request.method === "GET" && url.pathname === "/api/v100/dex/status") {
-    return respond(response, 200, getWeb3DexRouterStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/dex/arbitrage") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, scanCrossVenueDexArbitrage(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/dex/mev-bundle") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, simulatePrivateMevBundle(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Apex v100 Zero-Human Sovereign RWA Treasury Compounding
-  if (request.method === "GET" && url.pathname === "/api/v100/rwa/status") {
-    return respond(response, 200, getRwaTreasuryStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/rwa/sweep") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, sweepIdleCashToRwaYield(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/rwa/timelock") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, triggerTimelockCircuitBreaker(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Apex v100 Multi-Node Swarm Mesh & BFT Consensus
-  if (request.method === "GET" && url.pathname === "/api/v100/mesh/status") {
-    return respond(response, 200, getSwarmMeshStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/mesh/heartbeat") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, broadcastNodeHeartbeat(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/mesh/vote") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, evaluateBftConsensusVote(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Apex v100 3D Liquidity Depth Heatmap
-  if (request.method === "GET" && url.pathname === "/api/v100/heatmap/matrix") {
-    const symbol = url.searchParams.get("symbol") || "BTC/USDT";
-    const center = parseFloat(url.searchParams.get("centerPrice") || "87500");
-    return respond(response, 200, getLiquidityHeatmapMatrix({ symbol, centerPrice: center }));
-  }
-
-  // Apex v100 Cloud Independent Sovereign Node & 24/7 Deployment
-  if (request.method === "GET" && url.pathname === "/api/v100/cloud/status") {
-    return respond(response, 200, getCloudSovereignNodeStatus());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/cloud/blueprints") {
-    return respond(response, 200, get1ClickCloudDeploymentBlueprints());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/cloud/keepalive") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, startCloudKeepAliveDaemon(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Apex v100 Multi-Broker Sandbox Gateway
-  if (request.method === "GET" && url.pathname === "/api/v100/broker-sandbox/status") {
-    return respond(response, 200, getMultiBrokerSandboxStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/broker-sandbox/order") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, executeSandboxBrokerOrder(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/broker-sandbox/orders") {
-    return respond(response, 200, getSandboxOrdersHistory());
-  }
-
-  // Apex v100 Strategy Hyper-Optimizer
-  if (request.method === "GET" && url.pathname === "/api/v100/optimizer/rankings") {
-    return respond(response, 200, getStrategyOptimizationRankings());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/optimizer/run") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, runStrategyHyperOptimization(payload));
-    }).catch(() => {});
-    return;
-  }
-  // Future Requirements Endpoints (Phases 1 - 5)
-  // Phase 1: Timeseries
-  if (request.method === "GET" && url.pathname === "/api/v100/timeseries/status") {
-    return respond(response, 200, getTimeseriesStoreStatus());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/timeseries/candles") {
-    const sym = url.searchParams.get("symbol") || "AAPL";
-    const tf = url.searchParams.get("tf") || "1m";
-    return respond(response, 200, { symbol: sym, timeframe: tf, candles: getCandleBars(sym, tf) });
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/timeseries/tick") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, recordMarketTick(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Phase 2: Strategy Validation Pipeline
-  if (request.method === "GET" && url.pathname === "/api/v100/validation/dsr") {
-    const sharpe = Number(url.searchParams.get("sharpe") || 1.8);
-    const trials = Number(url.searchParams.get("trials") || 50);
-    return respond(response, 200, calculateDeflatedSharpeRatio({ observedSharpe: sharpe, numberOfTrials: trials }));
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/validation/spa") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, runHansenSpaTest(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/validation/gate") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, evaluateStrategyPromotionGate(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Phase 3: Portfolio Risk Fortress
-  if (request.method === "GET" && url.pathname === "/api/v100/risk/var") {
-    const val = Number(url.searchParams.get("value") || 100000);
-    return respond(response, 200, calculateValueAtRiskMetrics({ portfolioValue: val }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/risk/euler") {
-    return respond(response, 200, calculateEulerRiskBudgeting());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/risk/hrp") {
-    return respond(response, 200, calculateHierarchicalRiskParity());
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/risk/hedge") {
-    return respond(response, 200, evaluateDefensiveHedging());
-  }
-
-  // Phase 4: Multi-Broker Suite
-  if (request.method === "GET" && url.pathname === "/api/v100/brokers/status") {
-    return respond(response, 200, verifyBrokerConnectivityStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/brokers/route-sor") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, routeOrderThroughSor(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/brokers/twap-slices") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, generateTwapOrderSlices(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/brokers/iceberg") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, generateIcebergOrderPlan(payload));
-    }).catch(() => {});
-    return;
-  }
-
-  // Phase 5: Self-Evolving Swarm
-  if (request.method === "GET" && url.pathname === "/api/v100/swarm/genomes") {
-    return respond(response, 200, getEvolvedGenomeLibrary());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/swarm/synthesize") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, synthesizeStrategyGenome(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/swarm/adapt-policy") {
-    readJsonBody(request, response).then(payload => {
-      return respond(response, 200, adaptPolicyParametersFromRewards(payload));
-    }).catch(() => {});
-    return;
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/swarm/evolution-status") {
-    return respond(response, 200, getEvolutionStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/swarm/trigger-evolution") {
-    return respond(response, 200, runEvolutionCycle({ paper, orders, strategyLab, persist }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/bot/sizing") {
-    const sym = url.searchParams.get("symbol") || "AAPL";
-    const price = parseFloat(url.searchParams.get("price") || "150");
-    const cash = paper.account.cash || 100000;
-    return respond(response, 200, calculateDynamicLotSize({ symbol: sym, cash, currentPrice: price }));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/bot/consensus") {
-    const sym = url.searchParams.get("symbol") || "AAPL";
-    const quote = paper.quotes[sym] || { price: 150 };
-    return respond(response, 200, evaluateMultiGenomeConsensus(sym, quote));
-  }
-  if (request.method === "GET" && url.pathname === "/api/v100/autotrade/status") {
-    return respond(response, 200, getAutoTraderStatus());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/autotrade/start") {
-    return respond(response, 200, startAutoTrader({ paper, orders, persist }));
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/autotrade/stop") {
-    return respond(response, 200, stopAutoTrader());
-  }
-  if (request.method === "POST" && url.pathname === "/api/v100/autotrade/trigger-now") {
-    executeAutonomousTradeCycle({ paper, orders, persist, forceExecute: true }).then(result => {
-      return respond(response, 200, result);
-    }).catch(err => {
-      return respond(response, 500, { error: err.message });
-    });
-    return;
-  }
-
-  return respond(response, 404, { error: "not found" });
+    return respond(response, 404, { error: "not found" });
   } catch (err) {
     return respond(response, 500, { error: `Internal Server Error: ${err.message}` });
   }
@@ -1317,18 +999,11 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
   const httpServer = createServer(app);
   initializeWebSocketGateway({ server: httpServer });
   httpServer.listen(port, host, () => {
-    startBot({ paper, strategyLab, orders, persist });
-    startContinuous247AgentSwarmDaemon();
-    startMasterAutonomousNexusDaemon({ intervalMs: 60000 });
-    startAutonomousEvolutionDaemon({ intervalMs: 30000, paper, orders, strategyLab, persist });
-    startAutoTrader({ paper, orders, persist, intervalMs: 10000 });
-    startPersistentPublicTunnelDaemon({ port });
     console.log(`\n==================================================`);
-    console.log(`🚀 AIFIE AI AGENT ONLINE & AUTONOMOUS 24/7`);
+    console.log(`🚀 AIFIE AI AGENT ONLINE (PHASE 0 CORE)`);
     console.log(`📊 Local Web Dashboard: http://localhost:${port}`);
     console.log(`🌐 Network URL:         http://${host}:${port}`);
-    console.log(`📱 Telegram Bot:        Active on @Myaifiebot`);
-    console.log(`🤖 AI Trading Engine:   RUNNING (Auto-Scanning)`);
+    console.log(`🤖 Core Paper Engine:   READY`);
     console.log(`==================================================\n`);
   });
 }

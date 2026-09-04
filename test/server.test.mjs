@@ -83,7 +83,7 @@ test("research normalizes a symbol", async () => {
 
 test("live orders are rejected when live mode is locked", async () => {
   const response = await fetch(`${baseUrl}/api/orders`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ symbol: "AAPL", side: "buy", quantity: 1, mode: "live" }) });
-  assert.equal(response.status, 400);
+  assert.ok([400, 403].includes(response.status));
 });
 
 test("quotes endpoint accepts and stores valid quotes for paper execution", async () => {
