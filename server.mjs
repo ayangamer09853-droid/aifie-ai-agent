@@ -138,6 +138,8 @@ import {
   getSelfKnowledgeTelemetry, 
   applySelfKnowledgeToDecision 
 } from "./src/ai-peer-dialogue-collaboration-engine.mjs";
+import { WAR_ROOM_HTML } from "./src/ai-war-room-canvas.mjs";
+import { semanticVectorRagEngine } from "./src/semantic-vector-rag-engine.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -199,6 +201,7 @@ export function app(request, response) {
     const url = new URL(request.url, "http://127.0.0.1");
     if (request.method === "OPTIONS") return respond(response, 204, "");
     if (request.method === "GET" && url.pathname === "/") return respond(response, 200, DASHBOARD, "text/html");
+    if (request.method === "GET" && (url.pathname === "/war-room" || url.pathname === "/ai-war-room")) return respond(response, 200, WAR_ROOM_HTML, "text/html");
     if (request.method === "GET" && url.pathname === "/api/status") return respond(response, 200, { name: "Aifie AI Agent", mode: "paper", liveExecution: false, liveBroker: { isLiveModeUnlocked: false }, orders, paper: accountSnapshot(paper) });
     if (request.method === "GET" && url.pathname === "/api/sources") return respond(response, 200, getConnectedSourceStatus());
     if (request.method === "GET" && url.pathname === "/api/integrations") return respond(response, 200, integrationManifest);
@@ -1472,6 +1475,33 @@ export function app(request, response) {
       }).catch(err => {
         return respond(response, 500, { success: false, error: err.message });
       });
+      return;
+    }
+
+    // Semantic Vector RAG & Fast Setup Retrieval Endpoints
+    if (request.method === "GET" && url.pathname === "/api/ai/vector-rag/status") {
+      return respond(response, 200, semanticVectorRagEngine.getVaultTelemetry());
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/vector-rag/query") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = semanticVectorRagEngine.querySimilarSetups(payload);
+          return respond(response, 200, { success: true, result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/vector-rag/store") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const entry = semanticVectorRagEngine.storeSetupVector(payload);
+          return respond(response, 200, { success: true, entry });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
       return;
     }
 
