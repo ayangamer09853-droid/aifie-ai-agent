@@ -123,6 +123,11 @@ import {
   memoryGuard
 } from "./src/quantum-resistant-vault.mjs";
 
+// Constitutional Guard & Phases 9-10
+import { constitutionalGuard } from "./src/constitutional-constraints-guard.mjs";
+import { orderFlowTracker } from "./src/order-flow-whale-tape.mjs";
+import { crossExchangeArbitrage } from "./src/cross-exchange-arbitrage.mjs";
+
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
 const stateStore = createStateStore(process.env.AIFIE_STATE_PATH || join(process.cwd(), "data", "aifie-state.json"));
@@ -1039,6 +1044,106 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/security/vault/status") {
       return respond(response, 200, { success: true, ...globalQuantumVault.getStatus(), timestamp: new Date().toISOString() });
+    }
+
+    // Constitutional Constraints Guard Endpoints
+    if (request.method === "GET" && url.pathname === "/api/constitution/status") {
+      return respond(response, 200, { success: true, ...constitutionalGuard.getStatus(), timestamp: new Date().toISOString() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/constitution/validate-order") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = constitutionalGuard.validateOrder(payload);
+          return respond(response, result.permitted ? 200 : 403, { success: result.permitted, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/constitution/sweep-profit") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const sweep = constitutionalGuard.evaluateProfitSweep(payload.dailyProfit);
+          return respond(response, 200, { success: true, ...sweep });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 9: Order Flow & Whale Tape Endpoints
+    if (request.method === "POST" && url.pathname === "/api/orderflow/trade-tick") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const tick = orderFlowTracker.processTradeTick(payload);
+          return respond(response, 200, { success: true, tick });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/orderflow/detect-whales") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const analysis = orderFlowTracker.detectWhaleWalls(payload.bids || [], payload.asks || []);
+          return respond(response, 200, { success: true, ...analysis });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/orderflow/detect-iceberg") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const iceberg = orderFlowTracker.detectIceberg(payload.priceLevel, payload.visibleSize, payload.executedTrades || []);
+          return respond(response, 200, { success: true, ...iceberg });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/orderflow/cvd") {
+      const windowSize = Number(url.searchParams.get("window")) || 100;
+      const cvd = orderFlowTracker.getCvdAnalytics(windowSize);
+      return respond(response, 200, { success: true, ...cvd });
+    }
+    if (request.method === "GET" && url.pathname === "/api/orderflow/status") {
+      return respond(response, 200, { success: true, ...orderFlowTracker.getStatus(), timestamp: new Date().toISOString() });
+    }
+
+    // Phase 10: Cross-Exchange Arbitrage Endpoints
+    if (request.method === "POST" && url.pathname === "/api/arbitrage/scan-spatial") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const opportunity = crossExchangeArbitrage.scanSpatialArbitrage(payload.symbol || "BTCUSDT", payload.venues || {});
+          return respond(response, 200, { success: true, ...opportunity });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/arbitrage/scan-triangular") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const loop = crossExchangeArbitrage.scanTriangularArbitrage(payload);
+          return respond(response, 200, { success: true, ...loop });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/arbitrage/opportunities") {
+      return respond(response, 200, { success: true, ...crossExchangeArbitrage.getOpportunities() });
+    }
+    if (request.method === "GET" && url.pathname === "/api/arbitrage/status") {
+      return respond(response, 200, { success: true, ...crossExchangeArbitrage.getStatus(), timestamp: new Date().toISOString() });
     }
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {
