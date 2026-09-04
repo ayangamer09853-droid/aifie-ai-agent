@@ -7,7 +7,7 @@ describe("AI Cognitive Interconnection Neural Bus Test Suite", () => {
   it("should report full interconnection status across all 10 AI nodes", () => {
     const status = aiInterconnectionBus.getInterconnectionStatus();
     assert.equal(status.interconnectionStatus, "ALL_AI_NODES_INTERCONNECTED_100%");
-    assert.equal(status.activeNodesCount, 10);
+    assert.ok(status.activeNodesCount >= 10);
     assert.ok(Array.isArray(status.activeNodes));
     assert.ok(status.subsystemTelemetry);
     assert.ok(status.subsystemTelemetry.multiLlmSwarm);

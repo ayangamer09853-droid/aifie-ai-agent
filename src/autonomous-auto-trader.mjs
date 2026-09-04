@@ -21,6 +21,7 @@ import { recordLedgerTransaction } from "./real-pnl-accounting-ledger.mjs";
 import { sendTradeAlert } from "./telegram-notifier.mjs";
 import { alpacaBroker } from "./live-broker-alpaca.mjs";
 import { aiInterconnectionBus } from "./ai-interconnection-neural-bus.mjs";
+import { applySelfKnowledgeToDecision, distillSelfKnowledgeFromTradeOutcome } from "./ai-peer-dialogue-collaboration-engine.mjs";
 
 const autoTraderState = {
   isRunning: false,
@@ -111,6 +112,13 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
           fillPrice: fill.fillPrice,
           realizedPnLUSD: pnlVal
         });
+        distillSelfKnowledgeFromTradeOutcome({
+          symbol: sym,
+          side: "SELL",
+          realizedPnLUSD: pnlVal,
+          pnlPercent: Number(pnlPct.toFixed(2)),
+          strategy: "TAKE_PROFIT_AUTO"
+        });
         aiInterconnectionBus.emit("TRADE_EXECUTED", {
           symbol: sym,
           side: "SELL",
@@ -155,6 +163,13 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
           quantity: pos.quantity,
           fillPrice: fill.fillPrice,
           realizedPnLUSD: slLossVal
+        });
+        distillSelfKnowledgeFromTradeOutcome({
+          symbol: sym,
+          side: "SELL",
+          realizedPnLUSD: slLossVal,
+          pnlPercent: Number(pnlPct.toFixed(2)),
+          strategy: "STOP_LOSS_AUTO"
         });
         aiInterconnectionBus.emit("TRADE_EXECUTED", {
           symbol: sym,
@@ -207,6 +222,19 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         }
         if (qtyToBuy < 1) continue;
 
+        // Apply learned self-knowledge to filter / enhance decision
+        const knowledgeDecision = applySelfKnowledgeToDecision({
+          symbol,
+          proposedAction: "BUY",
+          rawConviction: consensus.agreementRatePercent || 70,
+          marketFeatures: { cvdDeltaInflow: true, defconLevel: 3 }
+        });
+
+        if (knowledgeDecision.isVetoed) {
+          logAutoTraderEvent(`🛑 [SELF-KNOWLEDGE GUARD] Entry skipped for ${symbol}: ${knowledgeDecision.vetoReason}`);
+          continue;
+        }
+
         const fill = placePaperOrder(paper, { symbol, side: "buy", quantity: qtyToBuy });
 
         const autoOrder = {
@@ -218,7 +246,9 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
             strategy: consensus.championGenome || "Multi-Genome Ensemble",
             consensusRate: consensus.agreementRatePercent,
             lotSizing: sizing.recommendedAllocPercent,
-            rationale: `24/7 Automated Trade Entry: Consensus ${consensus.agreementRatePercent}% (${consensus.buyVotes}/3 Genomes) | Sizing: ${sizing.recommendedAllocPercent}`
+            calibratedConviction: knowledgeDecision.calibratedConviction,
+            appliedAxioms: knowledgeDecision.appliedAxiomsCount,
+            rationale: `24/7 Automated Trade Entry: Consensus ${consensus.agreementRatePercent}% (${consensus.buyVotes}/3 Genomes) | Self-Knowledge Conviction: ${knowledgeDecision.calibratedConviction}% (${knowledgeDecision.appliedAxiomsCount} axioms applied)`
           }
         };
 

@@ -133,6 +133,11 @@ import { autonomousSelfLearningEngine } from "./src/autonomous-self-learning-eng
 import { continuousSelfOptimizationDaemon } from "./src/continuous-self-optimization-daemon.mjs";
 import { startAutoTrader, stopAutoTrader, getAutoTraderStatus, executeAutonomousTradeCycle } from "./src/autonomous-auto-trader.mjs";
 import { aiInterconnectionBus } from "./src/ai-interconnection-neural-bus.mjs";
+import { 
+  conductAiPeerDialogue, 
+  getSelfKnowledgeTelemetry, 
+  applySelfKnowledgeToDecision 
+} from "./src/ai-peer-dialogue-collaboration-engine.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1402,6 +1407,41 @@ export function app(request, response) {
           return respond(response, 200, { success: true, synthesis });
         } catch (err) {
           return respond(response, 500, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // AI-to-AI Peer Dialogue & Collaborative Reasoning Endpoints
+    if (request.method === "GET" && url.pathname === "/api/ai/collaboration/knowledge") {
+      return respond(response, 200, getSelfKnowledgeTelemetry());
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/collaboration/dialogue") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const symbol = payload.symbol || "NVDA";
+          const currentPrice = Number(payload.currentPrice || (paper.quotes?.[symbol]?.price || 150.0));
+          const proposedAction = payload.action || payload.proposedAction || "BUY";
+          const dialogue = await conductAiPeerDialogue({ 
+            symbol, 
+            currentPrice, 
+            proposedAction, 
+            marketContext: payload.marketContext || {} 
+          });
+          return respond(response, 200, { success: true, dialogue });
+        } catch (err) {
+          return respond(response, 500, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/collaboration/apply") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = applySelfKnowledgeToDecision(payload);
+          return respond(response, 200, { success: true, result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
         }
       }).catch(() => {});
       return;

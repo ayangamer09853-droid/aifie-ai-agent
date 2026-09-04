@@ -25,6 +25,7 @@ import { getAutoTraderStatus } from "./autonomous-auto-trader.mjs";
 import { orderFlowTracker } from "./order-flow-whale-tape.mjs";
 import { constitutionalGuard } from "./constitutional-constraints-guard.mjs";
 import { getPriceBuffer } from "./market-fetcher.mjs";
+import { getSelfKnowledgeTelemetry, conductAiPeerDialogue } from "./ai-peer-dialogue-collaboration-engine.mjs";
 
 class AiInterconnectionNeuralBus extends EventEmitter {
   constructor() {
@@ -40,7 +41,8 @@ class AiInterconnectionNeuralBus extends EventEmitter {
       "AUTONOMOUS_AUTO_TRADER",
       "ORDER_FLOW_WHALE_TAPE",
       "CONSTITUTIONAL_GUARD",
-      "THOUGHT_DECISION_GRAPH"
+      "THOUGHT_DECISION_GRAPH",
+      "AI_PEER_COLLABORATION_ENGINE"
     ];
     this.synapseLog = [];
     this.registerCoreCrossModuleListeners();
@@ -148,7 +150,8 @@ class AiInterconnectionNeuralBus extends EventEmitter {
         constitutionalGuard: {
           status: constStatus.governorStatus,
           rulesPassed: constStatus.rulesPassedCount
-        }
+        },
+        peerCollaboration: getSelfKnowledgeTelemetry()
       },
       recentSynapses: this.synapseLog.slice(0, 10),
       timestamp: new Date().toISOString()
