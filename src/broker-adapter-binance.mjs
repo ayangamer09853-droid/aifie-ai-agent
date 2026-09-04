@@ -74,11 +74,14 @@ export async function dispatchBinanceOrder(orderParams = {}, { dryRun = true, fe
   }
 
   const endpoint = dryRun ? payload.dryRunUrl : payload.liveUrl;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3500);
 
   try {
     const res = await fetchFn(endpoint, {
       method: "POST",
-      headers: payload.headers
+      headers: payload.headers,
+      signal: controller.signal
     });
 
     if (res.ok) {

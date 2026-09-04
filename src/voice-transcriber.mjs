@@ -58,8 +58,89 @@ export async function parseVoiceCommand(transcript, options = {}) {
     throw new Error("Empty voice command transcript provided");
   }
 
-  const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
   const fetchFn = options.fetchFn || globalThis.fetch;
+  const timeoutMs = options.timeoutMs || 8000;
+
+  // 1. Try NVIDIA NIM (High-Speed LLM inference)
+  const nvidiaKey = options.nvidiaKey || process.env.NVIDIA_NIM_API_KEY;
+  if (nvidiaKey && !nvidiaKey.includes("your_")) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchFn("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${nvidiaKey}`
+        },
+        body: JSON.stringify({
+          model: "meta/llama-3.2-11b-vision-instruct",
+          messages: [
+            {
+              role: "user",
+              content: `Parse this trading voice command into pure JSON: "${text}".
+Keys: action (BUY/SELL), symbol (e.g. AAPL, BTCUSDT), quantity (number), order_type (market/limit), confidence (number 0-1). Return only JSON.`
+            }
+          ],
+          max_tokens: 256,
+          temperature: 0.1
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const contentText = data.choices?.[0]?.message?.content || "{}";
+        const jsonMatch = contentText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          parsed.parserEngine = "nvidia-nim-llama-3.2";
+          return parsed;
+        }
+      }
+    } catch (_) {
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // 2. Try OpenAI GPT-4o
+  const openaiKey = options.openaiKey || process.env.OPENAI_API_KEY;
+  if (openaiKey && !openaiKey.includes("your_")) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetchFn("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: `Parse this trading voice command into structured JSON: "${text}". Keys: action, symbol, quantity, order_type, confidence.`
+            }
+          ],
+          max_tokens: 256,
+          response_format: { type: "json_object" }
+        })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const parsed = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+        parsed.parserEngine = "openai-gpt-4o";
+        return parsed;
+      }
+    } catch (_) {
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
 
   if (apiKey) {
     const controller = new AbortController();

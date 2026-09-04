@@ -11,19 +11,99 @@
  * @returns {Promise<object>} JSON analysis
  */
 export async function analyzeChartVision(chartImage, options = {}) {
-  const apiKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
   const fetchFn = options.fetchFn || globalThis.fetch;
+  const timeoutMs = options.timeoutMs || 15000;
+  const anthropicKey = options.apiKey || process.env.ANTHROPIC_API_KEY;
 
-  if (apiKey) {
+  // 1. Try NVIDIA NIM Llama-3.2-Vision (Ultra-fast hardware accelerated)
+  const nvidiaKey = options.nvidiaKey || process.env.NVIDIA_NIM_API_KEY;
+  if (nvidiaKey && !nvidiaKey.includes("your_")) {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), options.timeoutMs || 15000);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetchFn("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${nvidiaKey}`
+        },
+        body: JSON.stringify({
+          model: "meta/llama-3.2-11b-vision-instruct",
+          messages: [
+            {
+              role: "user",
+              content: "Analyze this trading chart. Identify: 1) Support/Resistance levels 2) Trend direction 3) Potential entry/exit points 4) Risk assessment. Return pure JSON with keys: supportLevels, resistanceLevels, trendDirection, potentialEntry, potentialExit, riskAssessment."
+            }
+          ],
+          max_tokens: 512,
+          temperature: 0.2
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const text = data.choices?.[0]?.message?.content || "";
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          parsed.engine = "nvidia-nim-llama-3.2-vision";
+          return parsed;
+        }
+      }
+    } catch (_) {
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // 2. Try OpenAI GPT-4o Vision
+  const openaiKey = options.openaiKey || process.env.OPENAI_API_KEY;
+  if (openaiKey && !openaiKey.includes("your_")) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetchFn("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: "Analyze this trading chart. Identify: 1) Support/Resistance levels 2) Trend direction 3) Potential entry/exit points 4) Risk assessment. Return pure JSON with keys: supportLevels, resistanceLevels, trendDirection, potentialEntry, potentialExit, riskAssessment."
+            }
+          ],
+          max_tokens: 512,
+          response_format: { type: "json_object" }
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const parsed = JSON.parse(data.choices?.[0]?.message?.content || "{}");
+        parsed.engine = "openai-gpt-4o-vision";
+        return parsed;
+      }
+    } catch (_) {
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // 3. Try Anthropic Claude 3.5 Sonnet
+  if (anthropicKey && !anthropicKey.includes("your_")) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const res = await fetchFn("https://api.anthropic.com/v1/messages", {
         method: "POST",
         signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
+          "x-api-key": anthropicKey,
           "anthropic-version": "2023-06-01"
         },
         body: JSON.stringify({
@@ -56,11 +136,12 @@ export async function analyzeChartVision(chartImage, options = {}) {
         const text = responseData.content?.[0]?.text || "{}";
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          const parsed = JSON.parse(jsonMatch[0]);
+          parsed.engine = "claude-3-5-sonnet";
+          return parsed;
         }
       }
-    } catch (_err) {
-      // Fall through to deterministic analyzer
+    } catch (_) {
     } finally {
       clearTimeout(timer);
     }
@@ -82,7 +163,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
       confidenceScore: 0.86,
       marketStructure: "FAIR_VALUE_GAP_DISPLACEMENT"
     },
-    engine: apiKey ? "claude-3-5-sonnet" : "aifie-deterministic-vision"
+    engine: anthropicKey ? "claude-3-5-sonnet" : "aifie-deterministic-vision"
   };
 }
 

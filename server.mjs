@@ -131,6 +131,7 @@ import { worldmonitorAdapter, GEOPOLITICAL_HOTSPOTS, STRATEGIC_CHOKEPOINTS } fro
 import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./src/vibe-trading-adapter.mjs";
 import { autonomousSelfLearningEngine } from "./src/autonomous-self-learning-engine.mjs";
 import { continuousSelfOptimizationDaemon } from "./src/continuous-self-optimization-daemon.mjs";
+import { startAutoTrader, stopAutoTrader, getAutoTraderStatus, executeAutonomousTradeCycle } from "./src/autonomous-auto-trader.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -382,6 +383,10 @@ export function app(request, response) {
           } else if (mode === "live" && payload.venue === "ALPACA") {
             dispatchResult = await dispatchAlpacaOrder(payload, { isPaper: false });
           } else {
+            const sym = String(payload.symbol || "AAPL").trim().toUpperCase();
+            if (payload.price || !paper.quotes[sym]) {
+              setQuote(paper, { symbol: sym, price: Number(payload.price || 150) });
+            }
             const fill = placePaperOrder(paper, payload);
             dispatchResult = { success: true, mode: "paper", fill };
           }
@@ -1361,6 +1366,27 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/optimizer/daily-reports") {
       return respond(response, 200, { success: true, reports: continuousSelfOptimizationDaemon.getHistoricalReports() });
+    }
+
+    // 24/7 Autonomous Auto-Trader v100 Endpoints
+    if (request.method === "GET" && url.pathname === "/api/v100/autotrade/status") {
+      return respond(response, 200, getAutoTraderStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/v100/autotrade/start") {
+      const status = startAutoTrader({ paper, orders, persist });
+      return respond(response, 200, status);
+    }
+    if (request.method === "POST" && url.pathname === "/api/v100/autotrade/stop") {
+      const status = stopAutoTrader();
+      return respond(response, 200, status);
+    }
+    if (request.method === "POST" && url.pathname === "/api/v100/autotrade/trigger-now") {
+      executeAutonomousTradeCycle({ paper, orders, persist, forceExecute: true }).then(result => {
+        return respond(response, 200, result);
+      }).catch(err => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
     }
 
     if (request.method === "POST" && url.pathname === "/api/quotes") {

@@ -10,11 +10,11 @@
 import { generateLiveTxHash } from "./real-world-live-data-sanitizer.mjs";
 
 const SUPPORTED_LLM_MODELS = [
-  { id: "LLAMA_32_VISION_NIM", provider: "NVIDIA_NIM", modelName: "meta/llama-3.2-11b-vision-instruct", latencyMs: 95, costPer1kTokensUSD: 0.0001, specialization: "SPEED_AND_MICROSERVICES", active: true },
-  { id: "DEEPSEEK_V4_NIM", provider: "NVIDIA_NIM", modelName: "deepseek-ai/deepseek-v4-pro-0813", latencyMs: 140, costPer1kTokensUSD: 0.0003, specialization: "QUANT_MATH_AND_LOGIC", active: true },
-  { id: "GPT_4O", provider: "OpenAI", modelName: "gpt-4o", latencyMs: 290, costPer1kTokensUSD: 0.0025, specialization: "GENERAL_INTELLIGENCE", active: true },
-  { id: "GEMINI_20_FLASH", provider: "Google", modelName: "gemini-2.0-flash", latencyMs: 180, costPer1kTokensUSD: 0.0010, specialization: "MULTIMODAL_LONG_CONTEXT", active: true },
-  { id: "CLAUDE_35_SONNET", provider: "Anthropic", modelName: "claude-3-5-sonnet", latencyMs: 280, costPer1kTokensUSD: 0.0030, specialization: "REASONING_AND_CODE", active: true }
+  { id: "CLAUDE_35_SONNET", provider: "Anthropic", modelName: "claude-3-5-sonnet", latencyMs: 280, costPer1kTokensUSD: 0.003, specialization: "REASONING_AND_CODE" },
+  { id: "GPT_4O", provider: "OpenAI", modelName: "gpt-4o", latencyMs: 310, costPer1kTokensUSD: 0.0025, specialization: "GENERAL_INTELLIGENCE" },
+  { id: "DEEPSEEK_R1_V3", provider: "DeepSeek", modelName: "deepseek-ai/deepseek-r1", latencyMs: 190, costPer1kTokensUSD: 0.0005, specialization: "QUANT_MATH_AND_LOGIC" },
+  { id: "LLAMA_33_70B", provider: "Meta_OpenSource", modelName: "meta/llama-3.2-11b-vision-instruct", latencyMs: 140, costPer1kTokensUSD: 0.0002, specialization: "SPEED_AND_MICROSERVICES" },
+  { id: "GEMINI_15_PRO", provider: "Google", modelName: "gemini-1.5-pro", latencyMs: 250, costPer1kTokensUSD: 0.00125, specialization: "MULTIMODAL_LONG_CONTEXT" }
 ];
 
 export function getMultiLlmSwarmStatus() {
@@ -106,11 +106,11 @@ export async function executeNvidiaNimInference(prompt, { model = "meta/llama-3.
 
 export function run5ModelConsensusVote({ symbol = "AAPL", marketContext = "BULL_TREND_CONFLUENCE" } = {}) {
   const modelVotes = [
-    { model: "LLAMA_33_70B_NIM", provider: "NVIDIA", vote: "BUY", confidence: 94, rationale: "Ultra-fast NVIDIA NIM inference: Order block mitigation with high volume shelf." },
-    { model: "DEEPSEEK_R1_NIM", provider: "NVIDIA", vote: "BUY", confidence: 96, rationale: "Quantitative reasoning: CVD delta divergence + favorable 3.4 Risk-to-Reward ratio." },
-    { model: "GPT_4O", provider: "OpenAI", vote: "BUY", confidence: 89, rationale: "Macro rate stabilization sentiment and gamma pin above strike." },
-    { model: "GEMINI_20_FLASH", provider: "Google", vote: "BUY", confidence: 91, rationale: "Multimodal visual confluence on 4H Fair Value Gap." },
-    { model: "CLAUDE_35_SONNET", provider: "Anthropic", vote: "BUY", confidence: 92, rationale: "Constitutional risk invariants satisfied with zero regime breaches." }
+    { model: "CLAUDE_35_SONNET", provider: "Anthropic", vote: "BUY", confidence: 92, rationale: "Structural liquidity sweep and bullish order block mitigation." },
+    { model: "GPT_4O", provider: "OpenAI", vote: "BUY", confidence: 88, rationale: "Macro rate pause sentiment and options gamma stability." },
+    { model: "DEEPSEEK_R1_V3", provider: "DeepSeek", vote: "BUY", confidence: 95, rationale: "High-frequency CVD delta divergence + 3RR expectation." },
+    { model: "LLAMA_33_70B", provider: "Meta_NVIDIA", vote: "BUY", confidence: 94, rationale: "NVIDIA NIM inference: Order block mitigation with high volume shelf." },
+    { model: "GEMINI_15_PRO", provider: "Google", vote: "HOLD", confidence: 60, rationale: "Pre-market earnings volatility shield active." }
   ];
 
   const buyVotes = modelVotes.filter(v => v.vote === "BUY").length;

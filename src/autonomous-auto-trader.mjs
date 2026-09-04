@@ -17,9 +17,9 @@ import { fetchLiveQuote } from "./market-fetcher.mjs";
 import { placePaperOrder, setQuote, accountSnapshot } from "./paper-engine.mjs";
 import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "./trading-bot.mjs";
 import { getEvolutionStatus } from "./self-evolving-swarm.mjs";
-import { generateTradingSignal } from "./technical-indicators.mjs";
 import { recordLedgerTransaction } from "./real-pnl-accounting-ledger.mjs";
 import { sendTradeAlert } from "./telegram-notifier.mjs";
+import { alpacaBroker } from "./live-broker-alpaca.mjs";
 
 const autoTraderState = {
   isRunning: false,
@@ -99,6 +99,9 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         };
         orders.push(closeOrder);
         autoTraderState.successfulProfitsCount++;
+        if (["AAPL", "TSLA", "NVDA"].includes(sym)) {
+          alpacaBroker.placeOrder(sym, pos.quantity, "sell", "market").catch(() => {});
+        }
         recordLedgerTransaction({
           symbol: sym,
           side: "SELL",
@@ -132,6 +135,9 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         };
         orders.push(closeOrder);
         autoTraderState.stopLossCount++;
+        if (["AAPL", "TSLA", "NVDA"].includes(sym)) {
+          alpacaBroker.placeOrder(sym, pos.quantity, "sell", "market").catch(() => {});
+        }
         recordLedgerTransaction({
           symbol: sym,
           side: "SELL",
@@ -199,6 +205,10 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
 
         orders.push(autoOrder);
         autoTraderState.totalAutoTradesExecuted++;
+
+        if (["AAPL", "TSLA", "NVDA"].includes(symbol)) {
+          alpacaBroker.placeOrder(symbol, qtyToBuy, "buy", "market").catch(() => {});
+        }
 
         recordLedgerTransaction({
           symbol,
