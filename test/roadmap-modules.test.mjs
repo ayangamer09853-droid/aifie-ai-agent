@@ -185,12 +185,18 @@ test("Server Integration: Endpoints for /api/orders guard, /api/backtest, /api/p
 
   try {
     // 1. /api/orders live mode without ENABLE_LIVE_TRADING returns 403
-    const liveOrderRes = await fetch(`${baseUrl}/api/orders`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ symbol: "AAPL", side: "buy", quantity: 10, mode: "live" })
-    });
-    assert.equal(liveOrderRes.status, 403);
+    const prevFlag = process.env.ENABLE_LIVE_TRADING;
+    delete process.env.ENABLE_LIVE_TRADING;
+    try {
+      const liveOrderRes = await fetch(`${baseUrl}/api/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symbol: "AAPL", side: "buy", quantity: 10, mode: "live" })
+      });
+      assert.equal(liveOrderRes.status, 403);
+    } finally {
+      if (prevFlag !== undefined) process.env.ENABLE_LIVE_TRADING = prevFlag;
+    }
 
     // 2. /api/orders paper mode returns 200
     const paperOrderRes = await fetch(`${baseUrl}/api/orders`, {
