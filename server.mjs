@@ -109,6 +109,22 @@ import { executeNexusAutonomousTick, getMasterNexusReport } from "./src/master-a
 import { dispatchMobileSignalAlert, processMobileConfirmationCallback, getPendingSignalAlerts, getMobileConfirmationGateStatus } from "./src/telegram-mobile-confirmation-gate.mjs";
 import { getCloudSovereigntyMetrics, startAntiSleepPinger, stopAntiSleepPinger } from "./src/cloud-sovereign-keepalive-daemon.mjs";
 
+// Phase 8: Quantum-Resistant Security Vault
+import {
+  QuantumVault,
+  encryptWithQuantumResistantVault,
+  decryptWithQuantumResistantVault,
+  splitSecretShamir,
+  reconstructSecretShamir,
+  generateLatticeKemKeyPair,
+  encapsulateLatticeSecret,
+  signLatticeData,
+  verifyLatticeSignature,
+  memoryGuard
+} from "./src/quantum-resistant-vault.mjs";
+
+const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
+
 const stateStore = createStateStore(process.env.AIFIE_STATE_PATH || join(process.cwd(), "data", "aifie-state.json"));
 const persistedState = stateStore.load();
 const orders = persistedState.orders;
@@ -923,6 +939,106 @@ export function app(request, response) {
         }
       }).catch(() => {});
       return;
+    }
+
+    // Phase 8: Quantum-Resistant Security Vault Endpoints
+    if (request.method === "POST" && url.pathname === "/api/security/vault/encrypt") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const envelope = encryptWithQuantumResistantVault(
+            payload.plaintext,
+            payload.masterPassword || globalQuantumVault.masterPassword,
+            payload.aad || ""
+          );
+          return respond(response, 200, { success: true, envelope });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/decrypt") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const decrypted = decryptWithQuantumResistantVault(
+            payload.envelope,
+            payload.masterPassword || globalQuantumVault.masterPassword
+          );
+          return respond(response, 200, { success: true, decrypted });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/split-secret") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const shares = splitSecretShamir(payload.secret, payload.n || 5, payload.k || 3);
+          return respond(response, 200, { success: true, count: shares.length, threshold: payload.k || 3, shares });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/recover-secret") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const secret = reconstructSecretShamir(payload.shares, payload.asHex || false);
+          return respond(response, 200, { success: true, secret });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/kem-keypair") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const keyPair = generateLatticeKemKeyPair(payload.dimension || 4);
+          return respond(response, 200, { success: true, ...keyPair });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/kem-encapsulate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const kem = encapsulateLatticeSecret(payload.publicKey);
+          return respond(response, 200, { success: true, ...kem });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/sign") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const sig = signLatticeData(payload.message, payload.privateKey);
+          return respond(response, 200, { success: true, ...sig });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/security/vault/verify") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const valid = verifyLatticeSignature(payload.message, payload.signature, payload.privateKey);
+          return respond(response, 200, { success: true, valid });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/security/vault/status") {
+      return respond(response, 200, { success: true, ...globalQuantumVault.getStatus(), timestamp: new Date().toISOString() });
     }
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {
