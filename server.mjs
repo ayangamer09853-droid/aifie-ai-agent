@@ -130,6 +130,7 @@ import { leanEngineAdapter } from "./src/lean-engine-adapter.mjs";
 import { worldmonitorAdapter, GEOPOLITICAL_HOTSPOTS, STRATEGIC_CHOKEPOINTS } from "./src/worldmonitor-intelligence-adapter.mjs";
 import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./src/vibe-trading-adapter.mjs";
 import { autonomousSelfLearningEngine } from "./src/autonomous-self-learning-engine.mjs";
+import { continuousSelfOptimizationDaemon } from "./src/continuous-self-optimization-daemon.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1322,6 +1323,46 @@ export function app(request, response) {
       }).catch(() => {});
       return;
     }
+
+    // Continuous 24/7 Self-Optimization Daemon & Day-End Report Endpoints
+    if (request.method === "GET" && url.pathname === "/api/optimizer/status") {
+      return respond(response, 200, continuousSelfOptimizationDaemon.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/optimizer/start") {
+      continuousSelfOptimizationDaemon.startDaemon();
+      return respond(response, 200, { success: true, message: "24/7 Self-Optimization Daemon Started", status: continuousSelfOptimizationDaemon.getStatus() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/optimizer/stop") {
+      continuousSelfOptimizationDaemon.stopDaemon();
+      return respond(response, 200, { success: true, message: "24/7 Self-Optimization Daemon Paused", status: continuousSelfOptimizationDaemon.getStatus() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/optimizer/trigger-now") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const result = await continuousSelfOptimizationDaemon.runOptimizationCycle(payload.trigger || "API_TRIGGER");
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/optimizer/trigger-eod-report") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const sendTelegram = payload.sendTelegram !== false;
+          const report = await continuousSelfOptimizationDaemon.generateDayEndReport(sendTelegram);
+          return respond(response, 200, report);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/optimizer/daily-reports") {
+      return respond(response, 200, { success: true, reports: continuousSelfOptimizationDaemon.getHistoricalReports() });
+    }
+
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {
         try {
