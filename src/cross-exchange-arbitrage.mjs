@@ -150,3 +150,4 @@ export class CrossExchangeArbitrageEngine {
 }
 
 export const crossExchangeArbitrage = new CrossExchangeArbitrageEngine();
+export const arbitrageEngine = crossExchangeArbitrage;

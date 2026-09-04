@@ -411,3 +411,5 @@ export class QuantumVault {
     };
   }
 }
+
+export const quantumVault = new QuantumVault();
