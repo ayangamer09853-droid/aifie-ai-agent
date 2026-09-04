@@ -131,7 +131,13 @@ export function updateAdminConfig(updates = {}) {
     "SUPABASE_ANON_KEY",
     "MAX_DAILY_LOSS_PERCENT",
     "RISK_PER_TRADE_PERCENT",
-    "LIVE_TRADING_ENABLED"
+    "LIVE_TRADING_ENABLED",
+    "ENABLE_LIVE_TRADING",
+    "APCA_API_KEY_ID",
+    "APCA_API_SECRET_KEY",
+    "APCA_API_BASE_URL",
+    "COINGECKO_API_KEY",
+    "COINGECKO_DEMO_API_KEY"
   ];
 
   const appliedUpdates = {};

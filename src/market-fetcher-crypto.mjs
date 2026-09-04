@@ -84,9 +84,20 @@ export async function fetchCoingeckoQuote(symbol, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+  const apiKey = options.apiKey || process.env.COINGECKO_API_KEY || process.env.COINGECKO_DEMO_API_KEY;
+
   try {
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd&include_market_cap=true`;
-    const res = await fetchFn(url, { signal: controller.signal });
+    let url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd&include_market_cap=true`;
+    const headers = {};
+    if (apiKey) {
+      headers["x-cg-demo-api-key"] = apiKey;
+      url += `&x_cg_demo_api_key=${encodeURIComponent(apiKey)}`;
+    }
+    const fetchOptions = { signal: controller.signal };
+    if (Object.keys(headers).length > 0) {
+      fetchOptions.headers = headers;
+    }
+    const res = await fetchFn(url, fetchOptions);
     if (!res.ok) {
       throw new Error(`CoinGecko API error: ${res.status} ${res.statusText || ""}`.trim());
     }

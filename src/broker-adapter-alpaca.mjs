@@ -16,9 +16,9 @@ const ALPACA_PAPER_BASE = "https://paper-api.alpaca.markets";
 const ALPACA_LIVE_BASE = "https://api.alpaca.markets";
 
 function getAlpacaAuth() {
-  const keyId = process.env.ALPACA_API_KEY || process.env.APCA_API_KEY_ID || "";
-  const secretKey = process.env.ALPACA_SECRET_KEY || process.env.APCA_API_SECRET_KEY || "";
-  const isLive = process.env.LIVE_TRADING_ENABLED === "true";
+  const keyId = process.env.ALPACA_API_KEY || process.env.ALPACA_API_KEY_ID || process.env.APCA_API_KEY_ID || "";
+  const secretKey = process.env.ALPACA_SECRET_KEY || process.env.ALPACA_API_SECRET_KEY || process.env.APCA_API_SECRET_KEY || "";
+  const isLive = process.env.LIVE_TRADING_ENABLED === "true" || process.env.ENABLE_LIVE_TRADING === "true";
   const isConfigured = Boolean(keyId && !keyId.includes("your_") && secretKey);
 
   return {

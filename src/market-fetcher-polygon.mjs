@@ -43,7 +43,28 @@ export async function fetchPolygonQuote(symbol, options = {}) {
       url = `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${encodeURIComponent(cleanTicker)}?apiKey=${encodeURIComponent(apiKey)}`;
     }
 
-    const res = await fetchFn(url, { signal: controller.signal });
+    let res = await fetchFn(url, { signal: controller.signal });
+    if (!res.ok && res.status === 403 && !isCrypto) {
+      // Fallback to previous day bar for accounts without real-time snapshot tier
+      const prevUrl = `https://api.polygon.io/v2/aggs/ticker/${encodeURIComponent(cleanTicker)}/prev?adjusted=true&apiKey=${encodeURIComponent(apiKey)}`;
+      const prevRes = await fetchFn(prevUrl, { signal: controller.signal }).catch(() => null);
+      if (prevRes && prevRes.ok) {
+        const prevData = await prevRes.json();
+        const bar = prevData.results?.[0];
+        if (bar) {
+          return {
+            symbol: normSymbol,
+            price: Number(bar.c),
+            bid: Number(bar.l),
+            ask: Number(bar.h),
+            bid_size: null,
+            ask_size: null,
+            timestamp: bar.t ? new Date(bar.t).toISOString() : new Date().toISOString(),
+            source: "polygon"
+          };
+        }
+      }
+    }
     if (!res.ok) {
       throw new Error(`Polygon API error: ${res.status} ${res.statusText || ""}`.trim());
     }

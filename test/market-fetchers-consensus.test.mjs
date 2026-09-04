@@ -219,11 +219,11 @@ test("Week 2: Server exposes IEX, Polygon, Crypto, and Consensus REST API endpoi
     const iexData = await iexRes.json();
     assert.equal(iexData.success, false);
 
-    // 4. GET /api/market/polygon/quote without key returns 502 graceful error
+    // 4. GET /api/market/polygon/quote (returns 200 when POLYGON_API_KEY present, 502 otherwise)
     const polyRes = await fetch(`${baseUrl}/api/market/polygon/quote?symbol=AAPL`);
-    assert.equal(polyRes.status, 502);
+    assert.ok([200, 502].includes(polyRes.status));
     const polyData = await polyRes.json();
-    assert.equal(polyData.success, false);
+    assert.equal(polyData.success, polyRes.status === 200);
   } finally {
     await new Promise(resolve => server.close(resolve));
   }

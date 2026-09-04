@@ -152,10 +152,16 @@ export async function fetchYahooFinanceBars(symbol = "AAPL", interval = "1m", ra
  */
 export async function fetchCoinGeckoPrice(coinId = "bitcoin", { fetchFn = fetch } = {}) {
   const cleanId = String(coinId || "bitcoin").toLowerCase();
-  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(cleanId)}&vs_currencies=usd&include_24hr_change=true`;
+  const apiKey = process.env.COINGECKO_API_KEY || process.env.COINGECKO_DEMO_API_KEY;
+  let url = `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(cleanId)}&vs_currencies=usd&include_24hr_change=true`;
+  const headers = {};
+  if (apiKey) {
+    headers["x-cg-demo-api-key"] = apiKey;
+    url += `&x_cg_demo_api_key=${encodeURIComponent(apiKey)}`;
+  }
 
   try {
-    const res = await fetchFn(url);
+    const res = await fetchFn(url, Object.keys(headers).length ? { headers } : undefined);
     if (res.ok) {
       const data = await res.json();
       if (data[cleanId]?.usd) {
