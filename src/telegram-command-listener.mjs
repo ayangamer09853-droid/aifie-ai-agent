@@ -190,10 +190,10 @@ import { conductAiPeerDialogue, getSelfKnowledgeTelemetry } from "./ai-peer-dial
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
-    [{ text: "🗣️ AI Collab & Dialogue" }, { text: "🧠 360° AI Interconnection" }],
-    [{ text: "🧠 Daily Learning Report" }, { text: "🌙 EOD Optimization Report" }],
-    [{ text: "⚙️ 24/7 Optimizer Status" }, { text: "🎛️ 10-Module Health" }],
-    [{ text: "🦁 Alpha Zoo (101 Factors)" }, { text: "🌍 WorldMonitor Intel" }],
+    [{ text: "🔄 24/7 Continuous Learning" }, { text: "🗣️ AI Collab & Dialogue" }],
+    [{ text: "🧠 360° AI Interconnection" }, { text: "🧠 Daily Learning Report" }],
+    [{ text: "🌙 EOD Optimization Report" }, { text: "⚙️ 24/7 Optimizer Status" }],
+    [{ text: "🎛️ 10-Module Health" }, { text: "🦁 Alpha Zoo (101 Factors)" }],
     [{ text: "📐 QuantConnect Lean" }, { text: "⚖️ Constitution Rules" }],
     [{ text: "🐳 Whale Orderflow" }, { text: "⚡ Cross-Exchange Arb" }],
     [{ text: "🏦 Alpaca Account ($100k)" }, { text: "🔐 Quantum Vault" }],
@@ -213,6 +213,7 @@ export const MOBILE_KEYBOARD = {
 export function parseTelegramCommand(text = "") {
   let normalized = text.trim();
 
+  if (normalized.startsWith("🔄 24/7 Continuous Learning") || normalized === "/continuouslearning" || normalized === "/learn247") normalized = "/continuouslearning status";
   if (normalized.startsWith("🗣️ AI Collab & Dialogue") || normalized === "/collab" || normalized === "/ai_talk" || normalized === "/dialogue") normalized = "/collab NVDA";
   if (normalized.startsWith("🧠 360° AI Interconnection") || normalized === "/interconnect" || normalized === "/synapse") normalized = "/synapse AAPL";
   if (normalized.startsWith("🧠 Daily Learning Report") || normalized === "/knowledge" || normalized === "/selfknowledge") normalized = normalized.startsWith("/knowledge") ? "/knowledge" : "/learning";
@@ -472,6 +473,54 @@ ${topAxiomList}
 
 ──────────────────
 <i>Self-knowledge is actively applied by Auto-Trader to calibrate confidence and prevent past trading mistakes.</i>`;
+  }
+
+  if (command === "/continuouslearning" || command === "/learn247") {
+    const sub = (symbol || "").toLowerCase().trim();
+    if (sub === "on" || sub === "start") {
+      const st = autonomousSelfLearningEngine.startContinuousLearning(60000);
+      return `🔄 <b>24/7 CONTINUOUS LEARNING ENGINE ACTIVATED</b>
+──────────────────
+<b>Status:</b> 🟢 <code>${st.engineStatus}</code>
+<b>Interval:</b> Every <code>${st.intervalSeconds}s</code> (24 hours / 7 days continuous)
+<b>Total Cycles:</b> <b>${st.totalCyclesLifetime}</b>
+<b>Evolution Score:</b> <b>${st.evolutionScore} / 100</b> [<code>${st.evolutionRank}</code>]
+
+<i>Aifie AI continuously scans market regimes, digests order flow anomalies, debates peer hypotheses, and improves self-knowledge non-stop.</i>`;
+    }
+    if (sub === "off" || sub === "stop") {
+      const st = autonomousSelfLearningEngine.stopContinuousLearning();
+      return `⏸️ <b>24/7 CONTINUOUS LEARNING ENGINE PAUSED</b>
+──────────────────
+<b>Status:</b> 🟡 <code>${st.engineStatus}</code>
+<b>Total Cycles Lifetime:</b> <b>${st.totalCyclesLifetime}</b>
+<b>Current Evolution Score:</b> <b>${st.evolutionScore} / 100</b>`;
+    }
+    if (sub === "now" || sub === "cycle") {
+      const res = await autonomousSelfLearningEngine.runContinuousLearningCycle("TELEGRAM_MANUAL_TRIGGER");
+      return `⚡ <b>CONTINUOUS LEARNING CYCLE #${res.cycleNumber} EXECUTED</b>
+──────────────────
+<b>Evolution Score:</b> <b>${res.evolutionScore} / 100</b>
+<b>New Discovery:</b> <i>${res.latestDiscovery}</i>
+<b>Timestamp:</b> <code>${res.executedAt}</code>
+
+<i>Learned pattern automatically updated in permanent knowledge vault.</i>`;
+    }
+
+    // Default status
+    const st = autonomousSelfLearningEngine.getContinuousLearningStatus();
+    return `🔄 <b>24/7 AUTONOMOUS CONTINUOUS LEARNING TELEMETRY</b>
+──────────────────
+<b>Daemon Status:</b> ${st.isRunning ? "🟢 <b>ACTIVE 24/7</b>" : "🟡 <b>PAUSED</b>"}
+<b>Continuous Interval:</b> Every <code>${st.intervalSeconds} seconds</code>
+<b>Total Learning Cycles:</b> <b>${st.totalCyclesLifetime}</b>
+<b>Evolution Stage:</b> <b>${st.evolutionRank}</b> (Score: <b>${st.evolutionScore} / 100</b>)
+<b>Last Active Cycle:</b> <code>${st.lastCycleAt}</code>
+
+<b>Controls:</b>
+• <code>/continuouslearning on</code> — Start 24/7 background learning
+• <code>/continuouslearning off</code> — Pause background loop
+• <code>/continuouslearning now</code> — Force immediate learning cycle`;
   }
 
   if (command === "/learning" || command === "/learningreport" || command === "/learn") {

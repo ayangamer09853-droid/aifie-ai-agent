@@ -1447,6 +1447,34 @@ export function app(request, response) {
       return;
     }
 
+    // 24/7 Autonomous Continuous Learning Endpoints
+    if (request.method === "GET" && url.pathname === "/api/ai/continuous-learning/status") {
+      return respond(response, 200, autonomousSelfLearningEngine.getContinuousLearningStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/continuous-learning/start") {
+      readJsonBody(request, response).then(payload => {
+        const interval = Number(payload.intervalMs || 60000);
+        const status = autonomousSelfLearningEngine.startContinuousLearning(interval);
+        return respond(response, 200, { success: true, status });
+      }).catch(() => {
+        const status = autonomousSelfLearningEngine.startContinuousLearning(60000);
+        return respond(response, 200, { success: true, status });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/continuous-learning/stop") {
+      const status = autonomousSelfLearningEngine.stopContinuousLearning();
+      return respond(response, 200, { success: true, status });
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/continuous-learning/cycle-now") {
+      autonomousSelfLearningEngine.runContinuousLearningCycle("MANUAL_REST_TRIGGER").then(result => {
+        return respond(response, 200, { success: true, result });
+      }).catch(err => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {
         try {
