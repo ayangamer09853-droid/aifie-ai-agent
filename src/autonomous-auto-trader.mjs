@@ -20,6 +20,7 @@ import { getEvolutionStatus } from "./self-evolving-swarm.mjs";
 import { recordLedgerTransaction } from "./real-pnl-accounting-ledger.mjs";
 import { sendTradeAlert } from "./telegram-notifier.mjs";
 import { alpacaBroker } from "./live-broker-alpaca.mjs";
+import { aiInterconnectionBus } from "./ai-interconnection-neural-bus.mjs";
 
 const autoTraderState = {
   isRunning: false,
@@ -102,12 +103,21 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         if (["AAPL", "TSLA", "NVDA"].includes(sym)) {
           alpacaBroker.placeOrder(sym, pos.quantity, "sell", "market").catch(() => {});
         }
+        const pnlVal = Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2));
         recordLedgerTransaction({
           symbol: sym,
           side: "SELL",
           quantity: pos.quantity,
           fillPrice: fill.fillPrice,
-          realizedPnLUSD: Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2))
+          realizedPnLUSD: pnlVal
+        });
+        aiInterconnectionBus.emit("TRADE_EXECUTED", {
+          symbol: sym,
+          side: "SELL",
+          quantity: pos.quantity,
+          realizedPnLUSD: pnlVal,
+          strategy: "TAKE_PROFIT_AUTO",
+          marketCondition: "BULL_PROFIT_RUN"
         });
         const msg = `🎯 AUTO TAKE-PROFIT: Closed ${pos.quantity} ${sym} at $${fill.fillPrice} (PnL: +${pnlPct.toFixed(2)}%)`;
         logAutoTraderEvent(msg);
@@ -138,12 +148,21 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
         if (["AAPL", "TSLA", "NVDA"].includes(sym)) {
           alpacaBroker.placeOrder(sym, pos.quantity, "sell", "market").catch(() => {});
         }
+        const slLossVal = Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2));
         recordLedgerTransaction({
           symbol: sym,
           side: "SELL",
           quantity: pos.quantity,
           fillPrice: fill.fillPrice,
-          realizedPnLUSD: Number((pos.quantity * (fill.fillPrice - avgPrice)).toFixed(2))
+          realizedPnLUSD: slLossVal
+        });
+        aiInterconnectionBus.emit("TRADE_EXECUTED", {
+          symbol: sym,
+          side: "SELL",
+          quantity: pos.quantity,
+          realizedPnLUSD: slLossVal,
+          strategy: "STOP_LOSS_AUTO",
+          marketCondition: "ADVERSE_VOLATILITY"
         });
         const msg = `🛡️ AUTO STOP-LOSS: Closed ${pos.quantity} ${sym} at $${fill.fillPrice} (PnL: ${pnlPct.toFixed(2)}%)`;
         logAutoTraderEvent(msg);
@@ -216,6 +235,16 @@ export async function executeAutonomousTradeCycle({ paper = { account: { cash: 1
           quantity: qtyToBuy,
           fillPrice: fill.fillPrice,
           realizedPnLUSD: 0
+        });
+
+        aiInterconnectionBus.emit("TRADE_EXECUTED", {
+          symbol,
+          side: "BUY",
+          quantity: qtyToBuy,
+          fillPrice: fill.fillPrice,
+          realizedPnLUSD: 0,
+          strategy: consensus.championGenome || "MULTI_GENOME_CONSENSUS",
+          marketCondition: "BULL_TREND_CONFLUENCE"
         });
 
         autoTraderState.recentAutoTrades.unshift({

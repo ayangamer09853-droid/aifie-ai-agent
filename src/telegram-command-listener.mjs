@@ -185,10 +185,11 @@ import { worldmonitorAdapter } from "./worldmonitor-intelligence-adapter.mjs";
 import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./vibe-trading-adapter.mjs";
 import { autonomousSelfLearningEngine } from "./autonomous-self-learning-engine.mjs";
 import { continuousSelfOptimizationDaemon } from "./continuous-self-optimization-daemon.mjs";
+import { aiInterconnectionBus } from "./ai-interconnection-neural-bus.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
-    [{ text: "🧠 Daily Learning Report" }, { text: "⚡ Run Self-Learning" }],
+    [{ text: "🧠 360° AI Interconnection" }, { text: "🧠 Daily Learning Report" }],
     [{ text: "🌙 EOD Optimization Report" }, { text: "⚙️ 24/7 Optimizer Status" }],
     [{ text: "🎛️ 10-Module Health" }, { text: "⚡ Vibe-Trading Alpha" }],
     [{ text: "🦁 Alpha Zoo (101 Factors)" }, { text: "🌍 WorldMonitor Intel" }],
@@ -211,6 +212,7 @@ export const MOBILE_KEYBOARD = {
 export function parseTelegramCommand(text = "") {
   let normalized = text.trim();
 
+  if (normalized.startsWith("🧠 360° AI Interconnection") || normalized === "/interconnect" || normalized === "/synapse") normalized = "/synapse AAPL";
   if (normalized.startsWith("🧠 Daily Learning Report")) normalized = "/learning";
   if (normalized.startsWith("⚡ Run Self-Learning")) normalized = "/learncycle";
   if (normalized.startsWith("🌙 EOD Optimization Report") || normalized === "/eod") normalized = "/eodreport";
@@ -409,6 +411,25 @@ export function parseTelegramCommand(text = "") {
 export async function processTelegramCommand({ command, symbol = "AAPL", quantity = 1, fullText = "" } = {}, { paper = {}, orders = [] } = {}) {
   const normSymbol = (symbol || "AAPL").trim().toUpperCase();
   const prices = getPriceBuffer(normSymbol);
+
+  if (command === "/synapse" || command === "/interconnect" || command === "/brain") {
+    const res = await aiInterconnectionBus.synthesizeUnified360Intelligence(normSymbol);
+    return `🧠 <b>AIFIE 360° INTERCONNECTED AI COGNITIVE SYNAPSE MATRIX</b>
+──────────────────
+<b>Target Asset:</b> <b>${res.symbol}</b> (Live Price: <code>$${res.currentPrice}</code>)
+<b>Composite Conviction:</b> <b>${res.compositeConvictionScore}</b> [<code>${res.recommendedAction}</code>]
+<b>Auto-Execution Gate:</b> <code>${res.autonomousExecutionApproval}</code>
+
+🔗 <b>INTERCONNECTED SUBSYSTEM CONFLUENCES:</b>
+• <b>Vision Engine:</b> <code>${res.interconnectedConfluences.chartVision.pattern}</code> (${res.interconnectedConfluences.chartVision.confidence})
+• <b>Multi-LLM Swarm:</b> <code>${res.interconnectedConfluences.multiLlmSwarm.verdict}</code> (${res.interconnectedConfluences.multiLlmSwarm.consensusRate} - ${res.interconnectedConfluences.multiLlmSwarm.modelsAgreedCount})
+• <b>Vibe Alpha#101:</b> <code>${res.interconnectedConfluences.vibeAlpha101.factor}</code> (Signal: ${res.interconnectedConfluences.vibeAlpha101.signal}) ➔ <b>${res.interconnectedConfluences.vibeAlpha101.recommendation}</b>
+• <b>WorldMonitor Macro:</b> DEFCON <code>${res.interconnectedConfluences.worldMonitorMacro.defconLevel}</code> (${res.interconnectedConfluences.worldMonitorMacro.geopoliticalBias})
+• <b>Whale Orderflow:</b> <code>${res.interconnectedConfluences.whaleTapeOrderflow.deltaBias}</code>
+
+──────────────────
+<i>All 10 AI subsystems continuously cross-communicate in real time over the Neural Synapse Bus.</i>`;
+  }
 
   if (command === "/learning" || command === "/learningreport" || command === "/learn") {
     const report = autonomousSelfLearningEngine.getDailyLearningReportDashboard();

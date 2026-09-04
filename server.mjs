@@ -132,6 +132,7 @@ import { vibeTradingAdapter, ALPHA_ZOO_REGISTRY } from "./src/vibe-trading-adapt
 import { autonomousSelfLearningEngine } from "./src/autonomous-self-learning-engine.mjs";
 import { continuousSelfOptimizationDaemon } from "./src/continuous-self-optimization-daemon.mjs";
 import { startAutoTrader, stopAutoTrader, getAutoTraderStatus, executeAutonomousTradeCycle } from "./src/autonomous-auto-trader.mjs";
+import { aiInterconnectionBus } from "./src/ai-interconnection-neural-bus.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -1386,6 +1387,23 @@ export function app(request, response) {
       }).catch(err => {
         return respond(response, 500, { success: false, error: err.message });
       });
+      return;
+    }
+
+    // AI Cognitive Interconnection Neural Bus Endpoints
+    if (request.method === "GET" && url.pathname === "/api/ai/interconnection/status") {
+      return respond(response, 200, aiInterconnectionBus.getInterconnectionStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/ai/interconnection/synapse") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const symbol = payload.symbol || "AAPL";
+          const synthesis = await aiInterconnectionBus.synthesizeUnified360Intelligence(symbol);
+          return respond(response, 200, { success: true, synthesis });
+        } catch (err) {
+          return respond(response, 500, { success: false, error: err.message });
+        }
+      }).catch(() => {});
       return;
     }
 
