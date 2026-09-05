@@ -196,6 +196,7 @@ import { answerTelegramCallbackQuery } from "./telegram-notifier.mjs";
 import { dataFeedingEngine } from "./ingestion/data-feeding-engine.mjs";
 import { mcpHub } from "./mcp/mcp-hub.mjs";
 import { handleTradingSuiteCommand } from "./telegram-trading-suite.mjs";
+import { telegramCommandRouter } from "./telegram/telegram-command-router.mjs";
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
@@ -464,10 +465,10 @@ export async function processTelegramCommand({ command, symbol = "AAPL", quantit
   const normSymbol = (symbol || "AAPL").trim().toUpperCase();
   const prices = getPriceBuffer(normSymbol);
 
-  // High-Performance 21-Command Institutional Trading Suite
-  const suiteResult = handleTradingSuiteCommand(command, { symbol, quantity, fullText }, { paper, orders });
-  if (suiteResult.handled) {
-    return suiteResult.response;
+  // Modular Command Router & Rate Limiter
+  const routerResult = await telegramCommandRouter.routeCommand({ command, symbol, quantity, fullText }, { paper, orders });
+  if (routerResult && routerResult.handled) {
+    return routerResult.response;
   }
 
   if (command === "/mcp") {

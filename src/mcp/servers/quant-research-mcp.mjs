@@ -24,6 +24,9 @@ import { LimitOrderBook, computeAlmgrenChrissTrajectory } from "../../microstruc
 import { realtimeFeatureStore } from "../../quant/realtime-feature-store.mjs";
 import { multiArmedBanditAllocator } from "../../portfolio/multi-armed-bandit-allocator.mjs";
 import { runMacroStressTestingMatrix, computeExtremeValueTheoryTailRisk } from "../../risk/macro-stress-testing-matrix.mjs";
+import { knowledgeGraphFeedbackEngine } from "../../learning/knowledge-graph-feedback-engine.mjs";
+import { geneticStrategyMutator } from "../../strategies/genetic-strategy-mutator.mjs";
+import { multiTimeframeSmcEngine } from "../../analysis/multi-timeframe-smc-engine.mjs";
 
 const mcpLob = new LimitOrderBook("AAPL", 150.0);
 
@@ -485,6 +488,61 @@ export function createQuantResearchMcpServer() {
       const stress = runMacroStressTestingMatrix(args);
       const evt = computeExtremeValueTheoryTailRisk({});
       return { stressTesting: stress, extremeValueTheory: evt };
+    }
+  });
+
+  // Tool 25: evaluate_knowledge_mitigation_rules
+  server.registerTool({
+    name: "evaluate_knowledge_mitigation_rules",
+    description: "Evaluates learned trade rules & adverse mitigation actions from the self-adaptive knowledge graph for a target symbol.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        symbol: { type: "string", description: "Target ticker symbol (e.g. NVDA, AAPL, BTC)" }
+      },
+      required: ["symbol"]
+    },
+    handler: async ({ symbol = "NVDA" }) => {
+      return knowledgeGraphFeedbackEngine.evaluateAdverseTradeMitigations(symbol);
+    }
+  });
+
+  // Tool 26: run_genetic_strategy_mutation
+  server.registerTool({
+    name: "run_genetic_strategy_mutation",
+    description: "Runs combinatorial genetic chromosome mutation across strategy parameters with Deflated Sharpe Ratio (DSR) gate.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        strategyName: { type: "string", description: "Base strategy name to mutate" },
+        populationSize: { type: "number", description: "Candidate population size" },
+        mutationRate: { type: "number", description: "Perturbation rate (0.0 to 1.0)" }
+      }
+    },
+    handler: async ({ strategyName = "TrendFollowingBreakout", populationSize = 10, mutationRate = 0.15 }) => {
+      return geneticStrategyMutator.evolvePopulation({ strategyName, populationSize, mutationRate });
+    }
+  });
+
+  // Tool 27: analyze_multi_timeframe_smc_zones
+  server.registerTool({
+    name: "analyze_multi_timeframe_smc_zones",
+    description: "Analyzes multi-timeframe Smart Money Concepts (FVG, Order Blocks, Liquidity Sweeps) and generates SVG multi-zone chart.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        symbol: { type: "string", description: "Ticker symbol" },
+        includeSvg: { type: "boolean", description: "Whether to generate headless SVG chart" }
+      },
+      required: ["symbol"]
+    },
+    handler: async ({ symbol = "AAPL", includeSvg = true }) => {
+      const analysis = multiTimeframeSmcEngine.analyzeSymbol(symbol);
+      let svg = null;
+      if (includeSvg) {
+        svg = multiTimeframeSmcEngine.renderMultiZoneSvgChart(symbol, analysis);
+      }
+      return { analysis, svg };
     }
   });
 

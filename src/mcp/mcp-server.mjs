@@ -55,6 +55,17 @@ export class McpServer {
   }
 
   /**
+   * Convenience programmatic invocation for tools
+   */
+  async callTool(name, args = {}) {
+    const tool = this.tools.get(name);
+    if (!tool) {
+      throw new Error(`Tool ${name} not found on server ${this.serverId}`);
+    }
+    return tool.handler(args);
+  }
+
+  /**
    * Register a readable resource
    */
   registerResource({ uri, name, description, mimeType = "application/json", handler }) {

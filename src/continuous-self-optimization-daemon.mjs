@@ -503,5 +503,8 @@ ${paramRows || "• Dynamic parameters auto-calibrated to prevailing regime."}
 
 // Global singleton instance & auto-start 24/7 daemon
 export const continuousSelfOptimizationDaemon = new ContinuousSelfOptimizationDaemon();
-// Auto-start daemon on module load
-continuousSelfOptimizationDaemon.startDaemon(60000);
+
+// Auto-start daemon on module load when not in test suite
+if (process.env.NODE_ENV !== "test" && !process.argv.some(a => a.includes("test"))) {
+  continuousSelfOptimizationDaemon.startDaemon(60000);
+}

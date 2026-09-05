@@ -71,6 +71,9 @@ import { LimitOrderBook, computeAlmgrenChrissTrajectory } from "./src/microstruc
 import { realtimeFeatureStore } from "./src/quant/realtime-feature-store.mjs";
 import { multiArmedBanditAllocator } from "./src/portfolio/multi-armed-bandit-allocator.mjs";
 import { runMacroStressTestingMatrix, computeExtremeValueTheoryTailRisk } from "./src/risk/macro-stress-testing-matrix.mjs";
+import { knowledgeGraphFeedbackEngine } from "./src/learning/knowledge-graph-feedback-engine.mjs";
+import { geneticStrategyMutator } from "./src/strategies/genetic-strategy-mutator.mjs";
+import { multiTimeframeSmcEngine } from "./src/analysis/multi-timeframe-smc-engine.mjs";
 
 const serverLob = new LimitOrderBook("AAPL", 150.0);
 
@@ -217,8 +220,6 @@ const persistedState = stateStore.load();
 const orders = persistedState.orders;
 const paper = createPaperState(persistedState.paper);
 const strategyLab = createStrategyState(persistedState.paper?.strategyLab);
-
-startTelegramCommandListener({ paper, orders, botToken: process.env.TELEGRAM_BOT_TOKEN });
 
 function persist() { stateStore.save({ orders, paper: { ...paper, strategyLab } }); }
 
@@ -2087,6 +2088,43 @@ export function app(request, response) {
 
     if (request.method === "GET" && url.pathname === "/api/risk/evt-tail") {
       const result = computeExtremeValueTheoryTailRisk({});
+      return respond(response, 200, { success: true, ...result });
+    }
+
+    // Knowledge Graph Mitigation, Genetic Alpha Mutation & Multi-Timeframe SMC Routes
+    if (request.method === "GET" && url.pathname === "/api/knowledge/mitigations") {
+      const symbol = url.searchParams.get("symbol") || "NVDA";
+      const result = knowledgeGraphFeedbackEngine.evaluateAdverseTradeMitigations(symbol);
+      return respond(response, 200, { success: true, ...result });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/knowledge/calibrate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { axiomId, isProfitable } = payload || {};
+          const result = knowledgeGraphFeedbackEngine.calibrateRuleOutcome(axiomId, isProfitable);
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/genetic/mutate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = geneticStrategyMutator.runEvolutionCycle(payload || {});
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/smc/multi-timeframe") {
+      const result = multiTimeframeSmcEngine.analyzeMultiTimeframeSMC();
       return respond(response, 200, { success: true, ...result });
     }
 

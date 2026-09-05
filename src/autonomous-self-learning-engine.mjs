@@ -859,6 +859,8 @@ export class AutonomousSelfLearningEngine {
 // Global singleton instance
 export const autonomousSelfLearningEngine = new AutonomousSelfLearningEngine();
 
-// Auto-start 24/7 continuous learning daemon on module load
-autonomousSelfLearningEngine.startContinuousLearning(60000);
+// Auto-start 24/7 continuous learning daemon when not running in test suite
+if (process.env.NODE_ENV !== "test" && !process.argv.some(a => a.includes("test"))) {
+  autonomousSelfLearningEngine.startContinuousLearning(60000);
+}
 
