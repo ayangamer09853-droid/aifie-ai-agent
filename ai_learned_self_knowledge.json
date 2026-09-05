@@ -10,11 +10,11 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 10,
-      "successCount": 7,
-      "accuracyRate": "70.0%",
+      "appliedCount": 12,
+      "successCount": 9,
+      "accuracyRate": "75.0%",
       "createdAt": "2026-09-05T12:45:48.961Z",
-      "lastCalibratedAt": "2026-09-05T15:20:39.734Z"
+      "lastCalibratedAt": "2026-09-05T15:34:06.665Z"
     },
     {
       "id": "SK-AXIOM-016",

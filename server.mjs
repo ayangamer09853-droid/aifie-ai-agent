@@ -181,6 +181,8 @@ import { semanticVectorRagEngine } from "./src/semantic-vector-rag-engine.mjs";
 import { dispatchV1Route } from "./src/api/v1-router.mjs";
 import { dispatchV100Route } from "./src/api/v100-roadmap-router.mjs";
 import { mcpHub } from "./src/mcp/mcp-hub.mjs";
+import { institutionalMetricsExporter } from "./src/observability/institutional-metrics-exporter.mjs";
+import { securityAuthorizationGate } from "./src/security/security-authorization-gate.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -378,6 +380,12 @@ export function app(request, response) {
       return respond(response, 200, WAR_ROOM_HTML, "text/html", { "ETag": WAR_ROOM_ETAG, "Cache-Control": "public, max-age=60" });
     }
     if (request.method === "GET" && url.pathname === "/api/status") return respond(response, 200, { name: "Aifie AI Agent", mode: "paper", liveExecution: false, liveBroker: { isLiveModeUnlocked: false }, orders, paper: accountSnapshot(paper) });
+    if (request.method === "GET" && url.pathname === "/api/metrics") {
+      const metricsText = institutionalMetricsExporter.generatePrometheusMetrics();
+      response.writeHead(200, { "content-type": "text/plain; version=0.0.4; charset=utf-8" });
+      response.end(metricsText);
+      return;
+    }
     if (request.method === "GET" && (url.pathname === "/api/sources/all" || url.pathname === "/api/sources/universe")) {
       return respond(response, 200, {
         totalSources: ALL_60_SOURCES.length,

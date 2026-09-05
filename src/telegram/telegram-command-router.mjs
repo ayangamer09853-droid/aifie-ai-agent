@@ -4,6 +4,7 @@
 
 import { handleTradingSuiteCommand } from "../telegram-trading-suite.mjs";
 import { knowledgeGraphFeedbackEngine } from "../learning/knowledge-graph-feedback-engine.mjs";
+import { securityAuthorizationGate } from "../security/security-authorization-gate.mjs";
 
 /**
  * Token-Bucket Rate Limiter to prevent Telegram 429 Too Many Requests errors.
@@ -131,7 +132,19 @@ ${mitigations.reasons?.length ? `\n<b>Learned Rules:</b>\n${mitigations.reasons.
       }
     }
 
-    // 2. Custom Registered Domain Handlers
+    // 2. Role-Based Access Control (RBAC) Verification
+    const auth = securityAuthorizationGate.authorizeTelegramUser(chatId, cleanCommand);
+    if (!auth.authorized) {
+      return {
+        handled: true,
+        response: {
+          text: `⛔ <b>ACCESS DENIED:</b> Your Telegram account (ID: <code>${chatId}</code>) is not authorized to execute trading operations on this instance.`,
+          replyMarkup: null
+        }
+      };
+    }
+
+    // 3. Custom Registered Domain Handlers
     if (this.commandHandlers.has(cleanCommand)) {
       const handler = this.commandHandlers.get(cleanCommand);
       return handler({ command, symbol, quantity, fullText, chatId }, { paper, orders });

@@ -233,6 +233,13 @@ export class AlgorithmicExecutionSlicer {
   }
 
   /**
+   * Convenience alias for simulateExecuteSlice
+   */
+  executeTranche(scheduleId, trancheIndex = 1, currentMarketPrice = null, paper = {}, orders = []) {
+    return this.simulateExecuteSlice(scheduleId, trancheIndex, currentMarketPrice, { paper, orders });
+  }
+
+  /**
    * Simulate execution of a scheduled tranche with realistic slippage and Implementation Shortfall
    */
   simulateExecuteSlice(scheduleId, trancheIndex = 1, currentMarketPrice = null, { paper = {}, orders = [] } = {}) {
@@ -311,6 +318,45 @@ export class AlgorithmicExecutionSlicer {
     });
 
     return { schedule, tranche };
+  }
+
+  /**
+   * Institutional Implementation Shortfall Decomposition
+   * Breaks total cost into Half-Spread, Temporary Impact, Permanent Impact, and Delay Drift
+   */
+  decomposeExecutionCost({
+    arrivalPrice = 100.0,
+    fillPrice = 100.15,
+    quantity = 100,
+    side = "buy",
+    dailyVolume = 1000000,
+    dailyVolatility = 0.02,
+    halfSpreadBps = 5
+  } = {}) {
+    const isBuy = side.toLowerCase() === "buy";
+    const totalShortfallUSD = isBuy ? (fillPrice - arrivalPrice) * quantity : (arrivalPrice - fillPrice) * quantity;
+    const totalShortfallBps = Number((((fillPrice - arrivalPrice) / (arrivalPrice || 1)) * 10000 * (isBuy ? 1 : -1)).toFixed(2));
+
+    const halfSpreadUSD = arrivalPrice * (halfSpreadBps / 10000) * quantity;
+    const participationRatio = quantity / (dailyVolume || 1000000);
+    const tempImpactUSD = 0.5 * dailyVolatility * Math.sqrt(participationRatio) * arrivalPrice * quantity;
+    const permImpactUSD = 0.1 * dailyVolatility * participationRatio * arrivalPrice * quantity;
+    const delayDriftUSD = Math.max(0, totalShortfallUSD - halfSpreadUSD - tempImpactUSD - permImpactUSD);
+
+    return {
+      arrivalPrice,
+      fillPrice,
+      quantity,
+      totalShortfallUSD: Number(totalShortfallUSD.toFixed(2)),
+      totalShortfallBps,
+      decomposition: {
+        halfSpreadUSD: Number(halfSpreadUSD.toFixed(2)),
+        temporaryImpactUSD: Number(tempImpactUSD.toFixed(2)),
+        permanentImpactUSD: Number(permImpactUSD.toFixed(2)),
+        delayDriftUSD: Number(delayDriftUSD.toFixed(2))
+      },
+      efficiencyScore: Number(Math.max(0, Math.min(100, 100 - (totalShortfallBps * 1.5))).toFixed(1))
+    };
   }
 
   /**
