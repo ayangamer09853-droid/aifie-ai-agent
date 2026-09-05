@@ -5,6 +5,7 @@
 
 import { knowledgeGraphFeedbackEngine } from "../learning/knowledge-graph-feedback-engine.mjs";
 import { institutionalRiskFortress } from "../risk/institutional-risk-fortress.mjs";
+import { riskEngine } from "../risk/risk-engine.mjs";
 import { algorithmicExecutionSlicer } from "../execution/algorithmic-execution-slicer.mjs";
 import { multiTimeframeSmcEngine } from "../analysis/multi-timeframe-smc-engine.mjs";
 import { eventSourcingWalJournal } from "../storage/event-sourcing-wal.mjs";
@@ -70,7 +71,7 @@ export class UnifiedTradingEnginePipeline {
     };
 
     // =========================================================================
-    // STAGE 4: INSTITUTIONAL PRE-TRADE RISK FORTRESS GATE
+    // STAGE 4: INSTITUTIONAL PRE-TRADE RISK FORTRESS & RISK ENGINE GATE
     // =========================================================================
     const riskCheck = institutionalRiskFortress.evaluatePreTradeRisk({
       order: proposedOrder,
@@ -87,6 +88,36 @@ export class UnifiedTradingEnginePipeline {
         status: "REJECTED_BY_RISK_FORTRESS",
         reason: riskCheck.reason,
         details: riskCheck.details,
+        proposedOrder,
+        timestamp: now
+      };
+      this.pipelineExecutionLog.unshift(rejectedResult);
+      return rejectedResult;
+    }
+
+    // Unbypassable independent Risk Engine check
+    const independentRiskCheck = await riskEngine.validate({
+      symbol: normSymbol,
+      side: side.toUpperCase(),
+      quantity: proposedOrder.quantity,
+      price: proposedOrder.price,
+      portfolio: {
+        totalNav: account.equity || account.cash || 100000,
+        cash: account.cash || 100000,
+        positions
+      },
+      market: marketQuote,
+      quoteTimestamp: marketQuote.timestamp || now
+    });
+
+    if (!independentRiskCheck.approved) {
+      const rejectedResult = {
+        cycleId,
+        symbol: normSymbol,
+        status: "REJECTED_BY_RISK_ENGINE",
+        reason: independentRiskCheck.reason,
+        stage: independentRiskCheck.stage,
+        details: independentRiskCheck.details,
         proposedOrder,
         timestamp: now
       };
