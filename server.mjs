@@ -2110,11 +2110,13 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
   const httpServer = createServer(app);
   initializeWebSocketGateway({ server: httpServer });
   httpServer.listen(port, host, () => {
+    startTelegramCommandListener({ paper, orders: paper.orders || [] });
     console.log(`\n==================================================`);
     console.log(`🚀 AIFIE AI AGENT ONLINE (PHASE 0 CORE)`);
     console.log(`📊 Local Web Dashboard: http://localhost:${port}`);
     console.log(`🌐 Network URL:         http://${host}:${port}`);
     console.log(`🤖 Core Paper Engine:   READY`);
+    console.log(`📱 Telegram Bot:        ACTIVE`);
     console.log(`==================================================\n`);
   });
 }
