@@ -1,5 +1,6 @@
 import { createServer } from "node:http";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
+import { monitorEventLoopDelay } from "node:perf_hooks";
 import { join } from "node:path";
 import { readFileSync, existsSync } from "node:fs";
 
@@ -27,7 +28,8 @@ loadDotEnv();
 import { agentRegistry, controlPlaneStatus, delegateTask, requestReplica, runHeartbeat, setKillSwitch } from "./src/alfie-control-plane.mjs";
 import { createStateStore } from "./src/state-store.mjs";
 import { createManualQuoteProvider, getFreshQuote } from "./src/market-data.mjs";
-import { accountSnapshot, createPaperState, placePaperOrder, setQuote } from "./src/paper-engine.mjs";
+import { accountSnapshot, createPaperState, placePaperOrder, setQuote, AsyncMutex } from "./src/paper-engine.mjs";
+import { marketCache } from "./src/market-cache.mjs";
 import { createStrategyState, evaluateDecision, registerStrategy } from "./src/strategy-lab.mjs";
 import { DASHBOARD } from "./src/dashboard.mjs";
 import { auditSources, recommendIntegrationOrder } from "./src/source-audit.mjs";
@@ -35,9 +37,42 @@ import { getSandboxedAdaptersCatalog, executeSandboxedCcxtTicker, executeSandbox
 import { startTelegramCommandListener } from "./src/telegram-command-listener.mjs";
 import { initializeWebSocketGateway } from "./src/realtime-websocket-broadcast-gateway.mjs";
 
+// 5-Stage 24/7 AI Trading Machine Engine
+import {
+  get5StagePipelineStatus,
+  runStage1ScannerWithRealData,
+  runFull5StagePipelineCycle,
+  executeHumanDecision,
+  getPerformanceReport,
+  runPipelineBacktest
+} from "./src/modular-5stage-ai-trading-machine-v94.mjs";
+
 // Core Research Source Dependencies
 import { integrationManifest } from "./src/integration-manifest.mjs";
 import { getConnectedSourceStatus, runFullIntelligenceScan } from "./src/source-bridges.mjs";
+import {
+  ALL_60_SOURCES,
+  getMasterSourcesStatus,
+  scanAll60Sources,
+  executeMasterSourceOperation
+} from "./src/master-sources-engine.mjs";
+import {
+  getLive60SourceAlphaMatrix,
+  start60SourceFusionDaemon
+} from "./src/continuous-60-source-fusion.mjs";
+import { realtimeEventStream } from "./src/realtime-event-stream.mjs";
+import { institutionalArbitrageEngine } from "./src/institutional-arbitrage-engine.mjs";
+import { institutionalRiskEngine } from "./src/institutional-risk-engine.mjs";
+import { algorithmicExecutionSlicer } from "./src/execution/algorithmic-execution-slicer.mjs";
+import { factorDecaySentry } from "./src/quant/factor-decay-sentry.mjs";
+import { institutionalPortfolioOptimizer } from "./src/portfolio/institutional-portfolio-optimizer.mjs";
+import { eventSourcingWalJournal } from "./src/storage/event-sourcing-wal.mjs";
+import { LimitOrderBook, computeAlmgrenChrissTrajectory } from "./src/microstructure/limit-order-book-simulator.mjs";
+import { realtimeFeatureStore } from "./src/quant/realtime-feature-store.mjs";
+import { multiArmedBanditAllocator } from "./src/portfolio/multi-armed-bandit-allocator.mjs";
+import { runMacroStressTestingMatrix, computeExtremeValueTheoryTailRisk } from "./src/risk/macro-stress-testing-matrix.mjs";
+
+const serverLob = new LimitOrderBook("AAPL", 150.0);
 
 // Phase 1: Real Market Data Ingestion & Time-Series Engines
 import { getUnifiedMarketQuote } from "./src/market-data.mjs";
@@ -140,10 +175,44 @@ import {
 } from "./src/ai-peer-dialogue-collaboration-engine.mjs";
 import { WAR_ROOM_HTML } from "./src/ai-war-room-canvas.mjs";
 import { semanticVectorRagEngine } from "./src/semantic-vector-rag-engine.mjs";
+import { dispatchV1Route } from "./src/api/v1-router.mjs";
+import { dispatchV100Route } from "./src/api/v100-roadmap-router.mjs";
+import { mcpHub } from "./src/mcp/mcp-hub.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
-const stateStore = createStateStore(process.env.AIFIE_STATE_PATH || join(process.cwd(), "data", "aifie-state.json"));
+const loopDelayMonitor = monitorEventLoopDelay({ resolution: 20 });
+loopDelayMonitor.enable();
+
+const orderMutex = new AsyncMutex();
+const MAX_MEMORY_ORDERS = 10000;
+
+const DASHBOARD_ETAG = `"${createHash("md5").update(DASHBOARD).digest("hex").slice(0, 16)}"`;
+const WAR_ROOM_ETAG = `"${createHash("md5").update(WAR_ROOM_HTML).digest("hex").slice(0, 16)}"`;
+
+const RATE_LIMIT_WINDOW_MS = 10000;
+const RATE_LIMIT_MAX_REQUESTS = 200;
+const rateLimitMap = new Map();
+
+function checkRateLimit(ip) {
+  if (!ip || ip === "127.0.0.1" || ip === "::1") return true;
+  const now = Date.now();
+  let record = rateLimitMap.get(ip);
+  if (!record || now > record.resetTime) {
+    record = { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS };
+    rateLimitMap.set(ip, record);
+    if (rateLimitMap.size > 2000) {
+      for (const [k, v] of rateLimitMap) {
+        if (now > v.resetTime) rateLimitMap.delete(k);
+      }
+    }
+    return true;
+  }
+  record.count++;
+  return record.count <= RATE_LIMIT_MAX_REQUESTS;
+}
+
+const stateStore = createStateStore(process.env.AIFIE_STATE_PATH || join(process.cwd(), "data", "aifie-state.json"), { maxOrders: MAX_MEMORY_ORDERS });
 const persistedState = stateStore.load();
 const orders = persistedState.orders;
 const paper = createPaperState(persistedState.paper);
@@ -153,7 +222,7 @@ startTelegramCommandListener({ paper, orders, botToken: process.env.TELEGRAM_BOT
 
 function persist() { stateStore.save({ orders, paper: { ...paper, strategyLab } }); }
 
-function respond(response, status, payload, type = "application/json") {
+function respond(response, status, payload, type = "application/json", headers = {}) {
   if (response.writableEnded) return;
   response.writeHead(status, {
     "content-type": `${type}; charset=utf-8`,
@@ -162,14 +231,15 @@ function respond(response, status, payload, type = "application/json") {
     "access-control-allow-headers": "content-type, authorization",
     "x-content-type-options": "nosniff",
     "x-frame-options": "DENY",
-    "x-xss-protection": "1; mode=block"
+    "x-xss-protection": "1; mode=block",
+    ...headers
   });
   response.end(type === "application/json" ? JSON.stringify(payload) : payload);
 }
 
 function readJsonBody(request, response, maxBytes = 1048576) {
   return new Promise((resolve, reject) => {
-    let body = "";
+    const chunks = [];
     let receivedBytes = 0;
     request.on("data", chunk => {
       receivedBytes += chunk.length;
@@ -178,11 +248,12 @@ function readJsonBody(request, response, maxBytes = 1048576) {
         respond(response, 413, { error: "Payload Too Large: Maximum 1MB allowed" });
         return reject(new Error("PAYLOAD_TOO_LARGE"));
       }
-      body += chunk;
+      chunks.push(chunk);
     });
     request.on("end", () => {
       try {
-        const payload = JSON.parse(body || "{}");
+        const raw = chunks.length === 0 ? "{}" : Buffer.concat(chunks, receivedBytes).toString("utf8");
+        const payload = JSON.parse(raw.trim() || "{}");
         resolve(payload);
       } catch (err) {
         respond(response, 400, { error: `Invalid JSON payload: ${err.message}` });
@@ -200,10 +271,134 @@ export function app(request, response) {
   try {
     const url = new URL(request.url, "http://127.0.0.1");
     if (request.method === "OPTIONS") return respond(response, 204, "");
-    if (request.method === "GET" && url.pathname === "/") return respond(response, 200, DASHBOARD, "text/html");
-    if (request.method === "GET" && (url.pathname === "/war-room" || url.pathname === "/ai-war-room")) return respond(response, 200, WAR_ROOM_HTML, "text/html");
+
+    const clientIp = request.socket?.remoteAddress || request.headers["x-forwarded-for"] || "127.0.0.1";
+    if (!checkRateLimit(clientIp)) {
+      return respond(response, 429, { error: "Too Many Requests: Rate limit exceeded. Please back off." });
+    }
+
+    // Model Context Protocol (MCP) JSON-RPC 2.0 Endpoint
+    if (url.pathname === "/mcp" || url.pathname === "/api/mcp") {
+      if (request.method === "POST") {
+        readJsonBody(request, response).then(async payload => {
+          try {
+            const mcpResponse = await mcpHub.handleMessage(payload);
+            return respond(response, 200, mcpResponse);
+          } catch (err) {
+            return respond(response, 500, {
+              jsonrpc: "2.0",
+              id: null,
+              error: { code: -32603, message: err.message }
+            });
+          }
+        }).catch(() => {});
+        return;
+      }
+      if (request.method === "GET") {
+        return respond(response, 200, mcpHub.getTelemetry());
+      }
+    }
+
+    // Consolidated /api/v1 Hard Boundaries REST Gateway
+    if (url.pathname === "/api/v1" || url.pathname.startsWith("/api/v1/")) {
+      if (request.method === "POST" || request.method === "PUT") {
+        readJsonBody(request, response).then(async payload => {
+          try {
+            const v1Result = await dispatchV1Route(url.pathname, request.method, url.searchParams, payload);
+            return respond(response, v1Result.status, v1Result);
+          } catch (err) {
+            return respond(response, 400, { error: err.message });
+          }
+        }).catch(() => {});
+        return;
+      }
+      Promise.resolve(dispatchV1Route(url.pathname, request.method, url.searchParams)).then(v1Result => {
+        return respond(response, v1Result.status, v1Result);
+      });
+      return;
+    }
+
+    // Roadmap /api/v100 Routes
+    if (url.pathname === "/api/v100" || url.pathname.startsWith("/api/v100/")) {
+      if (request.method === "POST") {
+        readJsonBody(request, response).then(payload => {
+          try {
+            const v100Result = dispatchV100Route(url.pathname, request.method, url.searchParams, payload);
+            return respond(response, v100Result.status, v100Result.payload);
+          } catch (err) {
+            return respond(response, 400, { error: err.message });
+          }
+        }).catch(() => {});
+        return;
+      }
+      const v100Result = dispatchV100Route(url.pathname, request.method, url.searchParams);
+      return respond(response, v100Result.status, v100Result.payload);
+    }
+
+    if (request.method === "GET" && (url.pathname === "/api/performance/telemetry" || url.pathname === "/api/telemetry/performance")) {
+      const mem = process.memoryUsage();
+      return respond(response, 200, {
+        success: true,
+        uptimeSeconds: Math.floor(process.uptime()),
+        eventLoop: {
+          meanLagMs: Number((loopDelayMonitor.mean / 1e6).toFixed(3)),
+          p95LagMs: Number((loopDelayMonitor.percentile(95) / 1e6).toFixed(3)),
+          maxLagMs: Number((loopDelayMonitor.max / 1e6).toFixed(3))
+        },
+        memory: {
+          heapUsedMb: Number((mem.heapUsed / 1024 / 1024).toFixed(2)),
+          heapTotalMb: Number((mem.heapTotal / 1024 / 1024).toFixed(2)),
+          rssMb: Number((mem.rss / 1024 / 1024).toFixed(2))
+        },
+        orders: {
+          inMemoryCount: orders.length,
+          maxRetained: MAX_MEMORY_ORDERS
+        },
+        marketCache: marketCache.getTelemetry(),
+        orderMutex: {
+          isLocked: orderMutex.isLocked()
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/") {
+      if (request.headers["if-none-match"] === DASHBOARD_ETAG) {
+        response.writeHead(304, { "ETag": DASHBOARD_ETAG });
+        return response.end();
+      }
+      return respond(response, 200, DASHBOARD, "text/html", { "ETag": DASHBOARD_ETAG, "Cache-Control": "public, max-age=60" });
+    }
+    if (request.method === "GET" && (url.pathname === "/war-room" || url.pathname === "/ai-war-room")) {
+      if (request.headers["if-none-match"] === WAR_ROOM_ETAG) {
+        response.writeHead(304, { "ETag": WAR_ROOM_ETAG });
+        return response.end();
+      }
+      return respond(response, 200, WAR_ROOM_HTML, "text/html", { "ETag": WAR_ROOM_ETAG, "Cache-Control": "public, max-age=60" });
+    }
     if (request.method === "GET" && url.pathname === "/api/status") return respond(response, 200, { name: "Aifie AI Agent", mode: "paper", liveExecution: false, liveBroker: { isLiveModeUnlocked: false }, orders, paper: accountSnapshot(paper) });
-    if (request.method === "GET" && url.pathname === "/api/sources") return respond(response, 200, getConnectedSourceStatus());
+    if (request.method === "GET" && (url.pathname === "/api/sources/all" || url.pathname === "/api/sources/universe")) {
+      return respond(response, 200, {
+        totalSources: ALL_60_SOURCES.length,
+        pillarsCount: 8,
+        sources: getMasterSourcesStatus()
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/sources/catalog") {
+      return respond(response, 200, {
+        total: ALL_60_SOURCES.length,
+        sources: ALL_60_SOURCES
+      });
+    }
+    if (request.method === "GET" && (url.pathname === "/api/sources/fusion" || url.pathname === "/api/sources/matrix")) {
+      return respond(response, 200, getLive60SourceAlphaMatrix());
+    }
+    if (request.method === "GET" && url.pathname === "/api/sources") {
+      if (url.searchParams.get("all") === "true" || url.searchParams.get("universe") === "60") {
+        return respond(response, 200, getMasterSourcesStatus());
+      }
+      return respond(response, 200, getConnectedSourceStatus(), "application/json", { "X-Total-Universe-Sources": "60" });
+    }
     if (request.method === "GET" && url.pathname === "/api/integrations") return respond(response, 200, integrationManifest);
     if (request.method === "GET" && url.pathname === "/api/source-audit") {
       const audit = auditSources(join(process.cwd(), "sources"), integrationManifest);
@@ -212,7 +407,15 @@ export function app(request, response) {
     }
     if (request.method === "GET" && (url.pathname === "/api/sources/scan" || url.pathname === "/api/sources/intelligence")) {
       const symbol = url.searchParams.get("symbol") || "AAPL";
-      return respond(response, 200, runFullIntelligenceScan(symbol));
+      if (url.searchParams.get("all") === "true" || url.searchParams.get("universe") === "60") {
+        return respond(response, 200, scanAll60Sources(symbol));
+      }
+      const baseScan = runFullIntelligenceScan(symbol);
+      const masterScan = scanAll60Sources(symbol);
+      return respond(response, 200, {
+        ...baseScan,
+        master60Sources: masterScan
+      });
     }
     if (request.method === "GET" && url.pathname === "/api/sources/consensus") {
       const symbol = url.searchParams.get("symbol") || "AAPL";
@@ -221,7 +424,13 @@ export function app(request, response) {
     if (request.method === "POST" && url.pathname === "/api/sources/execute") {
       readJsonBody(request, response).then(payload => {
         try {
-          const res = executeSandboxedSourceAdapter(payload.repository || payload.source, payload.params || {});
+          const repo = payload.repository || payload.source;
+          let res;
+          try {
+            res = executeSandboxedSourceAdapter(repo, payload.params || {});
+          } catch (_) {
+            res = executeMasterSourceOperation(repo, payload.operation, payload.params || {});
+          }
           return respond(response, 200, res);
         } catch (err) {
           return respond(response, 400, { error: err.message });
@@ -229,6 +438,187 @@ export function app(request, response) {
       }).catch(() => {});
       return;
     }
+
+    // Native Server-Sent Events (SSE) Real-Time Alpha & Execution Stream
+    if (request.method === "GET" && (url.pathname === "/api/stream/events" || url.pathname === "/api/stream")) {
+      return realtimeEventStream.registerClient(response);
+    }
+    if (request.method === "GET" && url.pathname === "/api/stream/telemetry") {
+      return respond(response, 200, realtimeEventStream.getTelemetry());
+    }
+    if (request.method === "GET" && url.pathname === "/api/stream/recent") {
+      return respond(response, 200, realtimeEventStream.getRecentEvents(parseInt(url.searchParams.get("limit") || "20", 10)));
+    }
+
+    // Institutional Multi-Venue Arbitrage & Liquidity Engine
+    if (request.method === "GET" && (url.pathname === "/api/arbitrage/matrix" || url.pathname === "/api/arbitrage/radar")) {
+      const symbolsParam = url.searchParams.get("symbols");
+      const symbols = symbolsParam ? symbolsParam.split(",").map(s => s.trim().toUpperCase()) : undefined;
+      return respond(response, 200, institutionalArbitrageEngine.scanSpatialArbitrage(symbols));
+    }
+    if (request.method === "GET" && url.pathname === "/api/arbitrage/opportunities") {
+      return respond(response, 200, institutionalArbitrageEngine.scanSpatialArbitrage().opportunities);
+    }
+    if (request.method === "GET" && url.pathname === "/api/arbitrage/triangular") {
+      const venue = url.searchParams.get("venue") || "binance";
+      return respond(response, 200, institutionalArbitrageEngine.scanTriangularArbitrage(venue));
+    }
+    if (request.method === "POST" && url.pathname === "/api/arbitrage/execute") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = institutionalArbitrageEngine.executeSyntheticArbitrage(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/arbitrage/history") {
+      return respond(response, 200, institutionalArbitrageEngine.getExecutionHistory());
+    }
+
+    // Institutional Risk Management, VaR & Macro Stress-Testing Lab
+    if (request.method === "GET" && (url.pathname === "/api/risk/analytics" || url.pathname === "/api/risk/metrics")) {
+      const eq = url.searchParams.get("equity") ? parseFloat(url.searchParams.get("equity")) : undefined;
+      return respond(response, 200, institutionalRiskEngine.getRiskAnalytics(eq));
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/stress-test") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = institutionalRiskEngine.runMacroStressTests(payload.portfolioValue);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/kelly") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = institutionalRiskEngine.calculateKellyPositionSize(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk/circuit-breaker/reset") {
+      return respond(response, 200, institutionalRiskEngine.resetCircuitBreaker());
+    }
+
+    // Algorithmic Execution Slicer (TWAP, VWAP, POV, Iceberg)
+    if (request.method === "POST" && url.pathname === "/api/execution/slice") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const algo = (payload.algorithm || "TWAP").toUpperCase();
+          let schedule;
+          if (algo === "VWAP") schedule = algorithmicExecutionSlicer.createVwapSchedule(payload);
+          else if (algo === "POV") schedule = algorithmicExecutionSlicer.createPovSchedule(payload);
+          else if (algo === "ICEBERG") schedule = algorithmicExecutionSlicer.createIcebergOrder(payload);
+          else schedule = algorithmicExecutionSlicer.createTwapSchedule(payload);
+
+          return respond(response, 200, schedule);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/execution/slices") {
+      return respond(response, 200, algorithmicExecutionSlicer.getTelemetry());
+    }
+    if (request.method === "POST" && url.pathname === "/api/execution/slice/fill") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = algorithmicExecutionSlicer.simulateExecuteSlice(
+            payload.scheduleId,
+            payload.trancheIndex || 1,
+            payload.marketPrice,
+            { paper, orders }
+          );
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Factor Decay Monitoring & Dynamic Regime Weights
+    if (request.method === "GET" && url.pathname === "/api/quant/decay") {
+      const sym = url.searchParams.get("symbol") || "BTC/USDT";
+      return respond(response, 200, factorDecaySentry.auditFactorDecayMatrix(sym));
+    }
+    if (request.method === "GET" && url.pathname === "/api/quant/regime-weights") {
+      const regime = url.searchParams.get("regime") || "BULL_TREND_STABLE";
+      return respond(response, 200, factorDecaySentry.getRegimeConditionedWeights(regime));
+    }
+    if (request.method === "POST" && url.pathname === "/api/quant/dsr") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          return respond(response, 200, factorDecaySentry.calculateDeflatedSharpeRatio(payload));
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Institutional Cross-Asset Portfolio Optimization
+    if (request.method === "POST" && url.pathname === "/api/portfolio/optimize-hrp") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          return respond(response, 200, institutionalPortfolioOptimizer.optimizeHierarchicalRiskParity(payload.assets));
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/optimize-black-litterman") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          return respond(response, 200, institutionalPortfolioOptimizer.optimizeBlackLitterman(payload));
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/portfolio/drift-check") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          return respond(response, 200, institutionalPortfolioOptimizer.evaluateRebalancingDrift(payload));
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Event Sourcing Write-Ahead Log (WAL) Journal
+    if (request.method === "GET" && url.pathname === "/api/journal/wal/events") {
+      const from = parseInt(url.searchParams.get("from") || "0", 10);
+      const to = parseInt(url.searchParams.get("to") || String(Date.now()), 10);
+      return respond(response, 200, eventSourcingWalJournal.replayEvents({ fromTimestamp: from, toTimestamp: to }));
+    }
+    if (request.method === "POST" && url.pathname === "/api/journal/wal/replay") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          return respond(response, 200, eventSourcingWalJournal.reconstructStateAt(payload.timestamp, payload.initialCash));
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/journal/wal/telemetry") {
+      return respond(response, 200, eventSourcingWalJournal.getTelemetry());
+    }
+
     if (request.method === "GET" && url.pathname === "/api/research") {
       const symbol = (url.searchParams.get("symbol") || "").trim().toUpperCase();
       return respond(response, 200, { symbol, status: "RESEARCH_READY", timestamp: new Date().toISOString() });
@@ -236,7 +626,7 @@ export function app(request, response) {
     // Phase 1: Real Market Data Endpoints
     if (request.method === "GET" && url.pathname === "/api/market/quote") {
       const symbol = url.searchParams.get("symbol") || "BTCUSDT";
-      getUnifiedMarketQuote(symbol).then(quote => {
+      marketCache.getOrFetch(`quote:${symbol}`, () => getUnifiedMarketQuote(symbol), 5000).then(quote => {
         return respond(response, 200, { success: true, quote });
       }).catch(err => {
         return respond(response, 500, { error: err.message });
@@ -273,7 +663,7 @@ export function app(request, response) {
     // Week 2: Real Market Data Connectors & Consensus Endpoints
     if (request.method === "GET" && url.pathname === "/api/market/iex/quote") {
       const symbol = url.searchParams.get("symbol") || "AAPL";
-      fetchIexQuote(symbol).then(quote => {
+      marketCache.getOrFetch(`iex_quote:${symbol}`, () => fetchIexQuote(symbol), 5000).then(quote => {
         return respond(response, 200, { success: true, quote });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -283,7 +673,7 @@ export function app(request, response) {
     if (request.method === "GET" && url.pathname === "/api/market/iex/historical") {
       const symbol = url.searchParams.get("symbol") || "AAPL";
       const range = url.searchParams.get("range") || "5y";
-      fetchIexHistorical(symbol, range).then(data => {
+      marketCache.getOrFetch(`iex_hist:${symbol}:${range}`, () => fetchIexHistorical(symbol, range), 60000).then(data => {
         return respond(response, 200, { success: true, data });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -292,7 +682,7 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/market/polygon/quote") {
       const symbol = url.searchParams.get("symbol") || "AAPL";
-      fetchPolygonQuote(symbol).then(quote => {
+      marketCache.getOrFetch(`polygon_quote:${symbol}`, () => fetchPolygonQuote(symbol), 5000).then(quote => {
         return respond(response, 200, { success: true, quote });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -301,7 +691,7 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/market/polygon/historical") {
       const symbol = url.searchParams.get("symbol") || "AAPL";
-      fetchPolygonHistorical(symbol).then(data => {
+      marketCache.getOrFetch(`polygon_hist:${symbol}`, () => fetchPolygonHistorical(symbol), 60000).then(data => {
         return respond(response, 200, { success: true, data });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -310,7 +700,7 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/market/crypto/binance") {
       const symbol = url.searchParams.get("symbol") || "BTCUSDT";
-      fetchBinanceQuote(symbol).then(quote => {
+      marketCache.getOrFetch(`binance_quote:${symbol}`, () => fetchBinanceQuote(symbol), 5000).then(quote => {
         return respond(response, 200, { success: true, quote });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -319,7 +709,7 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/market/crypto/coingecko") {
       const symbol = url.searchParams.get("symbol") || "bitcoin";
-      fetchCoingeckoQuote(symbol).then(quote => {
+      marketCache.getOrFetch(`coingecko_quote:${symbol}`, () => fetchCoingeckoQuote(symbol), 15000).then(quote => {
         return respond(response, 200, { success: true, quote });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -328,7 +718,7 @@ export function app(request, response) {
     }
     if (request.method === "GET" && url.pathname === "/api/market/consensus") {
       const symbol = url.searchParams.get("symbol") || "BTCUSDT";
-      getConsensusReport(symbol).then(report => {
+      marketCache.getOrFetch(`consensus:${symbol}`, () => getConsensusReport(symbol), 5000).then(report => {
         return respond(response, 200, { success: true, consensus: report });
       }).catch(err => {
         return respond(response, 502, { success: false, error: err.message });
@@ -393,11 +783,13 @@ export function app(request, response) {
             dispatchResult = await dispatchAlpacaOrder(payload, { isPaper: false });
           } else {
             const sym = String(payload.symbol || "AAPL").trim().toUpperCase();
-            if (payload.price || !paper.quotes[sym]) {
-              setQuote(paper, { symbol: sym, price: Number(payload.price || 150) });
-            }
-            const fill = placePaperOrder(paper, payload);
-            dispatchResult = { success: true, mode: "paper", fill };
+            dispatchResult = await orderMutex.runExclusive(async () => {
+              if (payload.price || !paper.quotes[sym]) {
+                setQuote(paper, { symbol: sym, price: Number(payload.price || 150) });
+              }
+              const fill = placePaperOrder(paper, payload);
+              return { success: true, mode: "paper", fill };
+            });
           }
 
           const price = Number(payload.price || 100);
@@ -711,22 +1103,33 @@ export function app(request, response) {
             return respond(response, 403, { error: "Live trading disabled. Set ENABLE_LIVE_TRADING=true" });
           }
 
-          if (payload.mode === "paper" || !payload.mode) {
-            // Paper engine
-            const fill = placePaperOrder(paper, payload);
-            const order = { id: randomUUID(), ...payload, status: "simulated", fill, requestedAt: new Date().toISOString() };
-            orders.push(order);
-            persist();
-            return respond(response, 200, { success: true, order });
-          } else if (payload.mode === "live") {
-            // Alpaca live
-            const order = await alpacaBroker.placeOrder(payload.symbol, payload.qty || payload.quantity, payload.side);
-            const saved = { id: order.id || randomUUID(), ...order, mode: "live" };
-            orders.push(saved);
-            persist();
-            return respond(response, 200, { success: true, order: saved });
-          }
-          return respond(response, 400, { error: `Unsupported mode: ${payload.mode}` });
+          const result = await orderMutex.runExclusive(async () => {
+            if (payload.mode === "paper" || !payload.mode) {
+              // Paper engine
+              const sym = String(payload.symbol || "AAPL").trim().toUpperCase();
+              const existingQuote = paper.quotes[sym];
+              const isStale = !existingQuote || (Date.now() - (existingQuote._cachedTime || Date.parse(existingQuote.updatedAt || 0)) > (paper.risk?.maxQuoteAgeMs || 60000));
+              if (payload.price || isStale) {
+                setQuote(paper, { symbol: sym, price: Number(payload.price || existingQuote?.price || 150) });
+              }
+              const fill = placePaperOrder(paper, payload);
+              const order = { id: randomUUID(), ...payload, status: "simulated", fill, requestedAt: new Date().toISOString() };
+              orders.push(order);
+              if (orders.length > MAX_MEMORY_ORDERS) orders.splice(0, orders.length - MAX_MEMORY_ORDERS);
+              persist();
+              return { status: 200, body: { success: true, order } };
+            } else if (payload.mode === "live") {
+              // Alpaca live
+              const order = await alpacaBroker.placeOrder(payload.symbol, payload.qty || payload.quantity, payload.side);
+              const saved = { id: order.id || randomUUID(), ...order, mode: "live" };
+              orders.push(saved);
+              if (orders.length > MAX_MEMORY_ORDERS) orders.splice(0, orders.length - MAX_MEMORY_ORDERS);
+              persist();
+              return { status: 200, body: { success: true, order: saved } };
+            }
+            return { status: 400, body: { error: `Unsupported mode: ${payload.mode}` } };
+          });
+          return respond(response, result.status, result.body);
         } catch (err) {
           return respond(response, 400, { error: err.message });
         }
@@ -1505,6 +1908,55 @@ export function app(request, response) {
       return;
     }
 
+    // 5-Stage 24/7 AI Trading Machine Endpoints
+    if (request.method === "GET" && url.pathname === "/api/pipeline/status") {
+      return respond(response, 200, get5StagePipelineStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/pipeline/scan") {
+      runStage1ScannerWithRealData().then(result => {
+        return respond(response, 200, { success: true, result });
+      }).catch(err => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/pipeline/cycle") {
+      readJsonBody(request, response).then(payload => {
+        const equity = Number(payload.accountEquity || 100000);
+        return runFull5StagePipelineCycle({ accountEquity: equity });
+      }).then(result => {
+        return respond(response, 200, { success: true, result });
+      }).catch(err => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/pipeline/decision") {
+      readJsonBody(request, response).then(payload => {
+        const { decisionId, action, notes } = payload;
+        const result = executeHumanDecision(decisionId, action, notes);
+        return respond(response, 200, result);
+      }).catch(err => {
+        return respond(response, 400, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/pipeline/performance") {
+      return respond(response, 200, getPerformanceReport());
+    }
+    if (request.method === "POST" && url.pathname === "/api/pipeline/backtest") {
+      readJsonBody(request, response).then(payload => {
+        const symbols = payload.symbols || ["BTCUSDT", "ETHUSDT"];
+        const interval = payload.interval || "1h";
+        return runPipelineBacktest(symbols, interval);
+      }).then(result => {
+        return respond(response, 200, { success: true, result });
+      }).catch(err => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+
     if (request.method === "POST" && url.pathname === "/api/quotes") {
       readJsonBody(request, response).then(payload => {
         try {
@@ -1558,6 +2010,84 @@ export function app(request, response) {
         }
       }).catch(() => {});
       return;
+    }
+
+    // Next-Gen Institutional Microstructure, Feature Store & Stress-Testing Routes
+    if (request.method === "POST" && url.pathname === "/api/lob/simulate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const side = payload.side || "BUY";
+          const qty = Number(payload.requestedQuantity || 100);
+          const result = serverLob.executeMarketOrder(side, qty);
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/lob/almgren-chriss") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const trajectory = computeAlmgrenChrissTrajectory(payload || {});
+          return respond(response, 200, { success: true, ...trajectory });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/features/store") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      // Ensure baseline seed if unpopulated
+      for (let i = 0; i < 10; i++) {
+        realtimeFeatureStore.ingestTick(symbol, { price: 150 + i * 0.2, volume: 500, ofi: 0.1, vpin: 0.12 });
+      }
+      const features = realtimeFeatureStore.computeFeatureVector(symbol);
+      return respond(response, 200, { success: true, features });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/features/psi") {
+      const featureKey = url.searchParams.get("feature") || "zScoreMomentum";
+      realtimeFeatureStore.setBaselineDistribution(featureKey, [-1.2, -0.8, -0.3, 0.1, 0.4, 0.7, 1.1, 1.4, 1.8, 2.1]);
+      const liveSamples = [-0.9, -0.5, 0.0, 0.2, 0.5, 0.8, 1.2, 1.5, 1.9, 2.2];
+      const psiResult = realtimeFeatureStore.calculatePopulationStabilityIndex(featureKey, liveSamples);
+      return respond(response, 200, { success: true, ...psiResult });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/bandit/allocate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const method = (payload.method || "THOMPSON").toUpperCase();
+          const cap = Number(payload.totalCapital || 100000);
+          const result = method === "UCB1" 
+            ? multiArmedBanditAllocator.allocateUCB1(cap)
+            : multiArmedBanditAllocator.allocateThompsonSampling(cap);
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/risk/stress-test") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = runMacroStressTestingMatrix(payload || {});
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/risk/evt-tail") {
+      const result = computeExtremeValueTheoryTailRisk({});
+      return respond(response, 200, { success: true, ...result });
     }
 
     return respond(response, 404, { error: "not found" });

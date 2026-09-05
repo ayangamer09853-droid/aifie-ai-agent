@@ -216,3 +216,104 @@ export async function fetchBinanceKlines(symbol = "BTCUSDT", interval = "1m", li
     provider: "BINANCE_KLINES_FALLBACK"
   };
 }
+
+/**
+ * Creates persistent real-time WebSocket stream for Binance spot/futures
+ */
+export function createBinanceWebSocketStream({
+  symbols = ["BTCUSDT", "ETHUSDT"],
+  onTick = null,
+  onDepth = null,
+  isTestEnv = false
+} = {}) {
+  const formattedSymbols = (Array.isArray(symbols) ? symbols : [symbols])
+    .map(s => normalizeBinanceSymbol(s).toLowerCase());
+
+  const streamEndpoints = formattedSymbols.map(s => `${s}@trade`).join("/");
+  const wsUrl = `wss://stream.binance.com:9443/ws/${streamEndpoints}`;
+
+  let ws = null;
+  let active = true;
+
+  const client = {
+    url: wsUrl,
+    symbols: formattedSymbols,
+    status: "CONNECTING",
+    isTestEnv,
+    close: () => {
+      active = false;
+      client.status = "CLOSED";
+      if (ws && typeof ws.close === "function") ws.close();
+    },
+    simulateTradeMessage: (symbol, price, qty) => {
+      const payload = {
+        e: "trade",
+        E: Date.now(),
+        s: normalizeBinanceSymbol(symbol),
+        p: String(price),
+        q: String(qty),
+        T: Date.now(),
+        m: false
+      };
+      if (onTick) {
+        onTick({
+          symbol: payload.s,
+          price: parseFloat(payload.p),
+          volume: parseFloat(payload.q),
+          timestamp: payload.T,
+          venue: "BINANCE_WS"
+        });
+      }
+      return payload;
+    },
+    simulateDepthMessage: (symbol, bids, asks) => {
+      const payload = {
+        lastUpdateId: Date.now(),
+        symbol: normalizeBinanceSymbol(symbol),
+        bids,
+        asks
+      };
+      if (onDepth) {
+        onDepth({
+          symbol: payload.symbol,
+          bids,
+          asks,
+          venue: "BINANCE_WS"
+        });
+      }
+      return payload;
+    }
+  };
+
+  if (!isTestEnv && typeof globalThis.WebSocket !== "undefined") {
+    try {
+      ws = new globalThis.WebSocket(wsUrl);
+      ws.onopen = () => { client.status = "OPEN"; };
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.e === "trade" && onTick) {
+            onTick({
+              symbol: msg.s,
+              price: parseFloat(msg.p),
+              volume: parseFloat(msg.q),
+              timestamp: msg.T,
+              venue: "BINANCE_WS"
+            });
+          }
+        } catch (_) {}
+      };
+      ws.onerror = () => { client.status = "ERROR"; };
+      ws.onclose = () => {
+        if (active) client.status = "RECONNECTING";
+        else client.status = "CLOSED";
+      };
+    } catch (_) {
+      client.status = "SIMULATED_ACTIVE";
+    }
+  } else {
+    client.status = "SIMULATED_ACTIVE";
+  }
+
+  return client;
+}

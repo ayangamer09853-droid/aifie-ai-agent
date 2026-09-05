@@ -44,7 +44,9 @@ import {
   computeMicroPrice,
   detectSpreadSpike,
   getOrderBookSnapshot,
-  clearOrderBook
+  clearOrderBook,
+  calculateHummingbotMarketMakingSpread,
+  simulateExchangeCoreMatchingImpact
 } from "../src/order-book-depth.mjs";
 
 import {
@@ -219,6 +221,20 @@ test("Phase 1: Order book depth computes Imbalance (OBI), Micro-Price, and detec
   assert.equal(snap.bids.length, 2);
   assert.equal(snap.asks.length, 2);
   assert.equal(snap.imbalance, 0.6);
+
+  // Hummingbot Avellaneda-Stoikov PMM Spread Test
+  const pmm = calculateHummingbotMarketMakingSpread("BTCUSDT", { targetVolatility: 0.02, inventorySkew: 0 });
+  assert.equal(pmm.engine, "HUMMINGBOT_AVELLANEDA_STOIKOV_PMM");
+  assert.ok(pmm.optimalBid < pmm.midPrice);
+  assert.ok(pmm.optimalAsk > pmm.midPrice);
+  assert.ok(pmm.spreadBps > 0);
+
+  // Exchange-Core LMAX Matching Engine Impact Test
+  const match = simulateExchangeCoreMatchingImpact("BTCUSDT", { side: "buy", quantity: 8 });
+  assert.equal(match.engine, "EXCHANGE_CORE_LMAX_MATCHER");
+  assert.equal(match.executedQuantity, 8);
+  assert.ok(match.averageFillPrice >= 101);
+  assert.ok(match.slippageBps >= 0);
 });
 
 test("Phase 1: Data sanitizer filters flash spikes, stale quotes, and anomalies", () => {

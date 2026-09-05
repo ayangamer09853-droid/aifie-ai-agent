@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/mcp-config.json",
+  "mcpServers": {
+    "aifie-quant-command": {
+      "command": "node",
+      "args": [
+        "bin/mcp-server.mjs"
+      ],
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "description": "Aifie Sovereign AI Quantitative Trading Platform & 8-Plane Risk Fortress (24 Tools across 6 Servers)"
+    }
+  }
+}

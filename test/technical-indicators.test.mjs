@@ -56,3 +56,27 @@ test("generateTradingSignal yields BUY on Golden Cross and SELL on Death Cross",
   assert.equal(sellSignal.signal, "SELL");
   assert.ok(sellSignal.confidence > 0.5);
 });
+
+test("calculateFractionalDifferentiation produces stationary memory-preserving series", async () => {
+  const { calculateFractionalDifferentiation } = await import("../src/technical-indicators.mjs");
+  const prices = [100, 102, 101, 105, 108, 107, 110, 112, 115, 114, 118];
+  const fracDiff = calculateFractionalDifferentiation(prices, 0.4);
+  assert.equal(fracDiff.length, prices.length);
+  assert.ok(typeof fracDiff[fracDiff.length - 1] === "number");
+  assert.ok(Number.isFinite(fracDiff[fracDiff.length - 1]));
+});
+
+test("evaluateTripleBarrierLabeling classifies profit take and stop loss events", async () => {
+  const { evaluateTripleBarrierLabeling } = await import("../src/technical-indicators.mjs");
+  const rallyPrices = [100, 101, 103, 106, 110];
+  const ptResult = evaluateTripleBarrierLabeling(rallyPrices, { entryIndex: 0, ptMultiplier: 1.0, slMultiplier: 1.0, volatility: 0.02 });
+  assert.equal(ptResult.outcome, "PROFIT_TAKE");
+  assert.equal(ptResult.barrierHit, "UPPER_HORIZONTAL");
+  assert.ok(ptResult.returnPct > 0);
+
+  const dumpPrices = [100, 99, 97, 94, 90];
+  const slResult = evaluateTripleBarrierLabeling(dumpPrices, { entryIndex: 0, ptMultiplier: 1.0, slMultiplier: 1.0, volatility: 0.02 });
+  assert.equal(slResult.outcome, "STOP_LOSS");
+  assert.equal(slResult.barrierHit, "LOWER_HORIZONTAL");
+  assert.ok(slResult.returnPct < 0);
+});

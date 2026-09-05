@@ -182,3 +182,94 @@ export function clearOrderBook(symbol) {
   const key = normalizeSymbolKey(symbol);
   orderBooks.delete(key);
 }
+
+/**
+ * Hummingbot Avellaneda-Stoikov Pure Market Making Spread Model
+ * Computes optimal reservation price and symmetric half-spreads around mid-price
+ */
+export function calculateHummingbotMarketMakingSpread(symbol, {
+  targetVolatility = 0.02,
+  riskAversion = 0.5,
+  inventorySkew = 0,
+  orderAmount = 1
+} = {}) {
+  const micro = computeMicroPrice(symbol);
+  const mid = micro.midPrice || 100;
+  
+  const reservationPrice = mid - (inventorySkew * riskAversion * Math.pow(targetVolatility, 2) * mid);
+  const optimalHalfSpread = mid * (targetVolatility * 0.5 + Math.max(0.0005, riskAversion * 0.002));
+
+  const optimalBid = Number((reservationPrice - optimalHalfSpread).toFixed(4));
+  const optimalAsk = Number((reservationPrice + optimalHalfSpread).toFixed(4));
+  const spreadBps = Number((((optimalAsk - optimalBid) / mid) * 10000).toFixed(1));
+
+  return {
+    engine: "HUMMINGBOT_AVELLANEDA_STOIKOV_PMM",
+    symbol: micro.symbol,
+    midPrice: mid,
+    reservationPrice: Number(reservationPrice.toFixed(4)),
+    optimalBid,
+    optimalAsk,
+    spreadBps,
+    inventorySkew,
+    recommendedOrderSize: orderAmount
+  };
+}
+
+/**
+ * Exchange-Core LMAX-Style Matching Engine Simulation
+ * Walks Level-2 order book depth to estimate slippage footprint, market impact, and fill probability
+ */
+export function simulateExchangeCoreMatchingImpact(symbol, {
+  side = "buy",
+  quantity = 10
+} = {}) {
+  const book = getOrderBook(symbol);
+  const normSide = String(side).toLowerCase();
+  const queue = normSide === "buy" ? book.asks : book.bids;
+
+  if (!queue || queue.length === 0) {
+    const defaultPrice = 100;
+    return {
+      engine: "EXCHANGE_CORE_LMAX_MATCHER",
+      symbol: book.symbol,
+      side: normSide,
+      requestedQuantity: quantity,
+      executedQuantity: quantity,
+      averageFillPrice: defaultPrice,
+      slippageBps: 1.5,
+      liquidityRating: "FAIR_MOCK_LIQUIDITY",
+      levelsConsumed: 1
+    };
+  }
+
+  let remaining = quantity;
+  let totalNotional = 0;
+  let levelsConsumed = 0;
+  const bestPrice = queue[0][0];
+
+  for (const [price, volume] of queue) {
+    if (remaining <= 0) break;
+    levelsConsumed++;
+    const fillAtLevel = Math.min(remaining, volume);
+    totalNotional += fillAtLevel * price;
+    remaining -= fillAtLevel;
+  }
+
+  const executedQuantity = quantity - remaining;
+  const averageFillPrice = executedQuantity > 0 ? Number((totalNotional / executedQuantity).toFixed(4)) : bestPrice;
+  const slippageBps = Number((Math.abs((averageFillPrice - bestPrice) / bestPrice) * 10000).toFixed(1));
+
+  return {
+    engine: "EXCHANGE_CORE_LMAX_MATCHER",
+    symbol: book.symbol,
+    side: normSide,
+    requestedQuantity: quantity,
+    executedQuantity,
+    bestPrice,
+    averageFillPrice,
+    slippageBps,
+    liquidityRating: slippageBps < 3 ? "PRIME_A_PLUS" : slippageBps < 10 ? "SOLID_B" : "THIN_C",
+    levelsConsumed
+  };
+}

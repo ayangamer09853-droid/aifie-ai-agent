@@ -1,0 +1,37 @@
+{
+  "release": "v101-baseline",
+  "frozenAt": "2026-09-05T13:04:00+05:30",
+  "immutable": true,
+  "git": {
+    "commit": "7fb7277d8df86dbb4ea737a888079e25760d5cb5",
+    "branch": "main"
+  },
+  "runtime": {
+    "node": "24.19.0",
+    "v8": "13.6.233.17-node.51",
+    "platform": "win32",
+    "arch": "x64",
+    "os": "Windows 11 Enterprise"
+  },
+  "verifiedBenchmarks": {
+    "directRingBufferThroughput": "257,108 ticks/sec sustained",
+    "burstIngestionRate": "> 5,000 ticks/sec in 15.8ms",
+    "subMillisecondStageLatency": "Data -> Feature -> Alpha -> Risk -> Exec < 1.0ms",
+    "testSuitePassing": "32/32 core roadmap tests passing with zero failures"
+  },
+  "architecturalBoundaries": [
+    { "plane": "DATA_PLANE", "description": "Market data feeds, normalization, deduplication, Data Quality Sentinel (Q >= 85)" },
+    { "plane": "FEATURE_PLANE", "description": "L2 order book depth, OBI, VPIN microstructure, AFML fractional differentiation, technicals" },
+    { "plane": "ALPHA_PLANE", "description": "Strategy Registry, RL agent policies, Stat-Arb, Buffett Moat, Graham DCF alpha generation" },
+    { "plane": "DECISION_PLANE", "description": "Governor, Regime-weighted Bayesian consensus, Red Team adversarial gating into TradeIntent" },
+    { "plane": "RISK_PLANE", "description": "Sovereign Independent Risk Gate, Immutable hard ceilings, CVaR 99%, Multi-Factor Kelly" },
+    { "plane": "EXECUTION_PLANE", "description": "Smart Order Routing, TWAP/VWAP/Iceberg slicers, Broker adapters (Binance, Alpaca, Paper)" },
+    { "plane": "AUDIT_PLANE", "description": "Order/fill/position ledgers, Event-sourcing immutable circular event log, Forensic replay" },
+    { "plane": "OBSERVABILITY_PLANE", "description": "Latency profiler (p50-p99.9), Structured JSON logs, Correlation ID tracing" }
+  ],
+  "constitutionalRules": {
+    "aiAuthority": "Advisory only (Analyze, Recommend, Rank, Debate, Estimate, Propose). AI cannot override risk limits, modify broker credentials, disable kill switch, or self-deploy.",
+    "riskAuthority": "Sovereign veto law. If Risk Fortress rejects an intent, order submission is blocked unconditionally.",
+    "orderGating": "Agents never place orders directly. Every order originates from a validated TradeIntent approved by sovereign Risk."
+  }
+}

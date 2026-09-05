@@ -13,7 +13,7 @@
 const MAX_TICKS_PER_SYMBOL = 5000;
 const MAX_BARS_PER_SYMBOL = 1000;
 
-class RingBuffer {
+export class RingBuffer {
   constructor(capacity = MAX_TICKS_PER_SYMBOL) {
     this.capacity = capacity;
     this.buffer = new Array(capacity);
@@ -37,6 +37,24 @@ class RingBuffer {
       ...this.buffer.slice(this.head),
       ...this.buffer.slice(0, this.head)
     ];
+  }
+
+  *[Symbol.iterator]() {
+    const start = this.length < this.capacity ? 0 : this.head;
+    for (let i = 0; i < this.length; i++) {
+      yield this.buffer[(start + i) % this.capacity];
+    }
+  }
+
+  sliceTail(limit = 100) {
+    const count = Math.min(limit, this.length);
+    if (count === 0) return [];
+    const result = new Array(count);
+    const start = (this.head - count + this.capacity) % this.capacity;
+    for (let i = 0; i < count; i++) {
+      result[i] = this.buffer[(start + i) % this.capacity];
+    }
+    return result;
   }
 
   last() {
@@ -147,7 +165,9 @@ function updateCandleAggregation(symbol, tick) {
       lastBar.volume += tick.volume;
       lastBar.tradesCount += 1;
       // Rolling VWAP
-      lastBar.vwap = ((lastBar.vwap * (lastBar.volume - tick.volume)) + (tick.price * tick.volume)) / lastBar.volume;
+      if (lastBar.volume > 0) {
+        lastBar.vwap = ((lastBar.vwap * (lastBar.volume - tick.volume)) + (tick.price * tick.volume)) / lastBar.volume;
+      }
     }
   }
 }
@@ -167,17 +187,37 @@ export function getCandleBars(symbol = "AAPL", timeframe = "1m", limit = 100) {
 export function getTickHistory(symbol = "AAPL", limit = 100) {
   const normalized = String(symbol).trim().toUpperCase();
   const ring = getTickBuffer(normalized);
-  const allTicks = ring.toArray();
-  return allTicks.slice(-Math.min(limit, allTicks.length));
+  return ring.sliceTail(limit);
 }
+
+/**
+ * Returns the most recently ingested market tick
+ */
+export function getLatestMarketTick(symbol = "AAPL") {
+  const normalized = String(symbol).trim().toUpperCase();
+  const ring = symbolTickBuffers.get(normalized);
+  return ring ? ring.last() : null;
+}
+
+const vwapCache = new Map();
+const VWAP_CACHE_TTL_MS = 1000;
 
 /**
  * Computes Session VWAP across recent ticks
  */
 export function computeSessionVwap(symbol = "AAPL") {
   const normalized = String(symbol).trim().toUpperCase();
+  const now = Date.now();
+  const cached = vwapCache.get(normalized);
+  if (cached && now - cached.timestamp < VWAP_CACHE_TTL_MS) {
+    return cached.vwap;
+  }
+
   const ticks = getTickHistory(normalized, 500);
-  if (ticks.length === 0) return 0;
+  if (ticks.length === 0) {
+    vwapCache.set(normalized, { vwap: 0, timestamp: now });
+    return 0;
+  }
 
   let totalNotional = 0;
   let totalVolume = 0;
@@ -186,7 +226,9 @@ export function computeSessionVwap(symbol = "AAPL") {
     totalVolume += t.volume;
   }
 
-  return totalVolume > 0 ? Number((totalNotional / totalVolume).toFixed(4)) : 0;
+  const vwap = totalVolume > 0 ? Number((totalNotional / totalVolume).toFixed(4)) : 0;
+  vwapCache.set(normalized, { vwap, timestamp: now });
+  return vwap;
 }
 
 /**
@@ -233,6 +275,7 @@ export function purgeStaleTicks(symbol = "AAPL", maxAgeMs = 86400000, now = Date
   const newRing = new RingBuffer(MAX_TICKS_PER_SYMBOL);
   for (const t of validTicks) newRing.push(t);
   symbolTickBuffers.set(normalized, newRing);
+  vwapCache.delete(normalized);
 
   return { purged, remaining: newRing.length, symbol: normalized };
 }
@@ -245,8 +288,10 @@ export function clearTimeseriesStore(symbol = null) {
     const normalized = String(symbol).trim().toUpperCase();
     symbolTickBuffers.delete(normalized);
     symbolCandleBars.delete(normalized);
+    vwapCache.delete(normalized);
   } else {
     symbolTickBuffers.clear();
     symbolCandleBars.clear();
+    vwapCache.clear();
   }
 }

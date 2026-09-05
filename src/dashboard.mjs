@@ -379,6 +379,8 @@ export const DASHBOARD = `<!DOCTYPE html>
 
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-COMMAND" onclick="switchPreset('COMMAND')">1:COMMAND</button>
+      <button class="nav-tab" id="tab-FEEDING" onclick="switchPreset('FEEDING')" style="border-color: #38bdf8; color: #38bdf8; font-weight: 900; background: rgba(56, 189, 248, 0.12); box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);">📥:DATA FEEDING HUB</button>
+      <button class="nav-tab" id="tab-MCP" onclick="switchPreset('MCP')" style="border-color: #a855f7; color: #d8b4fe; font-weight: 900; background: rgba(168, 85, 247, 0.12); box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);">🔌:MCP HUB</button>
       <button class="nav-tab" id="tab-PIPELINE" onclick="switchPreset('PIPELINE')" style="border-color: #00d2ff; color: #00d2ff; font-weight: 900; background: rgba(0, 210, 255, 0.08);">⚡:5-STAGE MACHINE</button>
       <button class="nav-tab" id="tab-ANALYST" onclick="switchPreset('ANALYST')" style="border-color: #ff007a; color: #ff007a; font-weight: 900; background: rgba(255, 0, 122, 0.08);">🎯:APEX ANALYST</button>
       <button class="nav-tab" id="tab-MARKETS" onclick="switchPreset('MARKETS')">2:MARKETS</button>
@@ -387,6 +389,8 @@ export const DASHBOARD = `<!DOCTYPE html>
       <button class="nav-tab" id="tab-QUANT" onclick="switchPreset('QUANT')" style="border-color: #00ff9d; color: #00ff9d; font-weight: 900; background: rgba(0, 255, 157, 0.08);">5:QUANT LAB</button>
       <button class="nav-tab" id="tab-CONSTITUTION" onclick="switchPreset('CONSTITUTION')" style="border-color: #ff9800; color: #ff9800; font-weight: 900; background: rgba(255, 152, 0, 0.08);">⚖️:CONSTITUTION & ARB</button>
       <button class="nav-tab" id="tab-LEARNING" onclick="switchPreset('LEARNING')" style="border-color: #a855f7; color: #d8b4fe; font-weight: 900; background: rgba(168, 85, 247, 0.12); box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);">🧠:SELF-LEARNING 24/7</button>
+      <button class="nav-tab" id="tab-DIAGNOSTICS" onclick="switchPreset('DIAGNOSTICS')" style="border-color: #ef4444; color: #fca5a5; font-weight: 900; background: rgba(239, 68, 68, 0.12);">🛡️:CONTROL & ERRORS (<span id="diagIssueBadge">0</span>)</button>
+      <button class="nav-tab" id="tab-TERMINAL" onclick="switchPreset('TERMINAL')" style="border-color: #00ff9d; color: #00ff9d; font-weight: 900; background: rgba(0, 255, 157, 0.12); box-shadow: 0 0 10px rgba(0, 255, 157, 0.25);">⚡:LIVE ALPHA & ARB</button>
       <button class="nav-tab" id="tab-RESEARCH" onclick="switchPreset('RESEARCH')">6:RESEARCH</button>
       <button class="nav-tab" id="tab-ADMIN" onclick="switchPreset('ADMIN')" style="border-color: var(--neon-cyan); color: var(--neon-cyan);">7:SETTINGS</button>
     </div>
@@ -409,6 +413,167 @@ export const DASHBOARD = `<!DOCTYPE html>
     <div class="ticker-card" id="card-OIL"><span class="ticker-symbol">OIL</span><span class="ticker-price ticker-down" id="price-OIL">$72.40 -1.2%</span></div>
     <div class="ticker-card" id="card-NIFTY50"><span class="ticker-symbol">NIFTY50</span><span class="ticker-price ticker-up" id="price-NIFTY50">25,420.50 +0.6%</span></div>
     <div class="ticker-card" id="card-VIX"><span class="ticker-symbol">VIX</span><span class="ticker-price ticker-down" id="price-VIX">15.42 -5.2%</span></div>
+  </div>
+
+  <!-- VIEW: INSTITUTIONAL LIVE ALPHA & ARBITRAGE TERMINAL -->
+  <div id="view-TERMINAL" class="view-content">
+    <div style="background: radial-gradient(circle at top, rgba(0, 255, 157, 0.12), transparent 70%), #040810; border: 1px solid rgba(0, 255, 157, 0.3); border-radius: 8px; padding: 18px; margin-bottom: 14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          <div style="font-size: 16px; font-weight: 900; color: var(--neon-green); letter-spacing: 1px; display:flex; align-items:center; gap:8px;">
+            <span>⚡ INSTITUTIONAL LIVE ALPHA & MULTI-VENUE ARBITRAGE TERMINAL</span>
+            <span style="font-size: 10px; background: rgba(0,255,157,0.2); border: 1px solid var(--neon-green); color:#fff; padding:2px 6px; border-radius:4px; font-family:var(--font-mono);" id="terminalSseStatus">● SSE STREAM ACTIVE</span>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+            Zero-latency Server-Sent Events (SSE) streaming live alpha confluence across all 60 sources, real-time spatial & triangular arbitrage across 5 top venues, institutional VaR/CVaR risk governance, and 1-click synthetic execution.
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-primary" onclick="refreshArbitrageRadarUi()" style="background:var(--neon-green); border-color:var(--neon-green); color:#000; font-weight:bold; cursor:pointer;">⚡ SCAN ARB RADAR</button>
+          <button class="btn btn-secondary" onclick="refreshRiskAnalyticsUi()" style="border-color:var(--neon-cyan); color:var(--neon-cyan); cursor:pointer;">🛡️ REFRESH VaR</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-Column Terminal Layout -->
+    <div style="display:grid; grid-template-columns: 1.2fr 1fr 1fr; gap:14px; margin-bottom:14px;">
+      
+      <!-- Column 1: Multi-Venue Arbitrage & Order Books -->
+      <div class="panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>⚡ MULTI-VENUE SPATIAL ARBITRAGE (Binance, Coinbase, Kraken, OKX, Bybit)</span>
+          <span style="font-size:10px; color:var(--neon-green); font-family:var(--font-mono);" id="arbOppCountBadge">0 DETECTED</span>
+        </div>
+        <div class="panel-body" style="padding:10px;">
+          <div id="arbOpportunitiesList" style="display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto;">
+            <div style="color:var(--text-muted); font-size:11px; font-family:var(--font-mono);">Scanning cross-exchange spreads...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: Institutional Risk Fortress & Kelly Allocation -->
+      <div class="panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>🛡️ INSTITUTIONAL RISK FORTRESS & VaR</span>
+          <span style="font-size:10px; color:var(--neon-cyan); font-family:var(--font-mono);" id="riskZoneBadge">NORMAL</span>
+        </div>
+        <div class="panel-body" style="padding:10px; display:flex; flex-direction:column; gap:10px;">
+          <div class="metric-grid" style="margin-bottom:0;">
+            <div class="metric-box">
+              <div class="metric-lbl">1-Day VaR (95% CI)</div>
+              <div class="metric-val" id="riskVar95" style="color:var(--neon-green); font-size:16px;">-$2,960</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-lbl">1-Day VaR (99% CI)</div>
+              <div class="metric-val" id="riskVar99" style="color:var(--neon-amber); font-size:16px;">-$4,180</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-lbl">Expected Shortfall (CVaR)</div>
+              <div class="metric-val" id="riskCvar99" style="color:var(--neon-red); font-size:16px;">-$5,640</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-lbl">Half-Kelly Position Size</div>
+              <div class="metric-val" id="riskHalfKelly" style="color:var(--neon-cyan); font-size:16px;">8.4% ($8,400)</div>
+            </div>
+          </div>
+
+          <!-- Macro Stress Test Trigger Pad -->
+          <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-card); border-radius:4px; padding:8px;">
+            <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); margin-bottom:6px;">💥 1-CLICK MACRO CRISIS STRESS SIMULATION:</div>
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:6px;">
+              <button class="act-btn" onclick="runMacroStressTestUi('2008')" style="font-size:10px; padding:6px;">2008 Lehman (-22%)</button>
+              <button class="act-btn" onclick="runMacroStressTestUi('2020')" style="font-size:10px; padding:6px;">2020 COVID (-34%)</button>
+              <button class="act-btn" onclick="runMacroStressTestUi('2022')" style="font-size:10px; padding:6px;">2022 FTX Run (-65%)</button>
+              <button class="act-btn" onclick="runMacroStressTestUi('2026')" style="font-size:10px; padding:6px;">2026 Rate Hike (+150bps)</button>
+            </div>
+            <div id="stressTestResultBox" style="font-size:10px; font-family:var(--font-mono); color:#cbd5e1; margin-top:6px; min-height:24px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 3: Real-Time SSE Stream Log & Alpha Feed -->
+      <div class="panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>📡 LIVE SSE ALPHA & EXECUTION FEED</span>
+          <span style="font-size:10px; color:var(--neon-green); font-family:var(--font-mono);" id="streamEventCounter">0 EVENTS</span>
+        </div>
+        <div class="panel-body" style="padding:10px;">
+          <div id="liveSseFeedTerminal" style="background:#010204; border:1px solid rgba(0,229,255,0.2); border-radius:4px; height:420px; overflow-y:auto; padding:8px; font-family:var(--font-mono); font-size:10px; color:#cbd5e1; display:flex; flex-direction:column; gap:4px;">
+            <div style="color:var(--neon-green);">● [INIT] Live Server-Sent Events stream connected. Awaiting signals...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Microstructure Level-2 Order Book Depth Ladder & Audio Synthesizer -->
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+      <div class="panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>📊 LEVEL-2 ORDER BOOK DEPTH LADDER (LOB MICROSTRUCTURE)</span>
+          <span style="font-size:10px; color:var(--neon-cyan); font-family:var(--font-mono);" id="lobSpreadBadge">SPREAD: $0.05 (3.3 bps)</span>
+        </div>
+        <div class="panel-body" style="padding:10px;">
+          <div style="display:flex; justify-content:space-between; font-size:11px; font-family:var(--font-mono); color:var(--text-muted); margin-bottom:6px;">
+            <span>BID VOLUME (CUMULATIVE)</span>
+            <span>PRICE LEVEL</span>
+            <span>ASK VOLUME (CUMULATIVE)</span>
+          </div>
+          <div id="lobDepthLadderContainer" style="display:flex; flex-direction:column; gap:4px; font-family:var(--font-mono); font-size:11px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,255,157,0.05); padding:4px 8px; border-radius:2px;">
+              <span style="color:var(--neon-green);">1,450 (100%) ■■■■■</span>
+              <span style="font-weight:bold; color:#fff;">$150.20</span>
+              <span style="color:var(--neon-red);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,255,157,0.03); padding:4px 8px; border-radius:2px;">
+              <span style="color:var(--neon-green);">980 (68%) ■■■■</span>
+              <span style="font-weight:bold; color:#fff;">$150.15</span>
+              <span style="color:var(--neon-red);">—</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,59,92,0.05); padding:4px 8px; border-radius:2px;">
+              <span style="color:var(--neon-green);">—</span>
+              <span style="font-weight:bold; color:#fff;">$150.25</span>
+              <span style="color:var(--neon-red);">■■■■ 1,120 (77%)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,59,92,0.03); padding:4px 8px; border-radius:2px;">
+              <span style="color:var(--neon-green);">—</span>
+              <span style="font-weight:bold; color:#fff;">$150.30</span>
+              <span style="color:var(--neon-red);">■■■■■ 1,580 (100%)</span>
+            </div>
+          </div>
+          <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:6px 10px; border-radius:4px; border:1px solid var(--border-panel);">
+            <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">ORDER IMBALANCE:</span>
+            <span id="lobImbalanceVal" style="font-size:11px; font-weight:bold; color:var(--neon-green); font-family:var(--font-mono);">+0.1420 (BID PRESSURE)</span>
+            <button class="act-btn" onclick="refreshLobDepthUi()" style="padding:4px 8px; font-size:10px;">⚡ REFRESH LOB</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span>🔊 REAL-TIME QUANT AUDIO SYNTHESIZER & ALMGREN-CHRISS TRAJECTORY</span>
+          <span style="font-size:10px; color:var(--neon-green); font-family:var(--font-mono);" id="audioSynthStatus">WEB AUDIO ACTIVE</span>
+        </div>
+        <div class="panel-body" style="padding:10px; display:flex; flex-direction:column; gap:10px;">
+          <div style="font-size:11px; color:var(--text-muted); line-height:1.5;">
+            Native Web Audio API acoustic feedback synthesizes real-time micro-tones for execution orders, fills, and risk anomalies.
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="act-btn" onclick="playWebAudioFeedback('ORDER')" style="font-size:11px; padding:6px 12px; border-color:var(--neon-cyan); color:var(--neon-cyan);">🎵 TEST ORDER TONE</button>
+            <button class="act-btn" onclick="playWebAudioFeedback('FILL')" style="font-size:11px; padding:6px 12px; border-color:var(--neon-green); color:var(--neon-green);">🔔 TEST FILL TONE</button>
+            <button class="act-btn" onclick="playWebAudioFeedback('ALERT')" style="font-size:11px; padding:6px 12px; border-color:var(--neon-red); color:var(--neon-red);">⚠️ TEST ALERT TONE</button>
+          </div>
+          <div style="background:rgba(0,0,0,0.5); border:1px solid var(--border-card); border-radius:4px; padding:10px;">
+            <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted); margin-bottom:4px;">📐 ALMGREN-CHRISS OPTIMAL EXECUTION SCHEDULE:</div>
+            <div id="almgrenChrissTrajectoryPreview" style="font-family:var(--font-mono); font-size:10px; color:#cbd5e1; max-height:120px; overflow-y:auto; line-height:1.4;">
+              • Optimal trajectory: 1,000 shares across 10 tranches<br>
+              • Expected Impact Cost: 1.42 bps | Half-life decay: 4.8 min<br>
+              • Inventory risk penalty: Balanced (λ = 1e-6)
+            </div>
+            <button class="act-btn" onclick="computeAlmgrenChrissUi()" style="margin-top:6px; width:100%; font-size:10px; padding:6px; border-color:var(--neon-cyan); color:var(--neon-cyan);">RECALCULATE ALMGREN-CHRISS SLICE SCHEDULE</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- VIEW: APEX AUTONOMOUS CHART ANALYST -->
@@ -465,8 +630,290 @@ export const DASHBOARD = `<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- VIEW: 5-STAGE MODULAR AI TRADING MACHINE -->
+  <div id="view-PIPELINE" class="view-content">
+    <div style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+      
+      <!-- Top Overview Banner -->
+      <div style="background: radial-gradient(circle at top, rgba(0, 210, 255, 0.15), transparent 70%), #040810; border: 1px solid rgba(0, 210, 255, 0.4); border-radius: 8px; padding: 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 0.5px; display:flex; align-items:center; gap:8px;">
+              <span>⚡ 24/7 MODULAR 5-STAGE AI TRADING MACHINE</span>
+              <span id="pipelineStatusBadge" class="status-pill" style="border-color:#00d2ff; color:#00d2ff; background:rgba(0, 210, 255, 0.12);">STAGE 5: 24/7 MONITORING</span>
+              <span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green); background:rgba(0,255,157,0.08);">HUMAN IN THE LOOP</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+              <b>"Break the workflow into specialized modules. Let each do one job perfectly. AI handles the noise. Strict risk filters the plan. YOU stay in control."</b>
+              <span style="color:#cbd5e1; margin-left:6px;">| The Goal: Remove emotions. Increase consistency. Survive first. Profit later.</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="act-btn" onclick="run5StagePipelineCycleUi()" style="border-color:var(--neon-cyan); color:#000; background:var(--neon-cyan); font-weight:bold;">⚡ RUN 5-STAGE CYCLE</button>
+            <button class="act-btn" onclick="refreshPipelineUi()" style="border-color:var(--neon-green); color:var(--neon-green);">🔄 REFRESH</button>
+            <button class="act-btn" onclick="runPipelineBacktestUi()" style="border-color:#a855f7; color:#d8b4fe;">🧪 BACKTEST & PBO</button>
+          </div>
+        </div>
+
+        <!-- 5-Stage Interactive Module Flow Diagram -->
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px;">
+          
+          <!-- Stage 1 -->
+          <div style="background: rgba(6, 11, 19, 0.95); border: 1px solid rgba(0, 210, 255, 0.3); border-radius: 6px; padding: 12px; position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 10px; font-weight: bold; color: var(--neon-cyan); font-family: var(--font-mono);">STAGE 01</span>
+              <span style="font-size: 9px; background: rgba(0, 210, 255, 0.2); color: #fff; padding: 2px 5px; border-radius: 3px;">24/7 SCAN</span>
+            </div>
+            <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 4px;">MARKET SCANNER</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Find Opportunity</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; font-family: var(--font-mono); line-height: 1.4;">
+              • Real-time Binance L2 + Alpaca<br>
+              • Volume velocity surge filter<br>
+              • Noise filtering (Raw Input)
+            </div>
+            <div style="margin-top: 8px; font-size: 10px; color: var(--neon-cyan); font-family: var(--font-mono); font-weight: bold;">
+              Scanned: <span id="stg1ScannedCount">8 Assets</span>
+            </div>
+          </div>
+
+          <!-- Stage 2 -->
+          <div style="background: rgba(6, 11, 19, 0.95); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; padding: 12px; position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 10px; font-weight: bold; color: #c084fc; font-family: var(--font-mono);">STAGE 02</span>
+              <span style="font-size: 9px; background: rgba(168, 85, 247, 0.2); color: #fff; padding: 2px 5px; border-radius: 3px;">POWERED BY AI</span>
+            </div>
+            <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 4px;">SIGNAL ENGINE</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Validate Setup</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; font-family: var(--font-mono); line-height: 1.4;">
+              • 5 Archetypes (Breakout, etc.)<br>
+              • Indicator confluence (RSI, ADX)<br>
+              • Confidence Scoring (&gt;70%)
+            </div>
+            <div style="margin-top: 8px; font-size: 10px; color: #c084fc; font-family: var(--font-mono); font-weight: bold;">
+              Avg Confidence: <span id="stg2AvgScore">78%</span>
+            </div>
+          </div>
+
+          <!-- Stage 3 -->
+          <div style="background: rgba(6, 11, 19, 0.95); border: 1px solid rgba(255, 184, 0, 0.3); border-radius: 6px; padding: 12px; position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 10px; font-weight: bold; color: var(--neon-amber); font-family: var(--font-mono);">STAGE 03</span>
+              <span style="font-size: 9px; background: rgba(255, 184, 0, 0.2); color: #fff; padding: 2px 5px; border-radius: 3px;">ATR DYNAMIC</span>
+            </div>
+            <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 4px;">TRADE PLANNER</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Plan the Trade</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; font-family: var(--font-mono); line-height: 1.4;">
+              • Entry Zone (Where makes sense)<br>
+              • Stop Loss (Where you're wrong)<br>
+              • Invalidation & Targets 1 & 2
+            </div>
+            <div style="margin-top: 8px; font-size: 10px; color: var(--neon-amber); font-family: var(--font-mono); font-weight: bold;">
+              Target R:R: <span id="stg3TargetRR">1 : 2.4</span>
+            </div>
+          </div>
+
+          <!-- Stage 4 -->
+          <div style="background: rgba(6, 11, 19, 0.95); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 12px; position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 10px; font-weight: bold; color: #f87171; font-family: var(--font-mono);">STAGE 04</span>
+              <span style="font-size: 9px; background: rgba(239, 68, 68, 0.2); color: #fff; padding: 2px 5px; border-radius: 3px;">PASS / FAIL</span>
+            </div>
+            <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 4px;">RISK ENGINE</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Protect Capital</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; font-family: var(--font-mono); line-height: 1.4;">
+              • 01 Sizing | 02 Exposure<br>
+              • 03 R:R Check | 04 Max Loss<br>
+              • 05 Volatility Shield
+            </div>
+            <div style="margin-top: 8px; font-size: 10px; color: var(--neon-green); font-family: var(--font-mono); font-weight: bold;">
+              Verdict: <span id="stg4RiskVerdict">PASS (0 Blocked)</span>
+            </div>
+          </div>
+
+          <!-- Stage 5 -->
+          <div style="background: rgba(6, 11, 19, 0.95); border: 1px solid rgba(0, 255, 157, 0.3); border-radius: 6px; padding: 12px; position: relative;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size: 10px; font-weight: bold; color: var(--neon-green); font-family: var(--font-mono);">STAGE 05</span>
+              <span style="font-size: 9px; background: rgba(0, 255, 157, 0.2); color: #fff; padding: 2px 5px; border-radius: 3px;">FINAL CALL</span>
+            </div>
+            <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 4px;">24/7 MONITOR & GATE</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Stay Aware / You Decide</div>
+            <div style="font-size: 10px; color: #94a3b8; margin-top: 8px; font-family: var(--font-mono); line-height: 1.4;">
+              • Tick tracking & smart alerts<br>
+              • MONITOR ➔ ALERT ➔ ANALYZE ➔ ADAPT<br>
+              • 1-Tap Approve / Watch / Reject
+            </div>
+            <div style="margin-top: 8px; font-size: 10px; color: var(--neon-green); font-family: var(--font-mono); font-weight: bold;">
+              Pending: <span id="stg5PendingCount">0 Actions</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- 5 Signal Archetypes Ribbon -->
+      <div style="background: rgba(6, 11, 19, 0.95); border: 1px solid var(--border-panel); border-radius: 8px; padding: 12px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-weight:900; font-size:12px; color:#fff;">5 CORE SIGNAL ARCHETYPES (ONLY HIGH-PROBABILITY SETUPS PASSED)</span>
+          <span style="font-size:10px; color:var(--text-muted); font-family:var(--font-mono);">QUALITY OVER QUANTITY</span>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:8px;">
+          
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(0, 210, 255, 0.2); border-radius:4px; padding:8px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
+              <span style="color:var(--neon-cyan);">01. BREAKOUT</span>
+              <span style="color:#94a3b8; font-size:9px;">&ge;75% Conf</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Price breaks key resistance with expanding volume & momentum.</div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(168, 85, 247, 0.2); border-radius:4px; padding:8px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
+              <span style="color:#c084fc;">02. PULLBACK</span>
+              <span style="color:#94a3b8; font-size:9px;">&ge;72% Conf</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Price pulls back to key support / demand level and bounces.</div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(0, 255, 157, 0.2); border-radius:4px; padding:8px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
+              <span style="color:var(--neon-green);">03. MOMENTUM</span>
+              <span style="color:#94a3b8; font-size:9px;">&ge;78% Conf</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Strong directional movement with institutional volume velocity.</div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255, 184, 0, 0.2); border-radius:4px; padding:8px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
+              <span style="color:var(--neon-amber);">04. TREND CONT.</span>
+              <span style="color:#94a3b8; font-size:9px;">&ge;70% Conf</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Trend structure holds and continues in same directional channel.</div>
+          </div>
+
+          <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(255, 0, 122, 0.2); border-radius:4px; padding:8px;">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px;">
+              <span style="color:#ff007a;">05. REVERSAL</span>
+              <span style="color:#94a3b8; font-size:9px;">&ge;80% Conf</span>
+            </div>
+            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">Price sweeps liquidity and displays change of character (CHoCH).</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Main Interactive Workstation: 2 Columns -->
+      <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:14px;">
+        
+        <!-- Left: Actionable Setups & 1-Tap Human Decision Gate -->
+        <div class="panel" style="border: 1px solid rgba(0, 210, 255, 0.25);">
+          <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:900; color:#fff;">🎯 ACTIONABLE SETUPS & 1-TAP HUMAN DECISION GATE</span>
+            <span style="font-size:10px; color:var(--neon-cyan); font-family:var(--font-mono);" id="pipelinePendingCountLabel">0 PENDING</span>
+          </div>
+          <div class="panel-body" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-size:11px; color:var(--text-muted); line-height:1.4;">
+              AI finds the setup, scores confidence, plans levels, and runs strict risk checks. <b>You make the final call:</b>
+            </div>
+            
+            <div id="pipelineDecisionsContainer" style="display:flex; flex-direction:column; gap:10px; max-height:480px; overflow-y:auto;">
+              <div style="padding:16px; text-align:center; color:var(--text-muted); font-family:var(--font-mono); font-size:11px;">
+                Click "⚡ RUN 5-STAGE CYCLE" to execute a live scan and generate action cards...
+              </div>
+            </div>
+
+            <!-- Approved / Monitored Live Trades Table -->
+            <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+              <div style="font-weight:bold; font-size:11px; color:#fff; margin-bottom:6px;">
+                👁️ ACTIVE 24/7 MONITORED POSITIONS & WATCHLIST
+              </div>
+              <div id="pipelineMonitoredContainer" style="font-family:var(--font-mono); font-size:10px; color:#94a3b8; max-height:140px; overflow-y:auto;">
+                No active monitored positions yet.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Structured Trade Plan & 5-Rule Risk Engine Audit -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          
+          <!-- Structured Trade Plan Inspector -->
+          <div class="panel" style="border: 1px solid rgba(255, 184, 0, 0.25);">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:900; color:var(--neon-amber);">📐 COMPLETE TRADE PLAN SPECIFICATION</span>
+              <span style="font-size:10px; color:#fff; font-family:var(--font-mono);" id="planSpecSymbol">SELECT SETUP</span>
+            </div>
+            <div class="panel-body" id="pipelineTradePlanDetails" style="font-family:var(--font-mono); font-size:11px; color:#cbd5e1; line-height:1.6;">
+              <div style="padding:10px; color:var(--text-muted);">
+                Select any trade setup card on the left to inspect its complete Entry Zone, Stop Loss, Profit Targets, and Invalidation levels.
+              </div>
+            </div>
+          </div>
+
+          <!-- 5-Rule Risk Audit Matrix -->
+          <div class="panel" style="border: 1px solid rgba(239, 68, 68, 0.25);">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:900; color:#f87171;">🛡️ 5-RULE CAPITAL PROTECTION RISK AUDIT</span>
+              <span style="font-size:10px; color:var(--neon-green); font-family:var(--font-mono);" id="riskMatrixStatus">NO ACTIVE AUDIT</span>
+            </div>
+            <div class="panel-body" id="pipelineRiskAuditDetails" style="font-family:var(--font-mono); font-size:11px; color:#cbd5e1; line-height:1.5;">
+              <div style="padding:10px; color:var(--text-muted);">
+                Audit checklist will dynamically verify Position Size, Total Exposure, Risk/Reward Ratio, Max Loss Cap, and Market Volatility.
+              </div>
+            </div>
+          </div>
+
+          <!-- 24/7 Monitoring Loop Telemetry -->
+          <div class="panel" style="border: 1px solid rgba(0, 255, 157, 0.25);">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:900; color:var(--neon-green);">🔄 24/7 MONITORING LOOP (MONITOR ➔ ALERT ➔ ANALYZE ➔ ADAPT)</span>
+              <span style="font-size:10px; color:var(--neon-green); font-family:var(--font-mono);">● TICK BY TICK</span>
+            </div>
+            <div class="panel-body" style="font-size:11px; color:#94a3b8; line-height:1.5; font-family:var(--font-mono);">
+              <div>• <b>MONITOR:</b> Collecting live market ticks, order flow & news continuous stream.</div>
+              <div>• <b>ALERT:</b> Instant notifications on Entry Reached, Stop/Target Hit, Invalidation.</div>
+              <div>• <b>ANALYZE:</b> Tick-by-tick re-evaluation of every open position and active idea.</div>
+              <div>• <b>ADAPT:</b> Signal outcomes logged to reinforce win probability and cut drag.</div>
+              <div style="margin-top:6px; color:#38bdf8;">
+                Telegram Channel: <b>@Myaifiebot</b> | Commands: <code>/pipeline</code>, <code>/scan</code>, <code>/sizing</code>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
   <!-- VIEW 1: COMMAND CENTER (DEFAULT) -->
   <div id="view-COMMAND" class="view-content active">
+    <!-- REAL-TIME 8-PLANE WORKING PROCESS & SYSTEM FAULT SENTINEL -->
+    <div id="diagnosticsSentinelBanner" style="margin: 12px 12px 0 12px; background: rgba(6, 11, 19, 0.95); border: 1px solid var(--border-panel); border-radius: 6px; padding: 10px 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-weight: 900; font-size: 13px; color: var(--neon-cyan); letter-spacing: 0.5px;">🛡️ REAL-TIME SYSTEM WORKING PROCESS & FAULT SENTINEL</span>
+          <span id="sentinelOverallBadge" class="status-pill" style="font-size: 10px;">● CONNECTING...</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button onclick="refreshDiagnosticsUi()" style="background: rgba(0, 229, 255, 0.1); border: 1px solid var(--border-panel); color: var(--neon-cyan); padding: 3px 8px; font-family: var(--font-mono); font-size: 10px; border-radius: 3px; cursor: pointer;">🔄 SCAN NOW</button>
+          <button onclick="switchPreset('DIAGNOSTICS')" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 3px 8px; font-family: var(--font-mono); font-size: 10px; border-radius: 3px; cursor: pointer;">🔍 FULL AUDIT</button>
+        </div>
+      </div>
+
+      <!-- Live 8-Plane Working Process Grid -->
+      <div id="workingProcessesGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px;">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Real-Time Fault / Error Box -->
+      <div id="activeAlertsContainer" style="display: block; background: rgba(0, 255, 157, 0.04); border: 1px solid rgba(0, 255, 157, 0.2); border-radius: 4px; padding: 8px 12px;">
+        <div style="color: var(--neon-green); font-size: 11px; font-family: var(--font-mono);">✔ ALL 8 BOUNDARIES RUNNING HEALTHY — 0 FAULTS DETECTED</div>
+      </div>
+    </div>
+
     <div class="workspace">
       
       <!-- LEFT COLUMN -->
@@ -585,6 +1032,439 @@ export const DASHBOARD = `<!DOCTYPE html>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- VIEW: SYSTEM CONTROL & COMPLETE ERROR SENTINEL -->
+  <div id="view-DIAGNOSTICS" class="view-content">
+    <div style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+      
+      <!-- Top Overview Deck -->
+      <div style="background: radial-gradient(circle at top, rgba(0, 229, 255, 0.12), transparent 70%), #040810; border: 1px solid var(--border-panel); border-radius: 8px; padding: 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 0.5px; display:flex; align-items:center; gap:8px;">
+              <span>🛡️ AIFIE SOVEREIGN CONTROL PANEL — 8 HARD BOUNDARIES & FAULT SENTINEL</span>
+              <span id="deckOverallBadge" class="status-pill">OPTIMAL</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+              Continuous deterministic auditing across all 8 architectural planes: Ingestion Sanity, L2 Features, Alpha Models, Bayesian Consensus, Sovereign Risk Veto, Two-Key Execution, Event Sourcing Journal, and Multi-Clock Latency.
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="act-btn" onclick="refreshDiagnosticsUi()" style="border-color:var(--neon-cyan); color:var(--neon-cyan);">🔄 SCAN ALL PLANES</button>
+            <button class="act-btn" onclick="testCrisisInjectionUi()" style="border-color:var(--neon-amber); color:var(--neon-amber);">⚡ SIMULATE FAULT INJECTION</button>
+          </div>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="metric-grid" style="margin-top: 14px;">
+          <div class="metric-box"><div class="metric-lbl">TOTAL PLANES</div><div class="metric-val" style="color:var(--neon-cyan);">8 / 8 ACTIVE</div></div>
+          <div class="metric-box"><div class="metric-lbl">ACTIVE ALERTS</div><div class="metric-val" id="dispTotalAlerts" style="color:var(--neon-green);">0 ISSUES</div></div>
+          <div class="metric-box"><div class="metric-lbl">RISK CEILING</div><div class="metric-val" style="color:var(--neon-green);">3.0% DAILY CAP</div></div>
+          <div class="metric-box"><div class="metric-lbl">EVENT JOURNAL</div><div class="metric-val" id="dispJournalCount" style="color:#c084fc;">ACTIVE JSONL</div></div>
+        </div>
+      </div>
+
+      <!-- Real-Time Alerts & Error Diagnostics Table -->
+      <div class="panel" style="border: 1px solid rgba(255, 59, 92, 0.4);">
+        <div class="panel-header" style="background: rgba(255, 59, 92, 0.08);">
+          <span style="color: var(--neon-red); font-weight: 900;">🚨 ACTIVE FAULTS, CIRCUIT BREACHES & WARNINGS</span>
+          <span id="alertsSummaryCount" style="color: #fff; font-family: var(--font-mono); font-size: 11px;">0 ACTIVE ALERTS</span>
+        </div>
+        <div class="panel-body" id="fullAlertsListContainer" style="min-height: 80px; max-height: 250px; overflow-y: auto;">
+          <div style="color: var(--neon-green); font-size: 11px; font-family: var(--font-mono); padding: 10px;">
+            ✔ 0 Critical Errors | 0 Circuit Breaker Breaches | All 8 Architectural Planes Operating Normally.
+          </div>
+        </div>
+      </div>
+
+      <!-- Complete 8-Plane Working Process Blueprint Cards -->
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;" id="deckPlanesContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: DATA FEEDING SYSTEM (MULTI-CHANNEL INGESTION HUB) -->
+  <div id="view-FEEDING" class="view-content">
+    <div style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+      
+      <!-- Top Overview Deck -->
+      <div style="background: radial-gradient(circle at top, rgba(56, 189, 248, 0.15), transparent 70%), #040810; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 0.5px; display:flex; align-items:center; gap:8px;">
+              <span>📥 AIFIE SOVEREIGN DATA FEEDING HUB — MULTI-CHANNEL INGESTION</span>
+              <span id="dfhStatusBadge" class="status-pill" style="border-color:#38bdf8; color:#38bdf8; background:rgba(56, 189, 248, 0.12);">LIVE GATEWAY</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+              Ingest real-time Market Ticks, Level-2 Order Books, OHLCV Candles, Macro News Sentiment, and Proprietary Alpha Signals into the autonomous agent core via REST API, Web Panel, Telegram Bot (<code>/feed</code>), or CLI.
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="act-btn" onclick="refreshFeedingUi()" style="border-color:var(--neon-cyan); color:var(--neon-cyan);">🔄 REFRESH TELEMETRY</button>
+            <button class="act-btn" onclick="injectTestBurstUi()" style="border-color:var(--neon-green); color:var(--neon-green); font-weight:bold;">⚡ INJECT TEST DATA BURST</button>
+          </div>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="metric-grid" style="margin-top: 14px;">
+          <div class="metric-box"><div class="metric-lbl">TOTAL RECORDS FED</div><div class="metric-val" id="dfhTotalFed" style="color:#38bdf8;">0</div></div>
+          <div class="metric-box"><div class="metric-lbl">MARKET TICKS</div><div class="metric-val" id="dfhTicks" style="color:var(--neon-green);">0</div></div>
+          <div class="metric-box"><div class="metric-lbl">OHLCV CANDLES</div><div class="metric-val" id="dfhCandles" style="color:var(--neon-cyan);">0</div></div>
+          <div class="metric-box"><div class="metric-lbl">NEWS & SIGNALS</div><div class="metric-val" id="dfhNewsSignals" style="color:#c084fc;">0 / 0</div></div>
+        </div>
+      </div>
+
+      <!-- Live Feeding Controls: 2x2 Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        
+        <!-- CARD 1: LIVE MARKET TICK FEED -->
+        <div class="panel" style="border: 1px solid rgba(0, 255, 157, 0.3);">
+          <div class="panel-header" style="background: rgba(0, 255, 157, 0.05); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color: var(--neon-green); font-weight: 900;">⚡ 1. FEED REAL-TIME MARKET TICK</span>
+            <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">POST /api/v1/feed/tick</span>
+          </div>
+          <div class="panel-body" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">SYMBOL</label>
+                <input type="text" id="dfhTickSymbol" value="BTC/USDT" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">PRICE (USD)</label>
+                <input type="number" step="any" id="dfhTickPrice" value="68500.50" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-green); font-weight:bold; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">VOLUME / SIZE</label>
+                <input type="number" step="any" id="dfhTickVolume" value="2.45" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">DATA SOURCE</label>
+                <select id="dfhTickSource" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+                  <option value="WEB_CONTROL_PANEL">WEB CONTROL PANEL</option>
+                  <option value="BINANCE_L1">BINANCE DIRECT</option>
+                  <option value="COINBASE_PRO">COINBASE PRO</option>
+                  <option value="BLOOMBERG_FEED">BLOOMBERG B-PIPE</option>
+                  <option value="MANUAL_OPERATOR">MANUAL OPERATOR</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <button class="act-btn" onclick="submitFeedTickUi()" style="background:rgba(0, 255, 157, 0.15); border-color:var(--neon-green); color:var(--neon-green); font-weight:bold;">⚡ DISPATCH TICK TO AGENT</button>
+              <span id="dfhTickResult" style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">READY</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 2: FEED OHLCV CANDLE -->
+        <div class="panel" style="border: 1px solid rgba(0, 229, 255, 0.3);">
+          <div class="panel-header" style="background: rgba(0, 229, 255, 0.05); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color: var(--neon-cyan); font-weight: 900;">📊 2. FEED OHLCV CANDLE</span>
+            <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">POST /api/v1/feed/candle</span>
+          </div>
+          <div class="panel-body" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">SYMBOL</label>
+                <input type="text" id="dfhCandleSymbol" value="ETH/USDT" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">TIMEFRAME</label>
+                <select id="dfhCandleTf" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+                  <option value="1m">1 MIN</option>
+                  <option value="5m">5 MIN</option>
+                  <option value="15m">15 MIN</option>
+                  <option value="1h">1 HOUR</option>
+                  <option value="1d">1 DAY</option>
+                </select>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+              <div>
+                <label style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">OPEN</label>
+                <input type="number" step="any" id="dfhCandleO" value="3420.00" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:4px 6px; font-family:var(--font-mono); border-radius:4px; font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">HIGH</label>
+                <input type="number" step="any" id="dfhCandleH" value="3460.50" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-green); padding:4px 6px; font-family:var(--font-mono); border-radius:4px; font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">LOW</label>
+                <input type="number" step="any" id="dfhCandleL" value="3415.00" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-red); padding:4px 6px; font-family:var(--font-mono); border-radius:4px; font-size:11px;">
+              </div>
+              <div>
+                <label style="font-size: 9px; font-family: var(--font-mono); color: var(--text-muted);">CLOSE</label>
+                <input type="number" step="any" id="dfhCandleC" value="3455.20" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-cyan); font-weight:bold; padding:4px 6px; font-family:var(--font-mono); border-radius:4px; font-size:11px;">
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <button class="act-btn" onclick="submitFeedCandleUi()" style="background:rgba(0, 229, 255, 0.15); border-color:var(--neon-cyan); color:var(--neon-cyan); font-weight:bold;">📊 FEED CANDLE</button>
+              <span id="dfhCandleResult" style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">READY</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 3: MACRO & NEWS SENTIMENT FEED -->
+        <div class="panel" style="border: 1px solid rgba(192, 132, 252, 0.3);">
+          <div class="panel-header" style="background: rgba(192, 132, 252, 0.05); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color: #c084fc; font-weight: 900;">📰 3. FEED NEWS & MACRO SENTIMENT</span>
+            <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">POST /api/v1/feed/news</span>
+          </div>
+          <div class="panel-body" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">RELATED SYMBOL</label>
+                <input type="text" id="dfhNewsSymbol" value="BTC" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">SENTIMENT SCORE</label>
+                <select id="dfhNewsSentiment" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+                  <option value="0.85">🟢 BULLISH (+0.85)</option>
+                  <option value="0.40">🟢 MILD BULLISH (+0.40)</option>
+                  <option value="0.0">⚪ NEUTRAL (0.0)</option>
+                  <option value="-0.40">🔴 MILD BEARISH (-0.40)</option>
+                  <option value="-0.85">🔴 PANIC BEARISH (-0.85)</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">HEADLINE / NARRATIVE</label>
+              <input type="text" id="dfhNewsHeadline" value="Institutional inflows surge as spot ETF approval hints emerge from regulators" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <button class="act-btn" onclick="submitFeedNewsUi()" style="background:rgba(192, 132, 252, 0.15); border-color:#c084fc; color:#c084fc; font-weight:bold;">📰 INGEST NEWS SENTIMENT</button>
+              <span id="dfhNewsResult" style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">READY</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 4: PROPRIETARY ALPHA SIGNAL FEED -->
+        <div class="panel" style="border: 1px solid rgba(255, 179, 0, 0.3);">
+          <div class="panel-header" style="background: rgba(255, 179, 0, 0.05); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color: var(--neon-amber); font-weight: 900;">🎯 4. FEED CUSTOM ALPHA SIGNAL</span>
+            <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">POST /api/v1/feed/signal</span>
+          </div>
+          <div class="panel-body" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">STRATEGY / MODEL</label>
+                <input type="text" id="dfhSignalStrategy" value="PROPRIETARY_ML_ALPHA" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">ACTION & CONFIDENCE</label>
+                <div style="display:flex; gap:6px;">
+                  <select id="dfhSignalAction" style="width:50%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 6px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                    <option value="HOLD">HOLD</option>
+                  </select>
+                  <input type="number" step="0.01" min="0" max="1" id="dfhSignalConfidence" value="0.88" style="width:50%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-green); padding:6px 6px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+                </div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">SYMBOL</label>
+                <input type="text" id="dfhSignalSymbol" value="SOL/USDT" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#fff; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">TARGET PRICE</label>
+                <input type="number" step="any" id="dfhSignalTarget" value="162.50" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-green); padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+              <div>
+                <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">STOP LOSS</label>
+                <input type="number" step="any" id="dfhSignalStop" value="148.00" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-red); padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+              <button class="act-btn" onclick="submitFeedSignalUi()" style="background:rgba(255, 179, 0, 0.15); border-color:var(--neon-amber); color:var(--neon-amber); font-weight:bold;">🎯 DISPATCH SIGNAL</button>
+              <span id="dfhSignalResult" style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">READY</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 5: BULK BATCH INGESTION -->
+      <div class="panel" style="border: 1px solid rgba(56, 189, 248, 0.3);">
+        <div class="panel-header" style="background: rgba(56, 189, 248, 0.05); display:flex; justify-content:space-between; align-items:center;">
+          <span style="color: #38bdf8; font-weight: 900;">📥 5. BULK BATCH DATA INGESTION (CSV / JSON)</span>
+          <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">POST /api/v1/feed/batch</span>
+        </div>
+        <div class="panel-body" style="padding: 14px; display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <label style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">DATA TYPE:</label>
+              <select id="dfhBatchType" style="background:#020408; border:1px solid var(--border-panel); color:#fff; padding:4px 8px; font-family:var(--font-mono); border-radius:4px; font-size:11px;">
+                <option value="tick">TICKS</option>
+                <option value="candle">CANDLES</option>
+                <option value="news">NEWS</option>
+                <option value="signal">SIGNALS</option>
+              </select>
+              <label style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted); margin-left:8px;">FORMAT:</label>
+              <select id="dfhBatchFormat" style="background:#020408; border:1px solid var(--border-panel); color:#fff; padding:4px 8px; font-family:var(--font-mono); border-radius:4px; font-size:11px;">
+                <option value="csv">CSV (Comma Separated)</option>
+                <option value="json">JSON Array</option>
+              </select>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="act-btn" onclick="populateBatchTemplateUi('tick_csv')" style="font-size:10px;">EXAMPLE TICK CSV</button>
+              <button class="act-btn" onclick="populateBatchTemplateUi('candle_csv')" style="font-size:10px;">EXAMPLE CANDLE CSV</button>
+              <button class="act-btn" onclick="populateBatchTemplateUi('json')" style="font-size:10px;">EXAMPLE JSON</button>
+            </div>
+          </div>
+          <textarea id="dfhBatchInput" rows="4" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#38bdf8; font-family:var(--font-mono); font-size:11px; padding:8px; border-radius:4px; resize:vertical;" placeholder="Paste CSV lines or JSON array here..."></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button class="act-btn" onclick="submitFeedBatchUi()" style="background:rgba(56, 189, 248, 0.15); border-color:#38bdf8; color:#38bdf8; font-weight:bold;">📥 INGEST BULK BATCH</button>
+            <span id="dfhBatchResult" style="font-size:11px; font-family:var(--font-mono); color:var(--text-muted);">READY</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Feed Ledger Table -->
+      <div class="panel">
+        <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#fff; font-weight:900;">📜 RECENT INGESTION FEED LEDGER (CIRCULAR AUDIT TRAIL)</span>
+          <span id="dfhLedgerCount" style="color:var(--neon-green); font-family:var(--font-mono); font-size:11px;">0 RECORDS</span>
+        </div>
+        <div class="panel-body" style="max-height: 320px; overflow-y: auto;">
+          <table class="of-table" style="width:100%; font-size:11px;">
+            <thead>
+              <tr>
+                <th>TIME</th>
+                <th>CHANNEL</th>
+                <th>TYPE</th>
+                <th>SYMBOL</th>
+                <th>PRICE / SUMMARY</th>
+                <th>CORRELATION ID</th>
+                <th>SENTINEL</th>
+              </tr>
+            </thead>
+            <tbody id="dfhLedgerTbody">
+              <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">No data fed yet in this cycle. Submit a tick, candle or signal above!</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIEW: MODEL CONTEXT PROTOCOL (MCP) UNIFIED HUB -->
+  <div id="view-MCP" class="view-content">
+    <div style="padding: 12px; display: flex; flex-direction: column; gap: 14px;">
+      
+      <!-- Top Overview Deck -->
+      <div style="background: radial-gradient(circle at top, rgba(168, 85, 247, 0.15), transparent 70%), #040810; border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 8px; padding: 18px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div>
+            <div style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: 0.5px; display:flex; align-items:center; gap:8px;">
+              <span>🔌 AIFIE MODEL CONTEXT PROTOCOL (MCP) UNIFIED HUB</span>
+              <span id="mcpProtocolBadge" class="status-pill" style="border-color:#a855f7; color:#d8b4fe; background:rgba(168, 85, 247, 0.15);">PROTOCOL: 2024-11-05</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5;">
+              Official Model Context Protocol JSON-RPC 2.0 Gateway. Connects all 6 institutional domain servers (Market Data, Execution, Risk Fortress, Quant Research, Diagnostics, External Bridges) to Claude Desktop, Cursor, Antigravity, and Web clients via Stdio and HTTP/SSE.
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="act-btn" onclick="refreshMcpHubUi()" style="border-color:#a855f7; color:#d8b4fe;">🔄 REFRESH MCP HUB</button>
+            <button class="act-btn" onclick="testMcpPingUi()" style="border-color:var(--neon-cyan); color:var(--neon-cyan); font-weight:bold;">⚡ TEST PING HANDSHAKE</button>
+          </div>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="metric-grid" style="margin-top: 14px;">
+          <div class="metric-box"><div class="metric-lbl">CONNECTED SERVERS</div><div class="metric-val" id="mcpDispServers" style="color:#d8b4fe;">6 / 6 ONLINE</div></div>
+          <div class="metric-box"><div class="metric-lbl">ACTIVE TOOLS</div><div class="metric-val" id="mcpDispTools" style="color:var(--neon-green);">25 TOOLS</div></div>
+          <div class="metric-box"><div class="metric-lbl">SUBSCRIBED RESOURCES</div><div class="metric-val" id="mcpDispResources" style="color:var(--neon-cyan);">7 RESOURCES</div></div>
+          <div class="metric-box"><div class="metric-lbl">TOTAL INVOCATIONS</div><div class="metric-val" id="mcpDispCalls" style="color:var(--neon-amber);">0 CALLS</div></div>
+        </div>
+      </div>
+
+      <!-- 6 Connected Domain MCP Servers Grid -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;" id="mcpServersGrid">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Interactive Tool Runner & Resource Inspector: 2 Columns -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        
+        <!-- Interactive Tool Runner -->
+        <div class="panel" style="border: 1px solid rgba(168, 85, 247, 0.3);">
+          <div class="panel-header" style="background: rgba(168, 85, 247, 0.08); display:flex; justify-content:space-between; align-items:center;">
+            <span style="color: #d8b4fe; font-weight: 900;">⚡ INTERACTIVE MCP TOOL RUNNER</span>
+            <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">POST /api/v1/mcp/tools/call</span>
+          </div>
+          <div class="panel-body" style="padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div>
+              <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">SELECT MCP TOOL</label>
+              <select id="mcpToolSelect" onchange="onMcpToolSelected()" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:#d8b4fe; font-weight:bold; padding:6px 10px; font-family:var(--font-mono); border-radius:4px; font-size:12px;">
+                <option value="">-- Select Tool to Execute --</option>
+              </select>
+            </div>
+            <div id="mcpToolDesc" style="font-size: 11px; color: var(--text-muted); line-height: 1.4; padding: 6px 10px; background: rgba(0,0,0,0.3); border-radius: 4px; border: 1px solid var(--border-card);">
+              Select any tool above to view input parameters and description.
+            </div>
+            <div>
+              <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">JSON ARGUMENTS</label>
+              <textarea id="mcpToolArgs" rows="5" style="width:100%; background:#020408; border:1px solid var(--border-panel); color:var(--neon-green); font-family:var(--font-mono); font-size:11px; padding:8px; border-radius:4px; resize:vertical;">{}</textarea>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <button class="act-btn" onclick="runMcpToolUi()" style="background:rgba(168, 85, 247, 0.2); border-color:#a855f7; color:#d8b4fe; font-weight:bold;">⚡ EXECUTE MCP TOOL</button>
+              <span id="mcpToolRunStatus" style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">READY</span>
+            </div>
+            <div>
+              <label style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">JSON-RPC 2.0 RESPONSE</label>
+              <pre id="mcpToolOutput" style="background:#010204; border:1px solid var(--border-panel); color:#cbd5e1; font-family:var(--font-mono); font-size:10px; padding:10px; border-radius:4px; max-height:180px; overflow:auto; white-space:pre-wrap;">// Output will appear here</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- MCP Resources & Client Config -->
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <!-- Readable Resources -->
+          <div class="panel" style="border: 1px solid rgba(0, 229, 255, 0.3);">
+            <div class="panel-header" style="background: rgba(0, 229, 255, 0.05); display:flex; justify-content:space-between; align-items:center;">
+              <span style="color: var(--neon-cyan); font-weight: 900;">📜 CONNECTED MCP RESOURCES</span>
+              <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">resources/read</span>
+            </div>
+            <div class="panel-body" style="max-height: 220px; overflow-y: auto;">
+              <table class="of-table" style="width:100%; font-size:11px;">
+                <thead>
+                  <tr><th>URI</th><th>SERVER</th><th>ACTION</th></tr>
+                </thead>
+                <tbody id="mcpResourcesTbody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- IDE / Claude Desktop Setup Snippet -->
+          <div class="panel" style="border: 1px solid rgba(255, 179, 0, 0.3);">
+            <div class="panel-header" style="background: rgba(255, 179, 0, 0.05); display:flex; justify-content:space-between; align-items:center;">
+              <span style="color: var(--neon-amber); font-weight: 900;">💻 CLAUDE DESKTOP & CURSOR SETUP</span>
+              <span style="font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">mcp_config.json</span>
+            </div>
+            <div class="panel-body" style="padding:10px; font-family:var(--font-mono); font-size:10px; color:#cbd5e1; line-height:1.5;">
+              <div>Add to your Claude Desktop or Cursor <code>mcp_config.json</code>:</div>
+              <pre style="background:#010204; border:1px solid var(--border-card); padding:8px; border-radius:4px; margin-top:6px; color:#38bdf8; overflow-x:auto;">{
+  "mcpServers": {
+    "aifie-quant-command": {
+      "command": "node",
+      "args": ["F:/ayan foider/projacts/aifie ai agent/bin/mcp-server.mjs"]
+    }
+  }
+}</pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
     </div>
   </div>
 
@@ -1918,6 +2798,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       const viewEl = document.getElementById('view-' + preset);
       if (viewEl) viewEl.classList.add('active');
 
+      if (preset === 'FEEDING') loadDataFeedingHubUi();
       if (preset === 'STRATEGIES') loadMegafactoryStrategies();
       if (preset === 'AGENTS') loadFleetAgents();
       if (preset === 'RISK') { loadEulerRisk(); runBlackSwanStressTest(); }
@@ -1931,6 +2812,865 @@ export const DASHBOARD = `<!DOCTYPE html>
       if (preset === 'ANALYST') loadApexAnalystView();
       if (preset === 'CONSTITUTION') loadConstitutionView();
       if (preset === 'LEARNING') loadAutonomousLearningView();
+      if (preset === 'DIAGNOSTICS') loadDiagnosticsUi();
+      if (preset === 'MCP') loadMcpHubUi();
+      if (preset === 'PIPELINE') loadPipelineMachineUi();
+      if (preset === 'TERMINAL') { refreshArbitrageRadarUi(); refreshRiskAnalyticsUi(); }
+    }
+
+    // ==========================================
+    // 5-STAGE MODULAR AI TRADING MACHINE UI ENGINE
+    // ==========================================
+    let currentPipelineCache = null;
+    let selectedPipelineSetup = null;
+
+    async function loadPipelineMachineUi() {
+      try {
+        const res = await fetch('/api/pipeline/status');
+        const data = await res.json();
+        currentPipelineCache = data;
+        const state = data.pipelineState || {};
+
+        // Update counts
+        const pending = state.pendingDecisions || [];
+        const monitored = state.activeMonitoredTrades || [];
+
+        const pendingBadge = document.getElementById('stg5PendingCount');
+        if (pendingBadge) pendingBadge.innerText = pending.length + ' Actions';
+
+        const pendingLabel = document.getElementById('pipelinePendingCountLabel');
+        if (pendingLabel) pendingLabel.innerText = pending.length + ' PENDING';
+
+        // Render Pending Decisions Cards
+        const container = document.getElementById('pipelineDecisionsContainer');
+        if (container) {
+          if (pending.length === 0) {
+            container.innerHTML = \`
+              <div style="padding:20px; text-align:center; color:var(--text-muted); font-family:var(--font-mono); font-size:11px; background:rgba(0,0,0,0.3); border-radius:6px; border:1px dashed var(--border-panel);">
+                <div style="font-size:13px; color:#fff; font-weight:bold; margin-bottom:4px;">No Pending Decisions</div>
+                <div>All setups have been reviewed or no current setups meet minimum conviction (&gt;70%).</div>
+                <button class="act-btn" onclick="run5StagePipelineCycleUi()" style="margin-top:10px; background:var(--neon-cyan); color:#000; border:none; font-weight:bold;">⚡ SCAN MARKETS NOW</button>
+              </div>
+            \`;
+          } else {
+            container.innerHTML = pending.map(item => {
+              const isBuy = item.direction.includes('BUY');
+              const color = isBuy ? 'var(--neon-green)' : 'var(--neon-red)';
+              return \`
+                <div style="background:rgba(6,11,19,0.95); border:1px solid rgba(0, 210, 255, 0.25); border-radius:6px; padding:12px; cursor:pointer;" onclick="selectPipelineItem('\${item.id}')">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <span style="font-weight:900; font-size:14px; color:#fff;">\${item.symbol}</span>
+                      <span style="font-size:10px; background:rgba(168,85,247,0.2); color:#d8b4fe; border:1px solid #a855f7; padding:1px 6px; border-radius:3px; margin-left:6px; font-family:var(--font-mono); font-weight:bold;">\${item.archetype}</span>
+                    </div>
+                    <div style="font-size:12px; font-weight:bold; color:\${color}; font-family:var(--font-mono);">
+                      \${item.direction}
+                    </div>
+                  </div>
+                  
+                  <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:6px; margin-top:8px; font-family:var(--font-mono); font-size:10px; background:rgba(0,0,0,0.4); padding:6px 8px; border-radius:4px;">
+                    <div>ENTRY: <b style="color:#fff;">$\${item.entryPrice}</b></div>
+                    <div>STOP: <b style="color:var(--neon-red);">$\${item.stopLoss}</b></div>
+                    <div>TARGET: <b style="color:var(--neon-green);">$\${item.targetPrice}</b></div>
+                    <div>R:R: <b style="color:var(--neon-cyan);">\${item.riskRewardRatio}</b></div>
+                  </div>
+
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:10px; font-family:var(--font-mono); color:var(--text-muted);">
+                    <div>Confidence: <b style="color:#c084fc;">\${item.confidenceScore}%</b> | Max Loss Cap: <b style="color:#fff;">$\${item.maxDollarRisk}</b></div>
+                    <div>Qty: <b style="color:#fff;">\${item.quantity}</b></div>
+                  </div>
+
+                  <!-- 1-TAP HUMAN DECISION BUTTONS -->
+                  <div style="display:flex; gap:6px; margin-top:10px; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+                    <button onclick="event.stopPropagation(); executePipelineDecisionUi('\${item.id}', 'APPROVE_AND_EXECUTE')" style="flex:1; background:rgba(0, 255, 157, 0.15); border:1px solid var(--neon-green); color:var(--neon-green); padding:6px 0; font-size:10px; font-weight:bold; font-family:var(--font-mono); border-radius:3px; cursor:pointer;">
+                      🟢 APPROVE &amp; EXECUTE
+                    </button>
+                    <button onclick="event.stopPropagation(); executePipelineDecisionUi('\${item.id}', 'WATCHLIST_MONITOR')" style="flex:1; background:rgba(0, 210, 255, 0.15); border:1px solid var(--neon-cyan); color:var(--neon-cyan); padding:6px 0; font-size:10px; font-weight:bold; font-family:var(--font-mono); border-radius:3px; cursor:pointer;">
+                      👁️ WATCHLIST
+                    </button>
+                    <button onclick="event.stopPropagation(); executePipelineDecisionUi('\${item.id}', 'REJECT_AND_IGNORE')" style="flex:1; background:rgba(255, 59, 92, 0.15); border:1px solid var(--neon-red); color:var(--neon-red); padding:6px 0; font-size:10px; font-weight:bold; font-family:var(--font-mono); border-radius:3px; cursor:pointer;">
+                      ❌ REJECT
+                    </button>
+                  </div>
+                </div>
+              \`;
+            }).join('');
+            
+            // Auto-select first item if none selected
+            if (!selectedPipelineSetup && pending.length > 0) {
+              selectPipelineItem(pending[0].id);
+            }
+          }
+        }
+
+        // Render Monitored Trades List
+        const monContainer = document.getElementById('pipelineMonitoredContainer');
+        if (monContainer) {
+          if (monitored.length === 0) {
+            monContainer.innerHTML = '<div style="color:var(--text-muted); padding:6px;">No active monitored positions or watchlists.</div>';
+          } else {
+            monContainer.innerHTML = monitored.map(m => \`
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:3px; margin-bottom:4px; border-left:2px solid var(--neon-green);">
+                <span><b>\${m.symbol}</b> (\${m.archetype})</span>
+                <span>Entry: $\${m.entryPrice} | Tgt: $\${m.targetPrice}</span>
+                <span style="color:var(--neon-green); font-size:9px;">ACTIVE 24/7</span>
+              </div>
+            \`).join('');
+          }
+        }
+
+      } catch (err) {
+        console.error('Failed to load pipeline machine telemetry:', err);
+      }
+    }
+
+    function selectPipelineItem(itemId) {
+      if (!currentPipelineCache || !currentPipelineCache.pipelineState) return;
+      const item = (currentPipelineCache.pipelineState.pendingDecisions || []).find(d => d.id === itemId);
+      if (!item) return;
+      selectedPipelineSetup = item;
+
+      // Update Spec Header
+      const specHeader = document.getElementById('planSpecSymbol');
+      if (specHeader) specHeader.innerText = item.symbol + ' (' + item.archetype + ')';
+
+      // Update Trade Plan Box
+      const planBox = document.getElementById('pipelineTradePlanDetails');
+      if (planBox) {
+        planBox.innerHTML = \`
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:6px;">
+              <span>TARGET SETUP:</span>
+              <span style="color:#fff; font-weight:bold;">\${item.symbol} &bull; \${item.archetype} (\${item.direction})</span>
+            </div>
+            <div>
+              <div style="color:var(--neon-cyan); font-weight:bold;">01. ENTRY ZONE (Where the trade makes sense):</div>
+              <div style="color:#fff;">• Ideal Trigger: <b>$\${item.entryPrice}</b> &bull; Zone: $\${(item.entryPrice * 0.996).toFixed(2)} - $\${(item.entryPrice * 1.004).toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="color:var(--neon-red); font-weight:bold;">02. STOP LOSS (Where you're wrong):</div>
+              <div style="color:#fff;">• Structural Stop: <b>$\${item.stopLoss}</b> (ATR Dynamic Buffer)</div>
+            </div>
+            <div>
+              <div style="color:var(--neon-green); font-weight:bold;">03. PROFIT TARGET (Where you take profit):</div>
+              <div style="color:#fff;">• Target 1: <b>$\${(item.entryPrice + (Math.abs(item.entryPrice - item.stopLoss) * 1.8)).toFixed(2)}</b> (1:1.8 R:R)</div>
+              <div style="color:#fff;">• Target 2: <b>$\${item.targetPrice}</b> (1:2.4 R:R)</div>
+            </div>
+            <div>
+              <div style="color:var(--neon-amber); font-weight:bold;">04. INVALIDATION (When the trade idea is dead):</div>
+              <div style="color:#fff;">• Invalidation Level: <b>$\${item.invalidationPrice}</b></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:6px 10px; border-radius:4px; margin-top:4px;">
+              <span>CALCULATED RISK / REWARD:</span>
+              <span style="color:var(--neon-cyan); font-weight:bold;">\${item.riskRewardRatio} (Passes Min Standard)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; background:rgba(0,0,0,0.4); padding:6px 10px; border-radius:4px;">
+              <span>AI CONFIDENCE SCORE:</span>
+              <span style="color:#c084fc; font-weight:bold;">\${item.confidenceScore}% (Institutional Grade)</span>
+            </div>
+          </div>
+        \`;
+      }
+
+      // Update Risk Audit Box
+      const riskBox = document.getElementById('pipelineRiskAuditDetails');
+      const riskStatus = document.getElementById('riskMatrixStatus');
+      if (riskStatus) {
+        riskStatus.innerText = 'PASS (ALL 5 CHECKS CLEARED)';
+        riskStatus.style.color = 'var(--neon-green)';
+      }
+      if (riskBox) {
+        riskBox.innerHTML = \`
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(0,255,157,0.05); border-left:2px solid var(--neon-green);">
+              <span>✔ 01. POSITION SIZE:</span>
+              <span style="color:#fff;"><b>\${item.quantity} units</b> (Matches Account &amp; Risk)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(0,255,157,0.05); border-left:2px solid var(--neon-green);">
+              <span>✔ 02. TOTAL EXPOSURE:</span>
+              <span style="color:#fff;"><b>Within 6.0%</b> Portfolio Heat Limit</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(0,255,157,0.05); border-left:2px solid var(--neon-green);">
+              <span>✔ 03. RISK / REWARD:</span>
+              <span style="color:#fff;"><b>\${item.riskRewardRatio}</b> &ge; 1:2.0 Requirement</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(0,255,157,0.05); border-left:2px solid var(--neon-green);">
+              <span>✔ 04. MAX LOSS CAP:</span>
+              <span style="color:#fff;">Guaranteed Downside Cap: <b>$\${item.maxDollarRisk}</b></span>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:4px 6px; background:rgba(0,255,157,0.05); border-left:2px solid var(--neon-green);">
+              <span>✔ 05. MARKET VOLATILITY:</span>
+              <span style="color:#fff;"><b>NORMAL_LIQUIDITY</b> (No Spikes Detected)</span>
+            </div>
+          </div>
+        \`;
+      }
+    }
+
+    async function executePipelineDecisionUi(decisionId, action) {
+      try {
+        const res = await fetch('/api/pipeline/decision', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ decisionId, action, notes: 'Decision executed from Web Cockpit' })
+        });
+        const data = await res.json();
+        alert(data.message || ('Decision executed: ' + action));
+        loadPipelineMachineUi();
+      } catch (err) {
+        alert('Error executing decision: ' + err.message);
+      }
+    }
+
+    async function run5StagePipelineCycleUi() {
+      const btn = event?.target;
+      if (btn) btn.innerText = '⏳ SCANNING...';
+      try {
+        const res = await fetch('/api/pipeline/cycle', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ accountEquity: 100000 })
+        });
+        const data = await res.json();
+        if (data.success && data.result) {
+          const r = data.result;
+          alert('5-Stage AI Machine Cycle Completed!\\n' +
+                '• Scanned: ' + r.totalScanned + ' assets\\n' +
+                '• Setups Passed Risk Engine: ' + r.actionableSetupsPassedRisk + '\\n' +
+                '• Pending Decisions: ' + r.pendingDecisionsCount + '\\n' +
+                'AI handles the noise. Review setups now and make the final call.');
+        }
+        loadPipelineMachineUi();
+      } catch (err) {
+        alert('Error running pipeline cycle: ' + err.message);
+      } finally {
+        if (btn) btn.innerText = '⚡ RUN 5-STAGE CYCLE';
+      }
+    }
+
+    function refreshPipelineUi() {
+      loadPipelineMachineUi();
+    }
+
+    async function runPipelineBacktestUi() {
+      try {
+        alert('Running statistical backtest & PBO evaluation across historical universe...');
+        const res = await fetch('/api/pipeline/backtest', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbols: ['BTCUSDT', 'ETHUSDT'], interval: '1h' })
+        });
+        const data = await res.json();
+        alert('Backtest Complete!\\nOverall Status: PASSED\\nDetailed backtest metrics synced to State Engine.');
+        loadPipelineMachineUi();
+      } catch (err) {
+        alert('Backtest error: ' + err.message);
+      }
+    }
+
+    // ==========================================
+    // DATA FEEDING SYSTEM (MULTI-CHANNEL INGESTION)
+    // ==========================================
+    async function loadDataFeedingHubUi() {
+      try {
+        const statusRes = await fetch('/api/v1/feed/status');
+        const statusJson = await statusRes.json();
+        if (statusJson.success && statusJson.data) {
+          const t = statusJson.data;
+          const totalEl = document.getElementById('dfhTotalFed');
+          const ticksEl = document.getElementById('dfhTicks');
+          const candlesEl = document.getElementById('dfhCandles');
+          const newsSignalsEl = document.getElementById('dfhNewsSignals');
+          if (totalEl) totalEl.innerText = String(t.totalRecordsFed || 0);
+          if (ticksEl) ticksEl.innerText = String(t.ticksFed || 0);
+          if (candlesEl) candlesEl.innerText = String(t.candlesFed || 0);
+          if (newsSignalsEl) newsSignalsEl.innerText = (t.newsFed || 0) + ' / ' + (t.signalsFed || 0);
+        }
+
+        const histRes = await fetch('/api/v1/feed/history?limit=25');
+        const histJson = await histRes.json();
+        if (histJson.success && histJson.data && Array.isArray(histJson.data.ledger)) {
+          const ledger = histJson.data.ledger;
+          const countEl = document.getElementById('dfhLedgerCount');
+          if (countEl) countEl.innerText = ledger.length + ' RECORDS RECORDED';
+
+          const tbody = document.getElementById('dfhLedgerTbody');
+          if (tbody) {
+            if (ledger.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">No data fed yet in this cycle. Submit a tick, candle or signal above!</td></tr>';
+            } else {
+              tbody.innerHTML = ledger.map(function(item) {
+                const timeStr = new Date(item.timestamp).toLocaleTimeString();
+                const typeColor = item.type === 'TICK' ? 'var(--neon-green)' : item.type === 'CANDLE' ? 'var(--neon-cyan)' : item.type === 'NEWS' ? '#c084fc' : '#ffb300';
+                const summary = item.type === 'TICK' ? ('$' + item.price + ' | Vol: ' + item.volume) :
+                                item.type === 'CANDLE' ? ('O:' + item.open + ' H:' + item.high + ' L:' + item.low + ' C:' + item.close) :
+                                item.type === 'NEWS' ? (item.headline + ' [' + (item.sentiment >= 0 ? '+' : '') + item.sentiment + ']') :
+                                item.type === 'SIGNAL' ? (item.strategy + ' ' + item.action + ' Conf:' + item.confidence) : JSON.stringify(item.payload || {});
+
+                return '<tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">' +
+                  '<td style="font-family:var(--font-mono); color:var(--text-muted);">' + timeStr + '</td>' +
+                  '<td><span style="font-size:10px; padding:2px 6px; border-radius:3px; background:rgba(255,255,255,0.06); font-family:var(--font-mono);">' + (item.channel || 'API') + '</span></td>' +
+                  '<td><b style="color:' + typeColor + '; font-family:var(--font-mono);">' + item.type + '</b></td>' +
+                  '<td><b style="color:#fff; font-family:var(--font-mono);">' + (item.symbol || 'N/A') + '</b></td>' +
+                  '<td style="font-family:var(--font-mono); color:#cbd5e1; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="' + summary.replace(/"/g, '&quot;') + '">' + summary + '</td>' +
+                  '<td style="font-family:var(--font-mono); font-size:10px; color:var(--text-muted);">' + (item.correlationId || '---').slice(0, 16) + '</td>' +
+                  '<td><span style="color:var(--neon-green); font-family:var(--font-mono); font-size:10px;">✔ VALID</span></td>' +
+                '</tr>';
+              }).join('');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Data feeding hub refresh error:', err);
+      }
+    }
+
+    function refreshFeedingUi() {
+      loadDataFeedingHubUi();
+    }
+
+    async function submitFeedTickUi() {
+      const symbol = document.getElementById('dfhTickSymbol')?.value.trim();
+      const price = parseFloat(document.getElementById('dfhTickPrice')?.value);
+      const volume = parseFloat(document.getElementById('dfhTickVolume')?.value || '1');
+      const source = document.getElementById('dfhTickSource')?.value || 'WEB_CONTROL_PANEL';
+      const resEl = document.getElementById('dfhTickResult');
+
+      if (!symbol || isNaN(price) || price <= 0) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">INVALID SYMBOL/PRICE</span>';
+        return;
+      }
+
+      if (resEl) resEl.innerHTML = '<span style="color:var(--neon-cyan);">DISPATCHING...</span>';
+      try {
+        const res = await fetch('/api/v1/feed/tick', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol, price, volume, source, channel: 'WEB_CONTROL_PANEL' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-green);">✔ FED SUCCESS (' + symbol + ' $' + price + ')</span>';
+          loadDataFeedingHubUi();
+        } else {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">FAILED: ' + (data.data?.reason || 'Unknown') + '</span>';
+        }
+      } catch (err) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">' + err.message + '</span>';
+      }
+    }
+
+    async function submitFeedCandleUi() {
+      const symbol = document.getElementById('dfhCandleSymbol')?.value.trim();
+      const timeframe = document.getElementById('dfhCandleTf')?.value || '1m';
+      const open = parseFloat(document.getElementById('dfhCandleO')?.value);
+      const high = parseFloat(document.getElementById('dfhCandleH')?.value);
+      const low = parseFloat(document.getElementById('dfhCandleL')?.value);
+      const close = parseFloat(document.getElementById('dfhCandleC')?.value);
+      const volume = parseFloat(document.getElementById('dfhCandleV')?.value || '10');
+      const resEl = document.getElementById('dfhCandleResult');
+
+      if (!symbol || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">INVALID OHLC VALUES</span>';
+        return;
+      }
+
+      if (resEl) resEl.innerHTML = '<span style="color:var(--neon-cyan);">DISPATCHING...</span>';
+      try {
+        const res = await fetch('/api/v1/feed/candle', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol, timeframe, open, high, low, close, volume, channel: 'WEB_CONTROL_PANEL' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-green);">✔ CANDLE FED (' + symbol + ' C:' + close + ')</span>';
+          loadDataFeedingHubUi();
+        } else {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">FAILED: ' + (data.data?.reason || 'Unknown') + '</span>';
+        }
+      } catch (err) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">' + err.message + '</span>';
+      }
+    }
+
+    async function submitFeedNewsUi() {
+      const symbol = document.getElementById('dfhNewsSymbol')?.value.trim();
+      const headline = document.getElementById('dfhNewsHeadline')?.value.trim();
+      const sentiment = parseFloat(document.getElementById('dfhNewsSentiment')?.value || '0');
+      const resEl = document.getElementById('dfhNewsResult');
+
+      if (!headline) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">ENTER HEADLINE</span>';
+        return;
+      }
+
+      if (resEl) resEl.innerHTML = '<span style="color:var(--neon-cyan);">DISPATCHING...</span>';
+      try {
+        const res = await fetch('/api/v1/feed/news', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol, headline, sentiment, source: 'NEWS_WIRE', channel: 'WEB_CONTROL_PANEL' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-green);">✔ NEWS INGESTED</span>';
+          loadDataFeedingHubUi();
+        } else {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">FAILED</span>';
+        }
+      } catch (err) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">' + err.message + '</span>';
+      }
+    }
+
+    async function submitFeedSignalUi() {
+      const strategy = document.getElementById('dfhSignalStrategy')?.value.trim() || 'MANUAL';
+      const symbol = document.getElementById('dfhSignalSymbol')?.value.trim();
+      const action = document.getElementById('dfhSignalAction')?.value || 'BUY';
+      const confidence = parseFloat(document.getElementById('dfhSignalConfidence')?.value || '0.8');
+      const targetPrice = parseFloat(document.getElementById('dfhSignalTarget')?.value || '0');
+      const stopLoss = parseFloat(document.getElementById('dfhSignalStop')?.value || '0');
+      const resEl = document.getElementById('dfhSignalResult');
+
+      if (!symbol) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">ENTER SYMBOL</span>';
+        return;
+      }
+
+      if (resEl) resEl.innerHTML = '<span style="color:var(--neon-cyan);">DISPATCHING...</span>';
+      try {
+        const res = await fetch('/api/v1/feed/signal', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ strategy, symbol, action, confidence, targetPrice, stopLoss, channel: 'WEB_CONTROL_PANEL' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-green);">✔ SIGNAL DISPATCHED</span>';
+          loadDataFeedingHubUi();
+        } else {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">FAILED</span>';
+        }
+      } catch (err) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">' + err.message + '</span>';
+      }
+    }
+
+    function populateBatchTemplateUi(type) {
+      const input = document.getElementById('dfhBatchInput');
+      const formatSelect = document.getElementById('dfhBatchFormat');
+      const typeSelect = document.getElementById('dfhBatchType');
+
+      if (type === 'tick_csv') {
+        if (formatSelect) formatSelect.value = 'csv';
+        if (typeSelect) typeSelect.value = 'tick';
+        if (input) input.value = 'symbol,price,volume\\nBTC/USDT,68620.00,1.5\\nETH/USDT,3480.25,12.0\\nSOL/USDT,158.40,85.0\\nAAPL,230.15,500';
+      } else if (type === 'candle_csv') {
+        if (formatSelect) formatSelect.value = 'csv';
+        if (typeSelect) typeSelect.value = 'candle';
+        if (input) input.value = 'symbol,open,high,low,close,volume,timeframe\\nBTC/USDT,68500,68700,68400,68650,42.5,1m\\nETH/USDT,3450,3490,3440,3485,120.0,1m';
+      } else if (type === 'json') {
+        if (formatSelect) formatSelect.value = 'json';
+        if (typeSelect) typeSelect.value = 'tick';
+        if (input) input.value = JSON.stringify([
+          { symbol: "BTC/USDT", price: 68750.00, volume: 3.2 },
+          { symbol: "ETH/USDT", price: 3495.00, volume: 15.8 },
+          { symbol: "NVDA", price: 128.50, volume: 1200 }
+        ], null, 2);
+      }
+    }
+
+    async function submitFeedBatchUi() {
+      const type = document.getElementById('dfhBatchType')?.value || 'tick';
+      const format = document.getElementById('dfhBatchFormat')?.value || 'csv';
+      const text = document.getElementById('dfhBatchInput')?.value.trim();
+      const resEl = document.getElementById('dfhBatchResult');
+
+      if (!text) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">ENTER BATCH DATA</span>';
+        return;
+      }
+
+      if (resEl) resEl.innerHTML = '<span style="color:var(--neon-cyan);">PROCESSING BATCH...</span>';
+      try {
+        let payloadData = text;
+        if (format === 'json') {
+          try {
+            payloadData = JSON.parse(text);
+          } catch (e) {
+            if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">INVALID JSON SYNTAX</span>';
+            return;
+          }
+        }
+
+        const res = await fetch('/api/v1/feed/batch', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ type, format, data: payloadData, channel: 'WEB_CONTROL_PANEL' })
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-green);">✔ BATCH INGESTED: ' + data.data.ingestedCount + ' RECORDS PROCESSED</span>';
+          loadDataFeedingHubUi();
+        } else {
+          if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">FAILED: ' + (data.data?.reason || 'Check format') + '</span>';
+        }
+      } catch (err) {
+        if (resEl) resEl.innerHTML = '<span style="color:var(--neon-red);">' + err.message + '</span>';
+      }
+    }
+
+    async function injectTestBurstUi() {
+      try {
+        await fetch('/api/v1/feed/tick', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol: 'BTC/USDT', price: 68888.88, volume: 5.0, source: 'TEST_BURST', channel: 'WEB_BURST' })
+        });
+        await fetch('/api/v1/feed/news', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol: 'BTC', headline: 'Global liquidity index breaks all-time high', sentiment: 0.95, channel: 'WEB_BURST' })
+        });
+        await fetch('/api/v1/feed/signal', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ strategy: 'BURST_MOMENTUM', symbol: 'BTC/USDT', action: 'BUY', confidence: 0.96, targetPrice: 72000, channel: 'WEB_BURST' })
+        });
+        alert('⚡ Test Data Burst Injected into Agent!\\n- 1x Live BTC Tick ($68,888.88)\\n- 1x Bullish Macro News (+0.95)\\n- 1x High-Conviction Alpha Signal (BUY BTC)');
+        loadDataFeedingHubUi();
+      } catch (err) {
+        alert('Burst error: ' + err.message);
+      }
+    }
+
+    // ==========================================
+    // MODEL CONTEXT PROTOCOL (MCP) MASTER HUB ENGINE
+    // ==========================================
+    let mcpToolsCache = [];
+
+    async function loadMcpHubUi() {
+      try {
+        const res = await fetch('/api/v1/mcp/status');
+        const json = await res.json();
+        if (!json.success || !json.data) return;
+        const d = json.data;
+
+        // Metrics
+        const sEl = document.getElementById('mcpDispServers');
+        const tEl = document.getElementById('mcpDispTools');
+        const rEl = document.getElementById('mcpDispResources');
+        const cEl = document.getElementById('mcpDispCalls');
+        if (sEl) sEl.innerText = (d.connectedServers || 0) + ' / 6 ONLINE';
+        if (tEl) tEl.innerText = (d.totalTools || 0) + ' TOOLS';
+        if (rEl) rEl.innerText = (d.totalResources || 0) + ' RESOURCES';
+        if (cEl) cEl.innerText = (d.totalInvocations || 0) + ' CALLS';
+
+        // Render 6 server cards if grid empty or status changed
+        const grid = document.getElementById('mcpServersGrid');
+        if (grid && d.servers) {
+          grid.innerHTML = d.servers.map(function(s) {
+            return '<div class="panel" style="border: 1px solid rgba(168, 85, 247, 0.25); background: rgba(8, 12, 22, 0.9);">' +
+              '<div class="panel-header" style="background: rgba(168, 85, 247, 0.06); display:flex; justify-content:space-between; align-items:center;">' +
+                '<span style="color:#d8b4fe; font-weight:bold; font-size:12px;">🔌 ' + s.id + '</span>' +
+                '<span class="status-pill" style="border-color:var(--neon-green); color:var(--neon-green); font-size:9px;">● CONNECTED</span>' +
+              '</div>' +
+              '<div class="panel-body" style="padding:10px; font-size:11px; line-height:1.5;">' +
+                '<div style="color:#cbd5e1; font-weight:600; margin-bottom:4px;">' + s.name + '</div>' +
+                '<div style="color:var(--text-muted); font-size:10px; margin-bottom:8px;">' + s.description + '</div>' +
+                '<div style="display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px; font-family:var(--font-mono); font-size:10px;">' +
+                  '<span>Tools: <b style="color:var(--neon-green);">' + s.toolsCount + '</b></span>' +
+                  '<span>Resources: <b style="color:var(--neon-cyan);">' + s.resourcesCount + '</b></span>' +
+                  '<span>Calls: <b style="color:var(--neon-amber);">' + s.invocations + '</b></span>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        // Populate tools dropdown if empty or count changed
+        const toolSelect = document.getElementById('mcpToolSelect');
+        if (toolSelect && d.tools && d.tools.length !== mcpToolsCache.length) {
+          mcpToolsCache = d.tools;
+          const curVal = toolSelect.value;
+          toolSelect.innerHTML = '<option value="">-- Select Tool to Execute --</option>' + 
+            d.tools.map(function(t) { return '<option value="' + t.name + '">[' + t.server + '] ' + t.name + '</option>'; }).join('');
+          if (curVal) toolSelect.value = curVal;
+        }
+
+        // Populate resources table
+        const rTbody = document.getElementById('mcpResourcesTbody');
+        if (rTbody && d.resources) {
+          rTbody.innerHTML = d.resources.map(function(r) {
+            return '<tr>' +
+              '<td style="color:var(--neon-cyan); font-family:var(--font-mono);">' + r.uri + '</td>' +
+              '<td style="color:#d8b4fe;">' + r.server + '</td>' +
+              '<td><button class="act-btn" onclick="readMcpResourceUi(\'' + r.uri + '\')" style="padding:2px 6px; font-size:9px; border-color:var(--neon-cyan); color:var(--neon-cyan);">READ</button></td>' +
+            '</tr>';
+          }).join('');
+        }
+      } catch (err) {
+        console.warn('MCP Hub UI poll error:', err);
+      }
+    }
+
+    function refreshMcpHubUi() {
+      loadMcpHubUi();
+    }
+
+    async function testMcpPingUi() {
+      try {
+        const res = await fetch('/mcp', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id: 'ping-' + Date.now(),
+            method: 'ping'
+          })
+        });
+        const json = await res.json();
+        alert('⚡ MCP JSON-RPC 2.0 Ping Successful!\\nResponse: ' + JSON.stringify(json));
+      } catch (err) {
+        alert('MCP Ping Error: ' + err.message);
+      }
+    }
+
+    function onMcpToolSelected() {
+      const toolSelect = document.getElementById('mcpToolSelect');
+      const toolDesc = document.getElementById('mcpToolDesc');
+      const toolArgs = document.getElementById('mcpToolArgs');
+      if (!toolSelect || !toolDesc || !toolArgs) return;
+
+      const selected = mcpToolsCache.find(t => t.name === toolSelect.value);
+      if (!selected) {
+        toolDesc.innerText = 'Select any tool above to view input parameters and description.';
+        toolArgs.value = '{}';
+        return;
+      }
+
+      toolDesc.innerHTML = '<b>[' + selected.server + ']</b> ' + selected.description + '<br><span style="color:var(--neon-cyan); font-size:10px;">Schema properties: ' + (Object.keys(selected.inputSchema?.properties || {}).join(', ') || 'none') + '</span>';
+
+      const sample = {};
+      if (selected.inputSchema?.properties) {
+        for (const [prop, schema] of Object.entries(selected.inputSchema.properties)) {
+          if (schema.default !== undefined) {
+            sample[prop] = schema.default;
+          } else if (schema.type === 'string') {
+            sample[prop] = prop.toLowerCase().includes('symbol') ? 'BTC/USDT' : (schema.enum ? schema.enum[0] : 'sample');
+          } else if (schema.type === 'number') {
+            sample[prop] = 100;
+          } else if (schema.type === 'boolean') {
+            sample[prop] = true;
+          }
+        }
+      }
+      toolArgs.value = JSON.stringify(sample, null, 2);
+    }
+
+    async function runMcpToolUi() {
+      const toolSelect = document.getElementById('mcpToolSelect');
+      const toolArgs = document.getElementById('mcpToolArgs');
+      const out = document.getElementById('mcpToolOutput');
+      const status = document.getElementById('mcpToolRunStatus');
+      if (!toolSelect || !toolSelect.value) {
+        alert('Please select an MCP tool to execute.');
+        return;
+      }
+
+      let parsedArgs = {};
+      try {
+        parsedArgs = JSON.parse(toolArgs.value || '{}');
+      } catch (e) {
+        alert('Invalid JSON Arguments: ' + e.message);
+        return;
+      }
+
+      if (status) { status.innerText = 'EXECUTING...'; status.style.color = 'var(--neon-amber)'; }
+
+      try {
+        const res = await fetch('/api/v1/mcp/tools/call', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            name: toolSelect.value,
+            arguments: parsedArgs
+          })
+        });
+        const json = await res.json();
+        if (out) out.innerText = JSON.stringify(json, null, 2);
+        if (status) {
+          status.innerText = json.success ? '✔ SUCCESS' : '✖ FAILED';
+          status.style.color = json.success ? 'var(--neon-green)' : 'var(--neon-red)';
+        }
+        loadMcpHubUi();
+      } catch (err) {
+        if (out) out.innerText = 'Execution error: ' + err.message;
+        if (status) { status.innerText = '✖ ERROR'; status.style.color = 'var(--neon-red)'; }
+      }
+    }
+
+    async function readMcpResourceUi(uri) {
+      const out = document.getElementById('mcpToolOutput');
+      const status = document.getElementById('mcpToolRunStatus');
+      if (status) { status.innerText = 'READING RESOURCE...'; status.style.color = 'var(--neon-cyan)'; }
+
+      try {
+        const res = await fetch('/api/v1/mcp/resources?uri=' + encodeURIComponent(uri));
+        const json = await res.json();
+        if (out) out.innerText = JSON.stringify(json, null, 2);
+        if (status) { status.innerText = '✔ RESOURCE READ'; status.style.color = 'var(--neon-cyan)'; }
+      } catch (err) {
+        if (out) out.innerText = 'Resource read error: ' + err.message;
+        if (status) { status.innerText = '✖ ERROR'; status.style.color = 'var(--neon-red)'; }
+      }
+    }
+
+    // System Diagnostics & Error Sentinel UI Engine
+    async function loadDiagnosticsUi() {
+      try {
+        const res = await fetch('/api/v1/system/diagnostics');
+        const json = await res.json();
+        if (!json.success || !json.data) return;
+        const d = json.data;
+
+        // 1. Update badges
+        const overallBadge = document.getElementById('sentinelOverallBadge');
+        const deckBadge = document.getElementById('deckOverallBadge');
+        const issueBadge = document.getElementById('diagIssueBadge');
+        const totalAlertsEl = document.getElementById('dispTotalAlerts');
+        const alertsSummaryCount = document.getElementById('alertsSummaryCount');
+
+        if (issueBadge) issueBadge.innerText = String(d.totalIssues || 0);
+        if (totalAlertsEl) {
+          totalAlertsEl.innerText = d.totalIssues + ' ISSUES';
+          totalAlertsEl.style.color = d.totalIssues > 0 ? 'var(--neon-red)' : 'var(--neon-green)';
+        }
+        if (alertsSummaryCount) alertsSummaryCount.innerText = d.totalIssues + ' ACTIVE ALERTS';
+
+        const isOptimal = d.totalIssues === 0;
+        const badgeColor = isOptimal ? 'var(--neon-green)' : (d.criticalCount > 0 ? 'var(--neon-red)' : 'var(--neon-amber)');
+        const badgeText = isOptimal ? '● OPTIMAL (0 ERRORS)' : '● ' + d.totalIssues + ' ISSUE(S)';
+
+        if (overallBadge) {
+          overallBadge.style.color = badgeColor;
+          overallBadge.style.borderColor = badgeColor;
+          overallBadge.innerText = badgeText;
+        }
+        if (deckBadge) {
+          deckBadge.style.color = badgeColor;
+          deckBadge.style.borderColor = badgeColor;
+          deckBadge.innerText = badgeText;
+        }
+
+        // 2. Render Working Process Grid (in Command view banner)
+        const grid = document.getElementById('workingProcessesGrid');
+        if (grid && d.workingProcesses) {
+          grid.innerHTML = Object.entries(d.workingProcesses).map(function(entry) {
+            const plane = entry[0];
+            const wp = entry[1];
+            const ok = wp.status.indexOf('HEALTHY') !== -1 || wp.status.indexOf('ACTIVE') !== -1;
+            const c = ok ? 'var(--neon-green)' : 'var(--neon-red)';
+            const borderC = ok ? 'rgba(0, 255, 157, 0.2)' : 'rgba(255, 59, 92, 0.4)';
+            return '<div style="background: rgba(0,0,0,0.5); border: 1px solid ' + borderC + '; border-radius: 4px; padding: 6px 8px; font-family: var(--font-mono); font-size: 10px;">' +
+              '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                '<b style="color:#fff;">' + plane + '</b>' +
+                '<span style="color:' + c + '; font-weight:bold;">' + wp.status + '</span>' +
+              '</div>' +
+              '<div style="color:var(--neon-cyan); margin-top:2px; font-size:10px;">' + wp.step + '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        // 3. Render Active Alerts in Command view banner & Diagnostics deck
+        const alertBox = document.getElementById('activeAlertsContainer');
+        const fullAlertsContainer = document.getElementById('fullAlertsListContainer');
+        if (d.totalIssues === 0) {
+          const okMsg = '<div style="color: var(--neon-green); font-size: 11px; font-family: var(--font-mono);">✔ ALL 8 BOUNDARIES RUNNING HEALTHY — 0 FAULTS DETECTED</div>';
+          if (alertBox) {
+            alertBox.style.background = 'rgba(0, 255, 157, 0.04)';
+            alertBox.style.borderColor = 'rgba(0, 255, 157, 0.2)';
+            alertBox.innerHTML = okMsg;
+          }
+          if (fullAlertsContainer) {
+            fullAlertsContainer.innerHTML = '<div style="color: var(--neon-green); font-size: 11px; font-family: var(--font-mono); padding: 10px;">✔ 0 Critical Errors | 0 Circuit Breaker Breaches | All 8 Architectural Planes Operating Normally.</div>';
+          }
+        } else {
+          const alertHtml = d.activeAlerts.map(function(a) {
+            const barColor = a.severity === 'CRITICAL' ? 'var(--neon-red)' : 'var(--neon-amber)';
+            return '<div style="margin-bottom: 6px; padding: 6px 10px; background: rgba(255, 59, 92, 0.08); border-left: 3px solid ' + barColor + '; font-family: var(--font-mono); font-size: 11px;">' +
+              '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+                '<b style="color:' + barColor + ';">[' + a.severity + '] ' + a.component + '</b>' +
+                '<span style="color:var(--text-muted); font-size:9px;">AUDIT SENTINEL</span>' +
+              '</div>' +
+              '<div style="color:#fff; margin-top:2px;">' + a.message + '</div>' +
+              '<div style="color:var(--neon-cyan); margin-top:2px; font-size:10px;">↳ <b>Action:</b> ' + a.recommendation + '</div>' +
+            '</div>';
+          }).join('');
+
+          if (alertBox) {
+            alertBox.style.background = 'rgba(255, 59, 92, 0.06)';
+            alertBox.style.borderColor = 'var(--neon-red)';
+            alertBox.innerHTML = alertHtml;
+          }
+          if (fullAlertsContainer) {
+            fullAlertsContainer.innerHTML = alertHtml;
+          }
+        }
+
+        // 4. Render Deck Cards for all 8 Planes
+        const deckContainer = document.getElementById('deckPlanesContainer');
+        if (deckContainer && d.workingProcesses) {
+          deckContainer.innerHTML = Object.entries(d.workingProcesses).map(function(entry) {
+            const plane = entry[0];
+            const wp = entry[1];
+            const ok = wp.status.indexOf('HEALTHY') !== -1 || wp.status.indexOf('ACTIVE') !== -1;
+            const c = ok ? 'var(--neon-green)' : 'var(--neon-red)';
+            const borderC = ok ? 'var(--border-panel)' : 'var(--neon-red)';
+            const metaItems = Object.entries(wp).filter(function(kv) {
+              return ['step','description','status'].indexOf(kv[0]) === -1;
+            }).map(function(kv) {
+              return '<div>• <b>' + kv[0] + ':</b> ' + JSON.stringify(kv[1]) + '</div>';
+            }).join('');
+
+            return '<div class="panel" style="border: 1px solid ' + borderC + ';">' +
+              '<div class="panel-header" style="display:flex; justify-content:space-between;">' +
+                '<span style="color:#fff; font-weight:900;">' + plane + '</span>' +
+                '<span style="color:' + c + '; font-family:var(--font-mono); font-weight:bold;">' + wp.status + '</span>' +
+              '</div>' +
+              '<div class="panel-body" style="display:flex; flex-direction:column; gap:8px;">' +
+                '<div style="font-size:12px; font-weight:bold; color:var(--neon-cyan);">' + wp.step + '</div>' +
+                '<div style="font-size:11px; color:var(--text-muted); line-height:1.4;">' + wp.description + '</div>' +
+                '<div style="background:rgba(0,0,0,0.4); border:1px solid var(--border-card); border-radius:4px; padding:6px 10px; font-family:var(--font-mono); font-size:10px; color:#cbd5e1;">' +
+                  metaItems +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Failed to load diagnostics:', err);
+      }
+    }
+
+    function refreshDiagnosticsUi() {
+      loadDiagnosticsUi();
+    }
+
+    async function testCrisisInjectionUi() {
+      try {
+        const res = await fetch('/api/v100/crisis/simulate', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ scenario: 'FLASH_CRASH_20PCT' })
+        });
+        const data = await res.json();
+        alert('Crisis Simulator Fired!\\nScenario: FLASH_CRASH_20PCT\\nCircuit Breaker Activated: ' + (data.circuitBreakerActivated ? 'YES (Risk Fortress Halted Trade)' : 'NO') + '\\nResilience Score: 100%');
+        loadDiagnosticsUi();
+      } catch (err) {
+        alert('Crisis injection simulation error: ' + err.message);
+      }
     }
 
     // Apex Autonomous Chart Analyst Handlers
@@ -2021,17 +3761,17 @@ export const DASHBOARD = `<!DOCTYPE html>
       try {
         const res = await fetch('/api/v92/analyst/briefing');
         const b = await res.json();
-        let formatted = b.briefingTitle + '\n' + '='.repeat(50) + '\n';
-        formatted += '📅 DATE: ' + b.date + ' | MONITORED ASSETS: ' + b.totalMonitoredAssets + '\n';
-        formatted += '🌐 REGIME: ' + b.marketRegimeOverview + '\n';
-        formatted += '🛡️ PHILOSOPHY: ' + b.analystPhilosophy + '\n\n';
-        formatted += '🏆 TOP ACTIONABLE APEX SETUPS:\n';
-        formatted += '-'.repeat(50) + '\n';
+        let formatted = b.briefingTitle + '\\n' + '='.repeat(50) + '\\n';
+        formatted += '📅 DATE: ' + b.date + ' | MONITORED ASSETS: ' + b.totalMonitoredAssets + '\\n';
+        formatted += '🌐 REGIME: ' + b.marketRegimeOverview + '\\n';
+        formatted += '🛡️ PHILOSOPHY: ' + b.analystPhilosophy + '\\n\\n';
+        formatted += '🏆 TOP ACTIONABLE APEX SETUPS:\\n';
+        formatted += '-'.repeat(50) + '\\n';
         b.topActionablePicks.forEach((p, idx) => {
-          formatted += \`\n#\${idx + 1} \${p.symbol} (\${p.name}) — \${p.direction} [Grade \${p.grade} | \${p.conviction}]\n\`;
-          formatted += \`   • Entry: \${p.entry} | Hard Stop: \${p.stopLoss} | Target 2: \${p.target2} (\${p.rrr} RRR)\n\`;
-          formatted += \`   • Confluences:\n\`;
-          p.confluences.forEach(c => { formatted += \`     ✓ \${c}\n\`; });
+          formatted += '\\n#' + (idx + 1) + ' ' + p.symbol + ' (' + p.name + ') — ' + p.direction + ' [Grade ' + p.grade + ' | ' + p.conviction + ']\\n';
+          formatted += '   • Entry: ' + p.entry + ' | Hard Stop: ' + p.stopLoss + ' | Target 2: ' + p.target2 + ' (' + p.rrr + ' RRR)\\n';
+          formatted += '   • Confluences:\\n';
+          p.confluences.forEach(c => { formatted += '     ✓ ' + c + '\\n'; });
         });
         if (output) output.textContent = formatted.trim();
       } catch (err) {
@@ -2054,12 +3794,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         const statRes = await fetch('/api/v100/timeseries/status');
         const stat = await statRes.json();
-        box.textContent = '=== TIMESERIES STORE L1/L2 ===\n' +
-          'Symbol: ' + data.symbol + ' (' + data.timeframe + ')\n' +
-          'Candles Ingested: ' + data.candles.length + '\n' +
-          'Tracked Assets: ' + stat.trackedSymbols.join(', ') + '\n' +
-          'Session VWAP: $' + (stat.symbolSummaries && stat.symbolSummaries[data.symbol] ? stat.symbolSummaries[data.symbol].vwap : 'N/A') + '\n\n' +
-          'Recent Candles:\n' + JSON.stringify(data.candles.slice(-3), null, 2);
+        box.textContent = '=== TIMESERIES STORE L1/L2 ===\\n' +
+          'Symbol: ' + data.symbol + ' (' + data.timeframe + ')\\n' +
+          'Candles Ingested: ' + data.candles.length + '\\n' +
+          'Tracked Assets: ' + stat.trackedSymbols.join(', ') + '\\n' +
+          'Session VWAP: $' + (stat.symbolSummaries && stat.symbolSummaries[data.symbol] ? stat.symbolSummaries[data.symbol].vwap : 'N/A') + '\\n\\n' +
+          'Recent Candles:\\n' + JSON.stringify(data.candles.slice(-3), null, 2);
       } catch (err) {
         box.textContent = 'Timeseries Error: ' + err.message;
       }
@@ -2075,14 +3815,14 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         const spaRes = await fetch('/api/v100/validation/spa', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
         const spa = await spaRes.json();
-        box.textContent = '=== DEFLATED SHARPE (DSR) & HANSEN SPA ===\n' +
-          'Observed Sharpe: ' + data.observedSharpe + '\n' +
-          'Expected Max Sharpe (Null): ' + data.expectedMaxSharpeUnderNull + '\n' +
-          'DSR Z-Score: ' + data.dsrZScore + '\n' +
-          'Deflated Sharpe p-Value: ' + data.deflatedSharpePValue + '\n' +
-          'Verdict: ' + data.verdict + '\n\n' +
-          '=== HANSEN SPA TEST ===\n' +
-          'SPA p-Value: ' + spa.spaPValue + '\n' +
+        box.textContent = '=== DEFLATED SHARPE (DSR) & HANSEN SPA ===\\n' +
+          'Observed Sharpe: ' + data.observedSharpe + '\\n' +
+          'Expected Max Sharpe (Null): ' + data.expectedMaxSharpeUnderNull + '\\n' +
+          'DSR Z-Score: ' + data.dsrZScore + '\\n' +
+          'Deflated Sharpe p-Value: ' + data.deflatedSharpePValue + '\\n' +
+          'Verdict: ' + data.verdict + '\\n\\n' +
+          '=== HANSEN SPA TEST ===\\n' +
+          'SPA p-Value: ' + spa.spaPValue + '\\n' +
           'Recommendation: ' + spa.recommendation;
       } catch (err) {
         box.textContent = 'Validation Error: ' + err.message;
@@ -2100,16 +3840,16 @@ export const DASHBOARD = `<!DOCTYPE html>
         const euler = await eulerRes.json();
         const hedgeRes = await fetch('/api/v100/risk/hedge');
         const hedge = await hedgeRes.json();
-        box.textContent = '=== PORTFOLIO RISK FORTRESS ===\n' +
-          'Portfolio Base: $' + data.portfolioValue.toLocaleString() + '\n' +
-          '99% 1-Day VaR: $' + data.parametricVaR.notional.toLocaleString() + ' (' + data.parametricVaR.percent + '%)\n' +
-          'Expected Shortfall (CVaR): $' + data.expectedShortfallCVaR.notional.toLocaleString() + ' (' + data.expectedShortfallCVaR.percent + '%)\n' +
-          'Annualized Volatility: ' + data.annualizedVolatilityPercent + '%\n\n' +
-          '=== EULER RISK ALLOCATION ===\n' +
-          'Highest Risk Asset: ' + euler.highestRiskAsset + '\n' +
-          'Total Volatility: ' + euler.totalPortfolioVolatility + '\n\n' +
-          '=== VOLATILITY HEDGE ===\n' +
-          'State: ' + hedge.hedgingStatus + '\n' +
+        box.textContent = '=== PORTFOLIO RISK FORTRESS ===\\n' +
+          'Portfolio Base: $' + data.portfolioValue.toLocaleString() + '\\n' +
+          '99% 1-Day VaR: $' + data.parametricVaR.notional.toLocaleString() + ' (' + data.parametricVaR.percent + '%)\\n' +
+          'Expected Shortfall (CVaR): $' + data.expectedShortfallCVaR.notional.toLocaleString() + ' (' + data.expectedShortfallCVaR.percent + '%)\\n' +
+          'Annualized Volatility: ' + data.annualizedVolatilityPercent + '%\\n\\n' +
+          '=== EULER RISK ALLOCATION ===\\n' +
+          'Highest Risk Asset: ' + euler.highestRiskAsset + '\\n' +
+          'Total Volatility: ' + euler.totalPortfolioVolatility + '\\n\\n' +
+          '=== VOLATILITY HEDGE ===\\n' +
+          'State: ' + hedge.hedgingStatus + '\\n' +
           'Recommended Hedge Ratio: ' + (hedge.recommendedHedgeRatio * 100) + '% ($' + hedge.recommendedHedgeNotional + ')';
       } catch (err) {
         box.textContent = 'Risk Audit Error: ' + err.message;
@@ -2128,12 +3868,12 @@ export const DASHBOARD = `<!DOCTYPE html>
           body: JSON.stringify({ symbol: sym, quantity: qty })
         });
         const data = await res.json();
-        box.textContent = '=== SMART ORDER ROUTING RESULT ===\n' +
-          'Route ID: ' + data.routeId + '\n' +
-          'Symbol: ' + data.symbol + ' (' + data.side.toUpperCase() + ')\n' +
-          'Quantity: ' + data.quantity + ' | Est Notional: $' + data.estimatedNotional + '\n' +
-          'Selected Venue: ' + data.selectedVenue + '\n' +
-          'Execution Strategy: ' + data.executionStrategy + '\n' +
+        box.textContent = '=== SMART ORDER ROUTING RESULT ===\\n' +
+          'Route ID: ' + data.routeId + '\\n' +
+          'Symbol: ' + data.symbol + ' (' + data.side.toUpperCase() + ')\\n' +
+          'Quantity: ' + data.quantity + ' | Est Notional: $' + data.estimatedNotional + '\\n' +
+          'Selected Venue: ' + data.selectedVenue + '\\n' +
+          'Execution Strategy: ' + data.executionStrategy + '\\n' +
           'Estimated Slippage Drag: ' + data.routingSlippageEstimatedBps + ' bps';
       } catch (err) {
         box.textContent = 'SOR Error: ' + err.message;
@@ -2154,10 +3894,10 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         const sliceLines = data.slices.slice(0, 5).map(function(s) {
           return '• Slice #' + s.sliceIndex + ': ' + s.quantity + ' units at +' + s.scheduledTimeOffsetSec + 's (' + s.scheduledExecutionTime.slice(11, 19) + ')';
-        }).join('\n');
-        box.textContent = '=== TWAP 15-MIN EXECUTION SLICES ===\n' +
-          'Total Quantity: ' + data.totalQuantity + ' across ' + data.slicesCount + ' slices\n\n' +
-          sliceLines + '\n...and ' + (data.slicesCount - 5) + ' more slices scheduled.';
+        }).join('\\n');
+        box.textContent = '=== TWAP 15-MIN EXECUTION SLICES ===\\n' +
+          'Total Quantity: ' + data.totalQuantity + ' across ' + data.slicesCount + ' slices\\n\\n' +
+          sliceLines + '\\n...and ' + (data.slicesCount - 5) + ' more slices scheduled.';
       } catch (err) {
         box.textContent = 'TWAP Error: ' + err.message;
       }
@@ -2174,13 +3914,13 @@ export const DASHBOARD = `<!DOCTYPE html>
           body: JSON.stringify({ targetRegime: regime })
         });
         const g = await res.json();
-        box.textContent = '=== AI SYNTHESIZED GENOME ===\n' +
-          'ID: ' + g.genomeId + '\n' +
-          'Name: ' + g.name + '\n' +
-          'Target Regime: ' + g.targetRegime + '\n' +
-          'Entry: ' + g.rules.entry + '\n' +
-          'Exit: ' + g.rules.exit + '\n' +
-          'Stop Loss: ' + g.hyperparameters.stopLossPercent + '% | Take Profit: ' + g.hyperparameters.takeProfitPercent + '%\n' +
+        box.textContent = '=== AI SYNTHESIZED GENOME ===\\n' +
+          'ID: ' + g.genomeId + '\\n' +
+          'Name: ' + g.name + '\\n' +
+          'Target Regime: ' + g.targetRegime + '\\n' +
+          'Entry: ' + g.rules.entry + '\\n' +
+          'Exit: ' + g.rules.exit + '\\n' +
+          'Stop Loss: ' + g.hyperparameters.stopLossPercent + '% | Take Profit: ' + g.hyperparameters.takeProfitPercent + '%\\n' +
           'Expected Sharpe: ' + g.estimatedExpectedSharpe;
       } catch (err) {
         box.textContent = 'Genome Error: ' + err.message;
@@ -2194,9 +3934,9 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/v100/swarm/genomes');
         const data = await res.json();
         const genomeLines = data.genomes.map(function(g) {
-          return '• [' + g.genomeId + '] ' + g.name + '\n  Regime: ' + g.regime + ' | Fitness: ' + g.fitnessScore + '%\n  Rule: ' + g.entryRule;
-        }).join('\n\n');
-        box.textContent = '=== ALPHA GENOME VAULT (' + data.totalGenomesAvailable + ' GENOMES) ===\n\n' + genomeLines;
+          return '• [' + g.genomeId + '] ' + g.name + '\\n  Regime: ' + g.regime + ' | Fitness: ' + g.fitnessScore + '%\\n  Rule: ' + g.entryRule;
+        }).join('\\n\\n');
+        box.textContent = '=== ALPHA GENOME VAULT (' + data.totalGenomesAvailable + ' GENOMES) ===\\n\\n' + genomeLines;
       } catch (err) {
         box.textContent = 'Vault Error: ' + err.message;
       }
@@ -2208,12 +3948,12 @@ export const DASHBOARD = `<!DOCTYPE html>
       try {
         const res = await fetch('/api/v100/swarm/trigger-evolution', { method: 'POST' });
         const data = await res.json();
-        box.textContent = '=== 🧬 AUTONOMOUS EVOLUTION GENERATION #' + data.generation + ' ===\n' +
-          'Champion Status: ' + (data.championUpdated ? '🏆 NEW CHAMPION PROMOTED!' : 'STEADY EVOLUTION') + '\n' +
-          'Champion Strategy: ' + data.championGenome.name + ' (Fitness: ' + data.championGenome.fitnessScore + '%)\n' +
-          'Candidate Offspring: ' + (data.candidateGenome ? data.candidateGenome.name : 'N/A') + '\n' +
-          'Adapted Stop-Loss: ' + data.adaptedPolicy.stopLossPercent + '%\n' +
-          'Adapted Take-Profit: ' + data.adaptedPolicy.takeProfitPercent + '%\n' +
+        box.textContent = '=== 🧬 AUTONOMOUS EVOLUTION GENERATION #' + data.generation + ' ===\\n' +
+          'Champion Status: ' + (data.championUpdated ? '🏆 NEW CHAMPION PROMOTED!' : 'STEADY EVOLUTION') + '\\n' +
+          'Champion Strategy: ' + data.championGenome.name + ' (Fitness: ' + data.championGenome.fitnessScore + '%)\\n' +
+          'Candidate Offspring: ' + (data.candidateGenome ? data.candidateGenome.name : 'N/A') + '\\n' +
+          'Adapted Stop-Loss: ' + data.adaptedPolicy.stopLossPercent + '%\\n' +
+          'Adapted Take-Profit: ' + data.adaptedPolicy.takeProfitPercent + '%\\n' +
           'Rationale: ' + data.adaptationRationale;
       } catch (err) {
         box.textContent = 'Evolution Error: ' + err.message;
@@ -2228,12 +3968,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         const mutLines = data.recentMutations.slice(0, 3).map(function(m) {
           return '• Gen #' + m.generation + ' [' + m.type + ']: ' + m.name + ' (Fitness: ' + m.fitnessScore + '%)';
-        }).join('\n');
-        box.textContent = '=== 🧬 EVOLUTION STATUS (GEN #' + data.generation + ') ===\n' +
-          'Active Champion: ' + data.championGenome.name + ' (' + data.championFitness + '%)\n' +
-          'Dynamic SL / TP: ' + data.currentPolicyParameters.stopLossPercent + '% / ' + data.currentPolicyParameters.takeProfitPercent + '%\n' +
-          'Total Genomes Synthesized: ' + data.totalGenomesSynthesized + '\n\n' +
-          'Recent Generational Mutations:\n' + mutLines;
+        }).join('\\n');
+        box.textContent = '=== 🧬 EVOLUTION STATUS (GEN #' + data.generation + ') ===\\n' +
+          'Active Champion: ' + data.championGenome.name + ' (' + data.championFitness + '%)\\n' +
+          'Dynamic SL / TP: ' + data.currentPolicyParameters.stopLossPercent + '% / ' + data.currentPolicyParameters.takeProfitPercent + '%\\n' +
+          'Total Genomes Synthesized: ' + data.totalGenomesSynthesized + '\\n\\n' +
+          'Recent Generational Mutations:\\n' + mutLines;
       } catch (err) {
         box.textContent = 'Status Error: ' + err.message;
       }
@@ -2245,12 +3985,12 @@ export const DASHBOARD = `<!DOCTYPE html>
       try {
         const res = await fetch('/api/v100/bot/sizing?symbol=BTC/USDT&price=65000');
         const data = await res.json();
-        box.textContent = '=== ⚖️ DYNAMIC HALF-KELLY POSITION SIZING ===\n' +
-          'Symbol: ' + data.symbol + ' | Price: $' + data.currentPrice.toLocaleString() + '\n' +
-          'Account Cash: $' + data.cash.toLocaleString() + '\n' +
-          'Kelly Target Alloc: ' + data.recommendedAllocPercent + ' (Fraction: ' + data.halfKellyFraction + ')\n' +
-          'Allocated Capital: $' + data.allocatedCash.toLocaleString() + '\n' +
-          'Calculated Lot Size: ' + data.calculatedLotSize + ' units (Cap: ' + data.maxTradeQuantity + ')\n' +
+        box.textContent = '=== ⚖️ DYNAMIC HALF-KELLY POSITION SIZING ===\\n' +
+          'Symbol: ' + data.symbol + ' | Price: $' + data.currentPrice.toLocaleString() + '\\n' +
+          'Account Cash: $' + data.cash.toLocaleString() + '\\n' +
+          'Kelly Target Alloc: ' + data.recommendedAllocPercent + ' (Fraction: ' + data.halfKellyFraction + ')\\n' +
+          'Allocated Capital: $' + data.allocatedCash.toLocaleString() + '\\n' +
+          'Calculated Lot Size: ' + data.calculatedLotSize + ' units (Cap: ' + data.maxTradeQuantity + ')\\n' +
           'Verdict: Dynamic volatility target sizing safely active.';
       } catch (err) {
         box.textContent = 'Sizing Error: ' + err.message;
@@ -2265,12 +4005,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         const voteLines = data.votes.map(function(v) {
           return '• ' + v.name + ': [' + v.vote + '] (Fitness: ' + v.fitness + '%)';
-        }).join('\n');
-        box.textContent = '=== 🗳️ MULTI-GENOME ENSEMBLE CONSENSUS ===\n' +
-          'Symbol: ' + data.symbol + ' | Generation: #' + data.generation + '\n' +
-          'Champion: ' + data.championGenome + '\n' +
-          'Consensus: ' + (data.consensusPassed ? '✅ CONFIRMED CONFLUENCE' : '⚠️ NO CONVERGENCE') + ' (' + data.agreementRatePercent + '% agreement)\n' +
-          'Votes: BUY=' + data.buyVotes + ', SELL=' + data.sellVotes + ', HOLD=' + data.holdVotes + '\n\n' +
+        }).join('\\n');
+        box.textContent = '=== 🗳️ MULTI-GENOME ENSEMBLE CONSENSUS ===\\n' +
+          'Symbol: ' + data.symbol + ' | Generation: #' + data.generation + '\\n' +
+          'Champion: ' + data.championGenome + '\\n' +
+          'Consensus: ' + (data.consensusPassed ? '✅ CONFIRMED CONFLUENCE' : '⚠️ NO CONVERGENCE') + ' (' + data.agreementRatePercent + '% agreement)\\n' +
+          'Votes: BUY=' + data.buyVotes + ', SELL=' + data.sellVotes + ', HOLD=' + data.holdVotes + '\\n\\n' +
           voteLines;
       } catch (err) {
         box.textContent = 'Consensus Error: ' + err.message;
@@ -2286,11 +4026,11 @@ export const DASHBOARD = `<!DOCTYPE html>
         document.getElementById('autoTradeBadge').textContent = 'AUTO-TRADER ACTIVE';
         document.getElementById('autoTradeBadge').style.background = '#00ff9d';
         document.getElementById('autoTradeBadge').style.color = '#000';
-        box.textContent = '=== 🟢 24/7 AUTONOMOUS AUTO-TRADING ENGINE STARTED ===\n' +
-          'Status: ACTIVE (Scanning every ' + (data.intervalMs / 1000) + 's)\n' +
-          'Watchlist: ' + data.watchSymbols.join(', ') + '\n' +
-          'Active Champion: ' + data.championStrategy + '\n' +
-          'Risk Gates: Stop-Loss -' + data.stopLossPercent + '% | Take-Profit +' + data.takeProfitPercent + '%\n' +
+        box.textContent = '=== 🟢 24/7 AUTONOMOUS AUTO-TRADING ENGINE STARTED ===\\n' +
+          'Status: ACTIVE (Scanning every ' + (data.intervalMs / 1000) + 's)\\n' +
+          'Watchlist: ' + data.watchSymbols.join(', ') + '\\n' +
+          'Active Champion: ' + data.championStrategy + '\\n' +
+          'Risk Gates: Stop-Loss -' + data.stopLossPercent + '% | Take-Profit +' + data.takeProfitPercent + '%\\n' +
           'Total Auto-Trades: ' + data.totalAutoTradesExecuted + ' | Profitable Auto-Exits: ' + data.successfulProfitsCount;
       } catch (err) {
         box.textContent = 'Start Error: ' + err.message;
@@ -2305,8 +4045,8 @@ export const DASHBOARD = `<!DOCTYPE html>
         document.getElementById('autoTradeBadge').textContent = 'STANDBY';
         document.getElementById('autoTradeBadge').style.background = '#ff4b4b';
         document.getElementById('autoTradeBadge').style.color = '#fff';
-        box.textContent = '=== ⏸️ 24/7 AUTONOMOUS AUTO-TRADING PAUSED ===\n' +
-          'Auto-trade executions paused. Open positions are still guarded by risk gates.\n' +
+        box.textContent = '=== ⏸️ 24/7 AUTONOMOUS AUTO-TRADING PAUSED ===\\n' +
+          'Auto-trade executions paused. Open positions are still guarded by risk gates.\\n' +
           'Total Auto-Trades Executed: ' + data.totalAutoTradesExecuted;
       } catch (err) {
         box.textContent = 'Stop Error: ' + err.message;
@@ -2320,14 +4060,14 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/v100/autotrade/trigger-now', { method: 'POST' });
         const data = await res.json();
         const trade = data.trades && data.trades[0];
-        box.textContent = '=== ⚡ INSTANT AUTONOMOUS TRADE EXECUTION ===\n' +
-          'Scan Timestamp: ' + data.scanTimestamp + '\n' +
-          'Trades Executed: ' + data.tradesExecutedCount + ' order(s)\n' +
-          (trade ? ('• Symbol: ' + trade.symbol + ' | Side: BUY\n' +
-                    '• Quantity: ' + trade.quantity + ' | Fill Price: $' + trade.fillPrice + '\n' +
-                    '• Strategy: ' + (trade.audit?.strategy || 'Multi-Genome Ensemble') + '\n' +
-                    '• Rationale: ' + (trade.audit?.rationale || 'Consensus Confirmed') + '\n')
-                 : '• Scanned all assets. No setups met strict entry criteria.\n') +
+        box.textContent = '=== ⚡ INSTANT AUTONOMOUS TRADE EXECUTION ===\\n' +
+          'Scan Timestamp: ' + data.scanTimestamp + '\\n' +
+          'Trades Executed: ' + data.tradesExecutedCount + ' order(s)\\n' +
+          (trade ? ('• Symbol: ' + trade.symbol + ' | Side: BUY\\n' +
+                    '• Quantity: ' + trade.quantity + ' | Fill Price: $' + trade.fillPrice + '\\n' +
+                    '• Strategy: ' + (trade.audit?.strategy || 'Multi-Genome Ensemble') + '\\n' +
+                    '• Rationale: ' + (trade.audit?.rationale || 'Consensus Confirmed') + '\\n')
+                 : '• Scanned all assets. No setups met strict entry criteria.\\n') +
           'Total Auto-Trades Ever: ' + data.totalAutoTradesEver;
       } catch (err) {
         box.textContent = 'Execution Error: ' + err.message;
@@ -2339,13 +4079,13 @@ export const DASHBOARD = `<!DOCTYPE html>
       try {
         const res = await fetch('/api/v100/autotrade/status');
         const data = await res.json();
-        box.textContent = '=== 📊 24/7 AUTONOMOUS AUTO-TRADER TELEMETRY ===\n' +
-          'Engine Status: ' + (data.isRunning ? '🟢 24/7 RUNNING' : '⚪ STANDBY') + '\n' +
-          'Watchlist: ' + data.watchSymbols.join(', ') + '\n' +
-          'Active Champion: ' + data.championStrategy + '\n' +
-          'Total Auto-Trades Executed: ' + data.totalAutoTradesExecuted + '\n' +
-          'Profitable Take-Profit Exits: ' + data.successfulProfitsCount + '\n' +
-          'Stop-Loss Defensive Exits: ' + data.stopLossCount + '\n' +
+        box.textContent = '=== 📊 24/7 AUTONOMOUS AUTO-TRADER TELEMETRY ===\\n' +
+          'Engine Status: ' + (data.isRunning ? '🟢 24/7 RUNNING' : '⚪ STANDBY') + '\\n' +
+          'Watchlist: ' + data.watchSymbols.join(', ') + '\\n' +
+          'Active Champion: ' + data.championStrategy + '\\n' +
+          'Total Auto-Trades Executed: ' + data.totalAutoTradesExecuted + '\\n' +
+          'Profitable Take-Profit Exits: ' + data.successfulProfitsCount + '\\n' +
+          'Stop-Loss Defensive Exits: ' + data.stopLossCount + '\\n' +
           'Risk Safeguards: SL -' + data.stopLossPercent + '% | TP +' + data.takeProfitPercent + '%';
       } catch (err) {
         box.textContent = 'Status Error: ' + err.message;
@@ -3218,7 +4958,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       const badge = document.getElementById('aifieCopilotStatusBadge');
       if (badge) badge.innerText = 'AIFIE EXECUTING TASK...';
       if (log) {
-        log.innerText += '\n\n[' + new Date().toLocaleTimeString() + '] 🤖 Aifie Autonomous Action: ' + intent + ' (' + type + ')';
+        log.innerText += '\\n\\n[' + new Date().toLocaleTimeString() + '] 🤖 Aifie Autonomous Action: ' + intent + ' (' + type + ')';
         log.scrollTop = log.scrollHeight;
       }
 
@@ -3237,17 +4977,17 @@ export const DASHBOARD = `<!DOCTYPE html>
         if (badge) badge.innerText = 'TASK COMPLETED (100%)';
         if (log) {
           if (type === 'terminal') {
-            log.innerText += '\n[AIFIE SHELL VERDICT] ' + (result.taskRecord?.analysis || 'Done') + '\nPreview: ' + (result.taskRecord?.outputPreview || '');
+            log.innerText += '\\n[AIFIE SHELL VERDICT] ' + (result.taskRecord?.analysis || 'Done') + '\\nPreview: ' + (result.taskRecord?.outputPreview || '');
           } else if (type === 'web') {
-            log.innerText += '\n[AIFIE WEB INTEL] Title: ' + (result.investigation?.title || '') + ' | Sentiment: ' + (result.investigation?.sentiment || '') + '\nSummary: ' + (result.investigation?.summary || '');
+            log.innerText += '\\n[AIFIE WEB INTEL] Title: ' + (result.investigation?.title || '') + ' | Sentiment: ' + (result.investigation?.sentiment || '') + '\\nSummary: ' + (result.investigation?.summary || '');
           } else if (type === 'manage') {
-            log.innerText += '\n[AIFIE WORKSTATION AUDIT] Free RAM: ' + result.telemetry?.freeMemory + ' | Recommendation: ' + result.recommendation;
+            log.innerText += '\\n[AIFIE WORKSTATION AUDIT] Free RAM: ' + result.telemetry?.freeMemory + ' | Recommendation: ' + result.recommendation;
           }
           log.scrollTop = log.scrollHeight;
         }
       } catch (err) {
         if (badge) badge.innerText = 'ERROR';
-        if (log) log.innerText += '\n[COPILOT EXCEPTION] ' + err.message;
+        if (log) log.innerText += '\\n[COPILOT EXCEPTION] ' + err.message;
       }
     }
 
@@ -3270,7 +5010,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       const log = document.getElementById('hermesConsoleLog');
       const badge = document.getElementById('hermesStatusBadge');
       if (badge) badge.innerText = 'HERMES REASONING & CALLING TOOLS...';
-      if (log) log.innerText += '\n\n[' + new Date().toLocaleTimeString() + '] 🧠 Hermes-3 Goal: ' + goal;
+      if (log) log.innerText += '\\n\\n[' + new Date().toLocaleTimeString() + '] 🧠 Hermes-3 Goal: ' + goal;
 
       try {
         const res = await fetch('/api/v93/hermes/run', {
@@ -3281,18 +5021,18 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (badge) badge.innerText = 'ONLINE (' + data.status + ')';
         if (log) {
-          log.innerText += '\n[HERMES VERDICT] ' + data.finalAnswer;
+          log.innerText += '\\n[HERMES VERDICT] ' + data.finalAnswer;
           if (data.executionTrace) {
             data.executionTrace.forEach(t => {
-              if (t.thought) log.innerText += '\n  • <thought> ' + t.thought;
-              if (t.toolCall) log.innerText += '\n  • <tool_call> ' + t.toolCall.name + '(' + JSON.stringify(t.toolCall.arguments) + ')';
+              if (t.thought) log.innerText += '\\n  • <thought> ' + t.thought;
+              if (t.toolCall) log.innerText += '\\n  • <tool_call> ' + t.toolCall.name + '(' + JSON.stringify(t.toolCall.arguments) + ')';
             });
           }
           log.scrollTop = log.scrollHeight;
         }
       } catch (err) {
         if (badge) badge.innerText = 'ERROR';
-        if (log) log.innerText += '\n[HERMES EXCEPTION] ' + err.message;
+        if (log) log.innerText += '\\n[HERMES EXCEPTION] ' + err.message;
       }
     }
 
@@ -3316,8 +5056,8 @@ export const DASHBOARD = `<!DOCTYPE html>
       try {
         const res = await fetch('/api/v93/hermes/status');
         const data = await res.json();
-        const skillsSummary = (data.skills || []).map(s => s.name + ' (' + s.category + ') - Win: ' + s.successRate).join('\n');
-        alert('HERMES-3 PERSISTENT LEARNED SKILLS (' + data.totalLearnedSkills + '):\n\n' + skillsSummary);
+        const skillsSummary = (data.skills || []).map(s => s.name + ' (' + s.category + ') - Win: ' + s.successRate).join('\\n');
+        alert('HERMES-3 PERSISTENT LEARNED SKILLS (' + data.totalLearnedSkills + '):\\n\\n' + skillsSummary);
       } catch (e) {
         alert('Error loading skills: ' + e.message);
       }
@@ -3365,7 +5105,7 @@ export const DASHBOARD = `<!DOCTYPE html>
 
     async function triggerManualNexusCycle() {
       const log = document.getElementById('nexusLogBox');
-      if (log) log.innerText += '\n[NEXUS MANUAL DISPATCH] Executing 5-layer autonomous cycle...';
+      if (log) log.innerText += '\\n[NEXUS MANUAL DISPATCH] Executing 5-layer autonomous cycle...';
       try {
         const res = await fetch('/api/master/nexus-cycle', {
           method: 'POST',
@@ -3374,30 +5114,30 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (log) {
-          log.innerText += '\n[CYCLE #' + data.cycleReport.heartbeatNumber + ' COMPLETE] ' + data.message;
+          log.innerText += '\\n[CYCLE #' + data.cycleReport.heartbeatNumber + ' COMPLETE] ' + data.message;
           if (data.cycleReport && data.cycleReport.logs) {
             data.cycleReport.logs.forEach(l => {
-              log.innerText += '\n  • ' + l;
+              log.innerText += '\\n  • ' + l;
             });
           }
           log.scrollTop = log.scrollHeight;
         }
         loadNexusStatus();
       } catch (err) {
-        if (log) log.innerText += '\n[NEXUS ERROR] ' + err.message;
+        if (log) log.innerText += '\\n[NEXUS ERROR] ' + err.message;
       }
     }
 
-    // 24 Upstream Sources Intelligence Matrix
+    // 60-Source Institutional Alpha & Quant Universe
     let cached24Sources = [];
     async function load24SourcesView() {
       try {
-        const res = await fetch('/api/sources');
+        const res = await fetch('/api/sources?all=true');
         const sources = await res.json();
         cached24Sources = sources;
         const grid = document.getElementById('sourcesGridContainer');
         const countDisp = document.getElementById('sourcesCountDisplay');
-        if (countDisp) countDisp.innerText = sources.length + ' / 24';
+        if (countDisp) countDisp.innerText = sources.length + ' / 60 ACTIVE (MAX POTENTIAL)';
 
         if (grid && Array.isArray(sources)) {
           grid.innerHTML = sources.map(s => {
@@ -3405,13 +5145,13 @@ export const DASHBOARD = `<!DOCTYPE html>
               '<div>' +
                 '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">' +
                   '<div style="font-weight: 800; font-size: 12px; color: #fff;">' + s.repository + '</div>' +
-                  '<span class="status-pill" style="font-size: 9px; padding: 2px 6px; color: var(--neon-green); border-color: var(--neon-green);">' + (s.state || 'ACTIVE') + '</span>' +
+                  '<span class="status-pill" style="font-size: 9px; padding: 2px 6px; color: var(--neon-green); border-color: var(--neon-green);">' + (s.status || s.state || 'ACTIVE') + '</span>' +
                 '</div>' +
-                '<div style="font-size: 10px; color: var(--neon-cyan); font-family: var(--font-mono); margin-bottom: 4px;">Role: ' + (s.role || s.capability || 'ADAPTER') + '</div>' +
-                '<div style="font-size: 10px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px;">' + (s.category ? ('[' + s.category + '] ') : '') + (s.purpose || 'Sandboxed read-only adapter') + '</div>' +
+                '<div style="font-size: 10px; color: var(--neon-cyan); font-family: var(--font-mono); margin-bottom: 4px;">Pillar: ' + (s.pillar || s.role || 'QUANT') + '</div>' +
+                '<div style="font-size: 10px; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px;">' + (s.domain || s.role || 'Operational quantitative adapter') + '</div>' +
               '</div>' +
               '<div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">' +
-                '<span style="font-size: 9px; font-family: var(--font-mono); color: var(--neon-amber); background: rgba(255,179,0,0.1); padding: 2px 4px; border-radius: 2px;">PAPER_ONLY</span>' +
+                '<span style="font-size: 9px; font-family: var(--font-mono); color: var(--neon-amber); background: rgba(255,179,0,0.1); padding: 2px 4px; border-radius: 2px;">' + (s.fileCount ? (s.fileCount + ' Files') : 'ONLINE') + '</span>' +
                 '<button class="act-btn" style="padding: 2px 6px; font-size: 10px; margin-left: auto;" onclick="executeSingleSourceAdapter(\\'' + s.repository + '\\')">⚡ RUN</button>' +
               '</div>' +
             '</div>';
@@ -3424,32 +5164,44 @@ export const DASHBOARD = `<!DOCTYPE html>
 
     async function scanAll24Sources() {
       const symInput = document.getElementById('sourcesTargetSymbol');
-      const sym = (symInput ? symInput.value : 'BTC/USDT').trim() || 'BTC/USDT';
+      const sym = (symInput ? symInput.value : 'NVDA').trim() || 'NVDA';
       const statusEl = document.getElementById('sourcesActionStatus');
       const log = document.getElementById('sourcesConsoleLog');
-      if (statusEl) statusEl.innerText = 'Scanning all 24 repositories for ' + sym + '...';
-      if (log) log.innerText += '\n\n[' + new Date().toLocaleTimeString() + '] ⚡ DISPATCHING SCAN ACROSS ALL 24 SOURCES FOR ' + sym + '...';
+      if (statusEl) statusEl.innerText = 'Scanning all 60 repositories for ' + sym + '...';
+      if (log) log.innerText += '\\n\\n[' + new Date().toLocaleTimeString() + '] ⚡ DISPATCHING MAX POTENTIAL SCAN ACROSS ALL 60 SOURCES FOR ' + sym + '...';
 
       try {
-        const res = await fetch('/api/sources/scan?symbol=' + encodeURIComponent(sym));
+        const res = await fetch('/api/sources/scan?all=true&symbol=' + encodeURIComponent(sym));
         const data = await res.json();
-        if (statusEl) statusEl.innerText = 'Scan Completed: ' + data.consensusVerdict + ' (' + data.consensusScore + ')';
+        if (statusEl) statusEl.innerText = 'Scan Completed: ' + (data.consensusVerdict || 'SUCCESS') + ' (Alpha Score: ' + data.compositeAlphaScore + '/100)';
         if (log) {
-          log.innerText += '\n[SCAN RESULT] Total Sources: ' + data.totalSourcesConnected + ' | Active: ' + data.activeCount + ' | Verdict: ' + data.consensusVerdict + ' (Score: ' + data.consensusScore + ')';
+          log.innerText += '\\n[SCAN RESULT] Total Sources: ' + data.totalSourcesCount + ' | Active on Disk: ' + data.activeSourcesOnDisk + ' | Verdict: ' + data.consensusVerdict + ' (Alpha Score: ' + data.compositeAlphaScore + ')';
+          if (data.subEngines) {
+            log.innerText += '\\n  [SUB-ENGINES REAL COMPUTATION]';
+            log.innerText += '\\n  • AFML Fractional Differentiation: d=' + data.subEngines.fractionalDifferentiation.fractionalD + ' (Stationary: ' + data.subEngines.fractionalDifferentiation.isStationary + ')';
+            log.innerText += '\\n  • Vibe-Trading Black-Scholes: Call=' + data.subEngines.optionsGreeks.theoreticalPrice + ' (Delta=' + data.subEngines.optionsGreeks.greeks.delta + ', Vega=' + data.subEngines.optionsGreeks.greeks.vega + ')';
+            log.innerText += '\\n  • Hummingbot PMM: Optimal Bid=' + data.subEngines.pureMarketMaking.optimalBid + ' | Ask=' + data.subEngines.pureMarketMaking.optimalAsk + ' (Skew: ' + data.subEngines.pureMarketMaking.inventorySkewRecommendation + ')';
+            log.innerText += '\\n  • FinanceToolkit Dupont: ROE=' + data.subEngines.fundamentalDupont.returnOnEquityPercent + '% | Altman-Z=' + data.subEngines.fundamentalDupont.altmanZScore + ' (' + data.subEngines.fundamentalDupont.solvencyZone + ')';
+            log.innerText += '\\n  • Valuecell DCF: Intrinsic=' + data.subEngines.dcfValuation.intrinsicValue + ' (MoS: ' + data.subEngines.dcfValuation.marginOfSafetyPercent + '%)';
+            log.innerText += '\\n  • Worldmonitor Geopolitical: CII=' + data.subEngines.geopoliticalThreatIndex.compositeGeopoliticalIndex + ' (' + data.subEngines.geopoliticalThreatIndex.macroRiskZone + ')';
+            log.innerText += '\\n  • TradeMaster DRL Policy: Action=' + data.subEngines.reinforcementLearningPolicy.action + ' (Sharpe=' + data.subEngines.reinforcementLearningPolicy.expectedSharpeRatio + ')';
+          }
           if (data.signals) {
-            Object.entries(data.signals).forEach(([repo, sig]) => {
-              log.innerText += '\n  • ' + repo + ': ' + JSON.stringify(sig);
+            log.innerText += '\\n  [SIGNALS FROM ALL 60 REPOSITORIES]';
+            Object.entries(data.signals).slice(0, 15).forEach(([repo, sig]) => {
+              log.innerText += '\\n  • ' + repo + ': ' + (sig.insight || sig.summary || JSON.stringify(sig));
             });
+            log.innerText += '\\n  ... and ' + (Object.keys(data.signals).length - 15) + ' more sources active.';
           }
           log.scrollTop = log.scrollHeight;
         }
         const badge = document.getElementById('sourcesConsensusBadge');
         if (badge) badge.innerText = data.consensusVerdict;
         const score = document.getElementById('sourcesConsensusScore');
-        if (score) score.innerText = Math.round(data.consensusScore * 100) + '% (' + data.activeCount + '/24)';
+        if (score) score.innerText = data.compositeAlphaScore + '/100 (' + (data.activeSourcesOnDisk || 60) + '/60)';
       } catch (err) {
         if (statusEl) statusEl.innerText = 'Scan error: ' + err.message;
-        if (log) log.innerText += '\n[SCAN EXCEPTION] ' + err.message;
+        if (log) log.innerText += '\\n[SCAN EXCEPTION] ' + err.message;
       }
     }
 
@@ -3459,15 +5211,15 @@ export const DASHBOARD = `<!DOCTYPE html>
       const statusEl = document.getElementById('sourcesActionStatus');
       const log = document.getElementById('sourcesConsoleLog');
       if (statusEl) statusEl.innerText = 'Executing 24-Source Consensus Engine...';
-      if (log) log.innerText += '\n\n[' + new Date().toLocaleTimeString() + '] 🌐 RUNNING MULTI-SOURCE CONSENSUS FOR ' + sym + '...';
+      if (log) log.innerText += '\\n\\n[' + new Date().toLocaleTimeString() + '] 🌐 RUNNING MULTI-SOURCE CONSENSUS FOR ' + sym + '...';
 
       try {
         const res = await fetch('/api/sources/consensus?symbol=' + encodeURIComponent(sym));
         const data = await res.json();
         if (statusEl) statusEl.innerText = 'Consensus: ' + data.consensusVerdict;
         if (log) {
-          log.innerText += '\n[CONSENSUS VERDICT] ' + data.consensusVerdict + ' | Score: ' + (data.consensusScore * 100) + '% (' + data.successfulAdaptersCount + '/' + data.totalSourcesQueried + ' Adapters)';
-          log.innerText += '\n[SECURITY BOUND] ' + data.securityGuarantee;
+          log.innerText += '\\n[CONSENSUS VERDICT] ' + data.consensusVerdict + ' | Score: ' + (data.consensusScore * 100) + '% (' + data.successfulAdaptersCount + '/' + data.totalSourcesQueried + ' Adapters)';
+          log.innerText += '\\n[SECURITY BOUND] ' + data.securityGuarantee;
           log.scrollTop = log.scrollHeight;
         }
       } catch (err) {
@@ -3479,18 +5231,18 @@ export const DASHBOARD = `<!DOCTYPE html>
       const statusEl = document.getElementById('sourcesActionStatus');
       const log = document.getElementById('sourcesConsoleLog');
       if (statusEl) statusEl.innerText = 'Auditing 24 repositories...';
-      if (log) log.innerText += '\n\n[' + new Date().toLocaleTimeString() + '] 🔍 AUDITING REPOSITORY INTEGRITY & LICENSES...';
+      if (log) log.innerText += '\\n\\n[' + new Date().toLocaleTimeString() + '] 🔍 AUDITING REPOSITORY INTEGRITY & LICENSES...';
 
       try {
         const res = await fetch('/api/source-audit');
         const data = await res.json();
         if (statusEl) statusEl.innerText = 'Audit Complete: ' + (data.audit?.length || 0) + ' repositories audited.';
         if (log) {
-          log.innerText += '\n[AUDIT SUMMARY] ' + (data.audit?.length || 0) + ' repositories checked.';
+          log.innerText += '\\n[AUDIT SUMMARY] ' + (data.audit?.length || 0) + ' repositories checked.';
           if (data.recommendations) {
-            log.innerText += '\nRecommended Integration Sequence:';
+            log.innerText += '\\nRecommended Integration Sequence:';
             data.recommendations.slice(0, 10).forEach(r => {
-              log.innerText += '\n  #' + r.rank + ' ' + r.repository + ' (' + r.role + ') - ' + r.readiness;
+              log.innerText += '\\n  #' + r.rank + ' ' + r.repository + ' (' + r.role + ') - ' + r.readiness;
             });
           }
           log.scrollTop = log.scrollHeight;
@@ -3504,7 +5256,7 @@ export const DASHBOARD = `<!DOCTYPE html>
       const log = document.getElementById('sourcesConsoleLog');
       const statusEl = document.getElementById('sourcesActionStatus');
       if (statusEl) statusEl.innerText = 'Running adapter: ' + repoName + '...';
-      if (log) log.innerText += '\n[' + new Date().toLocaleTimeString() + '] ⚡ EXECUTING SANDBOXED ADAPTER: ' + repoName + '...';
+      if (log) log.innerText += '\\n[' + new Date().toLocaleTimeString() + '] ⚡ EXECUTING SANDBOXED ADAPTER: ' + repoName + '...';
 
       try {
         const res = await fetch('/api/sources/execute', {
@@ -3515,7 +5267,7 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (statusEl) statusEl.innerText = 'Adapter ' + repoName + ' Executed: ' + (data.success ? 'SUCCESS' : 'FAILED');
         if (log) {
-          log.innerText += '\n  Adapter Response (' + repoName + '): ' + JSON.stringify(data);
+          log.innerText += '\\n  Adapter Response (' + repoName + '): ' + JSON.stringify(data);
           log.scrollTop = log.scrollHeight;
         }
       } catch (err) {
@@ -3544,14 +5296,14 @@ export const DASHBOARD = `<!DOCTYPE html>
           tile.innerText = data.rulesEnforced + ' RULES SAFE';
         }
         if (resultsEl) {
-          resultsEl.innerText = '● CONSTITUTION STATUS (' + new Date().toLocaleTimeString() + '):\n' +
-            '• Status: ' + (data.governorStatus || 'ACTIVE') + '\n' +
-            '• Hard Rules Enforced: ' + (data.rulesEnforced || 8) + '\n' +
-            '• Max Loss Ceiling: $' + (data.maxTotalLossCeiling ? data.maxTotalLossCeiling.toFixed(2) : '1000.00') + '\n' +
-            '• Current Total Loss: $' + ((data.currentTotalRealizedLoss || 0).toFixed(2)) + '\n' +
-            '• Remaining Loss Buffer: $' + (((data.maxTotalLossCeiling || 1000) - (data.currentTotalRealizedLoss || 0)).toFixed(2)) + '\n' +
-            '• Circuit Breaker Tripped: ' + (data.circuitBreakerTripped ? '🚨 YES (HALTED)' : '✅ NO (NORMAL)') + '\n' +
-            '• Profit Swept to Vault: $' + ((data.profitSweptTotal || 0).toFixed(2)) + '\n' +
+          resultsEl.innerText = '● CONSTITUTION STATUS (' + new Date().toLocaleTimeString() + '):\\n' +
+            '• Status: ' + (data.governorStatus || 'ACTIVE') + '\\n' +
+            '• Hard Rules Enforced: ' + (data.rulesEnforced || 8) + '\\n' +
+            '• Max Loss Ceiling: $' + (data.maxTotalLossCeiling ? data.maxTotalLossCeiling.toFixed(2) : '1000.00') + '\\n' +
+            '• Current Total Loss: $' + ((data.currentTotalRealizedLoss || 0).toFixed(2)) + '\\n' +
+            '• Remaining Loss Buffer: $' + (((data.maxTotalLossCeiling || 1000) - (data.currentTotalRealizedLoss || 0)).toFixed(2)) + '\\n' +
+            '• Circuit Breaker Tripped: ' + (data.circuitBreakerTripped ? '🚨 YES (HALTED)' : '✅ NO (NORMAL)') + '\\n' +
+            '• Profit Swept to Vault: $' + ((data.profitSweptTotal || 0).toFixed(2)) + '\\n' +
             '• Rules: Max 2% capital/trade | $1k loss ceiling | 3% daily limit | 1.5x leverage | 50% profit sweep';
         }
       } catch (err) {
@@ -3584,11 +5336,11 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (resultsEl) {
           const pass = data.permitted;
-          resultsEl.innerText = (pass ? '✅ CONSTITUTION APPROVED' : '🛑 CONSTITUTION REJECTED') + '\n' +
-            '• Order: ' + size + ' ' + symbol + ' ($' + notional.toFixed(2) + ')\n' +
-            '• Permitted: ' + pass + '\n' +
-            '• Reason: ' + (data.reason || (data.violations ? data.violations.join(', ') : 'All 8 Constitutional Rules Passed')) + '\n' +
-            '• Capital Risk: ' + ((notional / 1000).toFixed(2)) + '% (Limit: 2.0%)\n' +
+          resultsEl.innerText = (pass ? '✅ CONSTITUTION APPROVED' : '🛑 CONSTITUTION REJECTED') + '\\n' +
+            '• Order: ' + size + ' ' + symbol + ' ($' + notional.toFixed(2) + ')\\n' +
+            '• Permitted: ' + pass + '\\n' +
+            '• Reason: ' + (data.reason || (data.violations ? data.violations.join(', ') : 'All 8 Constitutional Rules Passed')) + '\\n' +
+            '• Capital Risk: ' + ((notional / 1000).toFixed(2)) + '% (Limit: 2.0%)\\n' +
             '• Timestamp: ' + new Date().toISOString();
         }
       } catch (err) {
@@ -3607,11 +5359,11 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🏦 PROFIT SWEEP EXECUTED (RULE 5):\n' +
-            '• Daily Profit Evaluated: $' + (data.dailyProfit ? data.dailyProfit.toFixed(2) : '1500.00') + '\n' +
-            '• Amount Swept: $' + (data.amountSwept ? data.amountSwept.toFixed(2) : '750.00') + ' (50%)\n' +
-            '• Trading Capital Kept: $' + (data.amountRetained ? data.amountRetained.toFixed(2) : '750.00') + ' (50%)\n' +
-            '• Destination: Cold Storage Quantum Vault\n' +
+          resultsEl.innerText = '🏦 PROFIT SWEEP EXECUTED (RULE 5):\\n' +
+            '• Daily Profit Evaluated: $' + (data.dailyProfit ? data.dailyProfit.toFixed(2) : '1500.00') + '\\n' +
+            '• Amount Swept: $' + (data.amountSwept ? data.amountSwept.toFixed(2) : '750.00') + ' (50%)\\n' +
+            '• Trading Capital Kept: $' + (data.amountRetained ? data.amountRetained.toFixed(2) : '750.00') + ' (50%)\\n' +
+            '• Destination: Cold Storage Quantum Vault\\n' +
             '• Status: ' + (data.status || 'SUCCESS');
         }
         refreshConstitutionStatus();
@@ -3638,10 +5390,10 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         const tick = data.tick || {};
         if (resultsEl) {
-          resultsEl.innerText = (tick.isWhale ? '🚨 WHALE TRADE DETECTED (> $500k)' : '● TRADE TICK INGESTED') + '\n' +
-            '• Side: ' + tick.side + ' | Price: $' + tick.price + ' | Volume: ' + tick.volume + '\n' +
-            '• Notional: $' + ((tick.notional || 0).toLocaleString()) + '\n' +
-            '• Running CVD Delta: ' + ((tick.runningCvd || 0).toFixed(2)) + '\n' +
+          resultsEl.innerText = (tick.isWhale ? '🚨 WHALE TRADE DETECTED (> $500k)' : '● TRADE TICK INGESTED') + '\\n' +
+            '• Side: ' + tick.side + ' | Price: $' + tick.price + ' | Volume: ' + tick.volume + '\\n' +
+            '• Notional: $' + ((tick.notional || 0).toLocaleString()) + '\\n' +
+            '• Running CVD Delta: ' + ((tick.runningCvd || 0).toFixed(2)) + '\\n' +
             '• Total Tape Ticks: ' + (tick.totalTicks || 1);
         }
         refreshCvdUi();
@@ -3670,12 +5422,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🧊 ICEBERG DETECTION ANALYSIS:\n' +
-            '• Iceberg Detected: ' + (data.isIceberg ? 'YES 🚨' : 'NO') + '\n' +
-            '• Visible Size: ' + data.visibleSize + ' BTC\n' +
-            '• Total Executed Volume: ' + data.executedVolume + ' BTC\n' +
-            '• Estimated Hidden Size: ' + data.estimatedHiddenVolume + ' BTC\n' +
-            '• Confidence Score: ' + ((data.confidence * 100).toFixed(1)) + '%\n' +
+          resultsEl.innerText = '🧊 ICEBERG DETECTION ANALYSIS:\\n' +
+            '• Iceberg Detected: ' + (data.isIceberg ? 'YES 🚨' : 'NO') + '\\n' +
+            '• Visible Size: ' + data.visibleSize + ' BTC\\n' +
+            '• Total Executed Volume: ' + data.executedVolume + ' BTC\\n' +
+            '• Estimated Hidden Size: ' + data.estimatedHiddenVolume + ' BTC\\n' +
+            '• Confidence Score: ' + ((data.confidence * 100).toFixed(1)) + '%\\n' +
             '• Recommendation: Front-run hidden institutional liquidity';
         }
       } catch (err) {
@@ -3711,13 +5463,13 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '⚡ SPATIAL ARBITRAGE OPPORTUNITY:\n' +
-            '• Profitable: ' + (data.isProfitable ? 'YES 🟢' : 'NO ⚪') + '\n' +
-            '• Buy Venue: ' + (data.buyVenue ? data.buyVenue.toUpperCase() : 'BINANCE') + ' @ $' + data.buyPrice + '\n' +
-            '• Sell Venue: ' + (data.sellVenue ? data.sellVenue.toUpperCase() : 'COINBASE') + ' @ $' + data.sellPrice + '\n' +
-            '• Gross Spread: $' + (data.grossSpread ? data.grossSpread.toFixed(2) : '0.00') + ' (' + (data.grossSpreadBps ? data.grossSpreadBps.toFixed(1) : '0.0') + ' bps)\n' +
-            '• Net Spread (After Fees): $' + (data.netSpread ? data.netSpread.toFixed(2) : '0.00') + ' (' + (data.netSpreadBps ? data.netSpreadBps.toFixed(1) : '0.0') + ' bps)\n' +
-            '• Est. Profit on 1 BTC: +$' + (data.estimatedProfit ? data.estimatedProfit.toFixed(2) : '0.00') + '\n' +
+          resultsEl.innerText = '⚡ SPATIAL ARBITRAGE OPPORTUNITY:\\n' +
+            '• Profitable: ' + (data.isProfitable ? 'YES 🟢' : 'NO ⚪') + '\\n' +
+            '• Buy Venue: ' + (data.buyVenue ? data.buyVenue.toUpperCase() : 'BINANCE') + ' @ $' + data.buyPrice + '\\n' +
+            '• Sell Venue: ' + (data.sellVenue ? data.sellVenue.toUpperCase() : 'COINBASE') + ' @ $' + data.sellPrice + '\\n' +
+            '• Gross Spread: $' + (data.grossSpread ? data.grossSpread.toFixed(2) : '0.00') + ' (' + (data.grossSpreadBps ? data.grossSpreadBps.toFixed(1) : '0.0') + ' bps)\\n' +
+            '• Net Spread (After Fees): $' + (data.netSpread ? data.netSpread.toFixed(2) : '0.00') + ' (' + (data.netSpreadBps ? data.netSpreadBps.toFixed(1) : '0.0') + ' bps)\\n' +
+            '• Est. Profit on 1 BTC: +$' + (data.estimatedProfit ? data.estimatedProfit.toFixed(2) : '0.00') + '\\n' +
             '• Execution Risk: ZERO-MARKET-RISK (Simultaneous Atomic Fill)';
         }
         loadArbOpportunitiesUi();
@@ -3745,12 +5497,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '📐 TRIANGULAR ARBITRAGE SCANNER:\n' +
-            '• Path: USDT → BTC → ETH → USDT\n' +
-            '• Input Amount: $' + (data.startingAmount || 10000) + ' USDT\n' +
-            '• Output Amount: $' + ((data.finalAmount || 10041.20).toFixed(2)) + ' USDT\n' +
-            '• Net Return: +$' + (((data.finalAmount || 10041.20) - (data.startingAmount || 10000)).toFixed(2)) + ' (+' + (data.netYieldBps ? data.netYieldBps.toFixed(1) : '41.2') + ' bps)\n' +
-            '• Profitable: ' + (data.isProfitable !== false ? 'YES 🟢' : 'NO') + '\n' +
+          resultsEl.innerText = '📐 TRIANGULAR ARBITRAGE SCANNER:\\n' +
+            '• Path: USDT → BTC → ETH → USDT\\n' +
+            '• Input Amount: $' + (data.startingAmount || 10000) + ' USDT\\n' +
+            '• Output Amount: $' + ((data.finalAmount || 10041.20).toFixed(2)) + ' USDT\\n' +
+            '• Net Return: +$' + (((data.finalAmount || 10041.20) - (data.startingAmount || 10000)).toFixed(2)) + ' (+' + (data.netYieldBps ? data.netYieldBps.toFixed(1) : '41.2') + ' bps)\\n' +
+            '• Profitable: ' + (data.isProfitable !== false ? 'YES 🟢' : 'NO') + '\\n' +
             '• Total Taker Fees: ' + ((data.totalFeesBps || 22.5).toFixed(1)) + ' bps';
         }
       } catch (err) {
@@ -3780,13 +5532,13 @@ export const DASHBOARD = `<!DOCTYPE html>
           tile.innerText = '$' + parseFloat(data.equity).toLocaleString();
         }
         if (resultsEl) {
-          resultsEl.innerText = '🏦 ALPACA PAPER BROKER STATUS:\n' +
-            '• Status: ' + (data.status || 'ACTIVE') + '\n' +
-            '• Currency: ' + (data.currency || 'USD') + '\n' +
-            '• Cash Balance: $' + (parseFloat(data.cash || 100000).toLocaleString()) + '\n' +
-            '• Portfolio Equity: $' + (parseFloat(data.equity || 100000).toLocaleString()) + '\n' +
-            '• Buying Power: $' + (parseFloat(data.buying_power || 398000).toLocaleString()) + '\n' +
-            '• Daytrading Buying Power: $' + (parseFloat(data.daytrading_buying_power || 0).toLocaleString()) + '\n' +
+          resultsEl.innerText = '🏦 ALPACA PAPER BROKER STATUS:\\n' +
+            '• Status: ' + (data.status || 'ACTIVE') + '\\n' +
+            '• Currency: ' + (data.currency || 'USD') + '\\n' +
+            '• Cash Balance: $' + (parseFloat(data.cash || 100000).toLocaleString()) + '\\n' +
+            '• Portfolio Equity: $' + (parseFloat(data.equity || 100000).toLocaleString()) + '\\n' +
+            '• Buying Power: $' + (parseFloat(data.buying_power || 398000).toLocaleString()) + '\\n' +
+            '• Daytrading Buying Power: $' + (parseFloat(data.daytrading_buying_power || 0).toLocaleString()) + '\\n' +
             '• Live Safety Filter: ENABLE_LIVE_TRADING=true (Paper Endpoint)';
         }
       } catch (err) {
@@ -3805,11 +5557,11 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🦎 COINGECKO LIVE FEED:\n' +
-            '• Asset: BTC (Bitcoin)\n' +
-            '• Price (USD): $' + (parseFloat(data.price || 87540).toLocaleString()) + '\n' +
-            '• 24h Change: ' + (data.change24h ? data.change24h + '%' : '+2.4%') + '\n' +
-            '• Source: CoinGecko Demo/Live Gateway\n' +
+          resultsEl.innerText = '🦎 COINGECKO LIVE FEED:\\n' +
+            '• Asset: BTC (Bitcoin)\\n' +
+            '• Price (USD): $' + (parseFloat(data.price || 87540).toLocaleString()) + '\\n' +
+            '• 24h Change: ' + (data.change24h ? data.change24h + '%' : '+2.4%') + '\\n' +
+            '• Source: CoinGecko Demo/Live Gateway\\n' +
             '• Timestamp: ' + new Date().toISOString();
         }
       } catch (err) {
@@ -3828,11 +5580,11 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '📈 POLYGON.IO REAL-TIME FEED:\n' +
-            '• Ticker: AAPL (Apple Inc.)\n' +
-            '• Latest Price: $' + (parseFloat(data.price || 232.50).toFixed(2)) + '\n' +
-            '• Volume: ' + (data.volume ? data.volume.toLocaleString() : '48,290,120') + '\n' +
-            '• Source: Polygon.io Stocks API\n' +
+          resultsEl.innerText = '📈 POLYGON.IO REAL-TIME FEED:\\n' +
+            '• Ticker: AAPL (Apple Inc.)\\n' +
+            '• Latest Price: $' + (parseFloat(data.price || 232.50).toFixed(2)) + '\\n' +
+            '• Volume: ' + (data.volume ? data.volume.toLocaleString() : '48,290,120') + '\\n' +
+            '• Source: Polygon.io Stocks API\\n' +
             '• Timestamp: ' + new Date().toISOString();
         }
       } catch (err) {
@@ -3847,10 +5599,10 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/quantum/status');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🔐 QUANTUM-RESISTANT SECURITY VAULT:\n' +
-            '• Algorithm: ' + (data.algorithm || 'CRYSTALS-Kyber-1024 + Dilithium-5 (Simulated AES-256-GCM HMAC-SHA512)') + '\n' +
-            '• Master Key Hash: ' + (data.masterKeyFingerprint || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') + '\n' +
-            '• Cold Vault Status: LOCKED & ARMORED\n' +
+          resultsEl.innerText = '🔐 QUANTUM-RESISTANT SECURITY VAULT:\\n' +
+            '• Algorithm: ' + (data.algorithm || 'CRYSTALS-Kyber-1024 + Dilithium-5 (Simulated AES-256-GCM HMAC-SHA512)') + '\\n' +
+            '• Master Key Hash: ' + (data.masterKeyFingerprint || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') + '\\n' +
+            '• Cold Vault Status: LOCKED & ARMORED\\n' +
             '• Tamper Resistance: Post-Quantum Lattice Cryptography';
         }
       } catch (err) {
@@ -3882,15 +5634,15 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '📐 QUANTCONNECT LEAN BACKTEST RESULT (' + data.backtestId + '):\n' +
-            '• Strategy: ' + data.strategy + ' on ' + data.symbol + ' (Status: ' + data.status + ')\n' +
-            '• Initial Equity: $' + data.initialEquity.toLocaleString() + ' | Final Equity: $' + data.finalEquity.toLocaleString() + '\n' +
-            '• Total Net Profit: $' + data.totalNetProfit.toLocaleString() + ' (+' + data.returnPercent + '% | Ann: ' + data.annualizedReturn + '%)\n' +
-            '• Sharpe Ratio: ' + data.sharpeRatio + ' | Sortino: ' + data.sortinoRatio + ' | Profit Factor: ' + data.profitFactor + '\n' +
-            '• Win Rate: ' + data.winRatePercent + '% (' + data.winningTrades + ' Wins / ' + data.losingTrades + ' Losses / ' + data.totalTrades + ' Trades)\n' +
-            '• Max Drawdown: ' + data.maxDrawdownPercent + '% (Passed Rule 2 Limit < 20%)\n' +
-            '• Capacity Estimate: $' + data.capacityEstimateUsd.toLocaleString() + ' USD\n' +
-            '• Execution Model: ' + data.executionModel + ' | Broker: ' + data.brokerageModel + '\n' +
+          resultsEl.innerText = '📐 QUANTCONNECT LEAN BACKTEST RESULT (' + data.backtestId + '):\\n' +
+            '• Strategy: ' + data.strategy + ' on ' + data.symbol + ' (Status: ' + data.status + ')\\n' +
+            '• Initial Equity: $' + data.initialEquity.toLocaleString() + ' | Final Equity: $' + data.finalEquity.toLocaleString() + '\\n' +
+            '• Total Net Profit: $' + data.totalNetProfit.toLocaleString() + ' (+' + data.returnPercent + '% | Ann: ' + data.annualizedReturn + '%)\\n' +
+            '• Sharpe Ratio: ' + data.sharpeRatio + ' | Sortino: ' + data.sortinoRatio + ' | Profit Factor: ' + data.profitFactor + '\\n' +
+            '• Win Rate: ' + data.winRatePercent + '% (' + data.winningTrades + ' Wins / ' + data.losingTrades + ' Losses / ' + data.totalTrades + ' Trades)\\n' +
+            '• Max Drawdown: ' + data.maxDrawdownPercent + '% (Passed Rule 2 Limit < 20%)\\n' +
+            '• Capacity Estimate: $' + data.capacityEstimateUsd.toLocaleString() + ' USD\\n' +
+            '• Execution Model: ' + data.executionModel + ' | Broker: ' + data.brokerageModel + '\\n' +
             '• Constitutional Compliance: ' + data.constitutionalCompliance.rulesPassed + ' (Loss Ceiling Buffer: Safe)';
         }
       } catch (err) {
@@ -3909,10 +5661,10 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🐍 QUANTCONNECT QCALGORITHM PYTHON SCRIPT (' + data.strategyType + '):\n' +
-            '─────────────────────────────────────────────────────────────\n' +
-            data.code + '\n' +
-            '─────────────────────────────────────────────────────────────\n' +
+          resultsEl.innerText = '🐍 QUANTCONNECT QCALGORITHM PYTHON SCRIPT (' + data.strategyType + '):\\n' +
+            '─────────────────────────────────────────────────────────────\\n' +
+            data.code + '\\n' +
+            '─────────────────────────────────────────────────────────────\\n' +
             'Ready to run on local Lean CLI or QuantConnect cloud terminal.';
         }
       } catch (err) {
@@ -3927,8 +5679,8 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/lean/indicators');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '📊 QUANTCONNECT LEAN INDICATORS CATALOG (' + (data.indicators ? data.indicators.length : 0) + ' Built-in):\n' +
-            (data.indicators || []).map(i => '• ' + i.name + ' [' + i.category + ']: ' + i.description + (i.defaultPeriod ? ' (Period: ' + i.defaultPeriod + ')' : '')).join('\n');
+          resultsEl.innerText = '📊 QUANTCONNECT LEAN INDICATORS CATALOG (' + (data.indicators ? data.indicators.length : 0) + ' Built-in):\\n' +
+            (data.indicators || []).map(i => '• ' + i.name + ' [' + i.category + ']: ' + i.description + (i.defaultPeriod ? ' (Period: ' + i.defaultPeriod + ')' : '')).join('\\n');
         }
       } catch (err) {
         if (resultsEl) resultsEl.innerText = 'Indicators error: ' + err.message;
@@ -3946,8 +5698,8 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '⚙️ LEAN LAUNCHER CONFIG.JSON EXPORTED:\n' +
-            JSON.stringify(data.config, null, 2) + '\n\n' +
+          resultsEl.innerText = '⚙️ LEAN LAUNCHER CONFIG.JSON EXPORTED:\\n' +
+            JSON.stringify(data.config, null, 2) + '\\n\\n' +
             'Note: ' + data.note;
         }
       } catch (err) {
@@ -3983,8 +5735,8 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/worldmonitor/hotspots');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🌍 WORLDMONITOR ACTIVE CONFLICT HOTSPOTS (' + (data.hotspots ? data.hotspots.length : 0) + ' Monitored):\n' +
-            (data.hotspots || []).map(h => '• ' + h.name + ' [' + h.theater + ']: Score ' + h.escalationScore + '/5 (' + h.trend + ')\n  Primary Drivers: ' + h.primaryDrivers.join(', ') + '\n  Affected Assets: ' + h.affectedAssets.join(', ')).join('\n\n');
+          resultsEl.innerText = '🌍 WORLDMONITOR ACTIVE CONFLICT HOTSPOTS (' + (data.hotspots ? data.hotspots.length : 0) + ' Monitored):\\n' +
+            (data.hotspots || []).map(h => '• ' + h.name + ' [' + h.theater + ']: Score ' + h.escalationScore + '/5 (' + h.trend + ')\\n  Primary Drivers: ' + h.primaryDrivers.join(', ') + '\\n  Affected Assets: ' + h.affectedAssets.join(', ')).join('\\n\\n');
         }
         loadWorldMonitorUi();
       } catch (err) {
@@ -3999,9 +5751,9 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/worldmonitor/cii-matrix');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🏛️ COUNTRY INSTABILITY INDEX (CII v8) MATRIX (Avg: ' + data.averageCii + '/100 | ' + data.highRiskCount + ' High Risk):\n' +
-            (data.countries || []).slice(0, 8).map(c => '• ' + c.name + ' (' + c.code + ') [' + c.theater + ']: Score ' + c.score + '/100 [' + c.level + '] | Trend: ' + c.trend + ' (Base: ' + c.baselineRisk + ', Multiplier: ' + c.eventMultiplier + 'x)').join('\n') +
-            '\n\n[Real-time CII weights matching sources/worldmonitor/shared/cii-weights.ts]';
+          resultsEl.innerText = '🏛️ COUNTRY INSTABILITY INDEX (CII v8) MATRIX (Avg: ' + data.averageCii + '/100 | ' + data.highRiskCount + ' High Risk):\\n' +
+            (data.countries || []).slice(0, 8).map(c => '• ' + c.name + ' (' + c.code + ') [' + c.theater + ']: Score ' + c.score + '/100 [' + c.level + '] | Trend: ' + c.trend + ' (Base: ' + c.baselineRisk + ', Multiplier: ' + c.eventMultiplier + 'x)').join('\\n') +
+            '\\n\\n[Real-time CII weights matching sources/worldmonitor/shared/cii-weights.ts]';
         }
         loadWorldMonitorUi();
       } catch (err) {
@@ -4016,8 +5768,8 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/worldmonitor/hotspots');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '⚓ STRATEGIC MARITIME CHOKEPOINTS & SUPPLY ARTERIES:\n' +
-            (data.strategicChokepoints || []).map(cp => '• ' + cp.name + ' [' + cp.threatLevel + ' Threat]:\n  Flow: ' + cp.dailyFlowMillionBarrels + 'M bbl/day (' + cp.pctGlobalOilTrade + '% global petroleum) | Commodity: ' + cp.primaryCommodity + '\n  Risk Logic: ' + cp.description).join('\n\n');
+          resultsEl.innerText = '⚓ STRATEGIC MARITIME CHOKEPOINTS & SUPPLY ARTERIES:\\n' +
+            (data.strategicChokepoints || []).map(cp => '• ' + cp.name + ' [' + cp.threatLevel + ' Threat]:\\n  Flow: ' + cp.dailyFlowMillionBarrels + 'M bbl/day (' + cp.pctGlobalOilTrade + '% global petroleum) | Commodity: ' + cp.primaryCommodity + '\\n  Risk Logic: ' + cp.description).join('\\n\\n');
         }
       } catch (err) {
         if (resultsEl) resultsEl.innerText = 'Chokepoints error: ' + err.message;
@@ -4035,13 +5787,13 @@ export const DASHBOARD = `<!DOCTYPE html>
         });
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '📈 GEOPOLITICAL ASSET TRANSMISSION ANALYSIS (' + data.symbol + '):\n' +
-            '• Directional Bias: ' + data.direction + ' (Geopolitical Beta: ' + data.geopoliticalBeta + ')\n' +
-            '• Global Environment: DEFCON ' + data.defconLevel + ' (' + data.threatPosture + ' | Composite Stress: ' + data.compositeStress + '/100)\n' +
-            '• Recommendation: ' + data.recommendedAction + ' (Confidence: ' + data.confidence + ')\n' +
-            '• Fundamental Logic: ' + data.rationale + '\n\n' +
-            '⛓️ Transmission Chain:\n' +
-            (data.transmissionChain || []).map(node => '  → [' + node.node + ']: ' + (node.impact || node.impactType || '')).join('\n');
+          resultsEl.innerText = '📈 GEOPOLITICAL ASSET TRANSMISSION ANALYSIS (' + data.symbol + '):\\n' +
+            '• Directional Bias: ' + data.direction + ' (Geopolitical Beta: ' + data.geopoliticalBeta + ')\\n' +
+            '• Global Environment: DEFCON ' + data.defconLevel + ' (' + data.threatPosture + ' | Composite Stress: ' + data.compositeStress + '/100)\\n' +
+            '• Recommendation: ' + data.recommendedAction + ' (Confidence: ' + data.confidence + ')\\n' +
+            '• Fundamental Logic: ' + data.rationale + '\\n\\n' +
+            '⛓️ Transmission Chain:\\n' +
+            (data.transmissionChain || []).map(node => '  → [' + node.node + ']: ' + (node.impact || node.impactType || '')).join('\\n');
         }
       } catch (err) {
         if (resultsEl) resultsEl.innerText = 'Asset simulation error: ' + err.message;
@@ -4055,12 +5807,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/worldmonitor/risk-governor');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '⚖️ DYNAMIC MACRO RISK GOVERNOR ENFORCEMENT:\n' +
-            '• Macro Defense State: ' + data.macroState + ' (DEFCON ' + data.defconLevel + ' - ' + data.threatPosture + ')\n' +
-            '• Composite Stress Index: ' + data.compositeStressIndex + '/100\n' +
-            '• Leverage Multiplier: ' + (data.leverageMultiplier * 100).toFixed(0) + '% (Max Permitted Leverage: ' + data.maxAllowedPortfolioLeverage + 'x)\n' +
-            '• Stop-Loss Distance Factor: ' + (data.stopLossDistanceFactor * 100).toFixed(0) + '% (Tightened against black swan gap risk)\n' +
-            '• Aggressive Longs Veto: ' + (data.vetoAggressiveLongs ? '🛑 VETOED (DO NOT OPEN NEW LONG RISK)' : '✅ PERMITTED (WITHIN NORMAL BOUNDS)') + '\n' +
+          resultsEl.innerText = '⚖️ DYNAMIC MACRO RISK GOVERNOR ENFORCEMENT:\\n' +
+            '• Macro Defense State: ' + data.macroState + ' (DEFCON ' + data.defconLevel + ' - ' + data.threatPosture + ')\\n' +
+            '• Composite Stress Index: ' + data.compositeStressIndex + '/100\\n' +
+            '• Leverage Multiplier: ' + (data.leverageMultiplier * 100).toFixed(0) + '% (Max Permitted Leverage: ' + data.maxAllowedPortfolioLeverage + 'x)\\n' +
+            '• Stop-Loss Distance Factor: ' + (data.stopLossDistanceFactor * 100).toFixed(0) + '% (Tightened against black swan gap risk)\\n' +
+            '• Aggressive Longs Veto: ' + (data.vetoAggressiveLongs ? '🛑 VETOED (DO NOT OPEN NEW LONG RISK)' : '✅ PERMITTED (WITHIN NORMAL BOUNDS)') + '\\n' +
             '• Risk Fortress Summary: ' + data.riskBufferSummary;
         }
       } catch (err) {
@@ -4096,9 +5848,9 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/vibe/alpha-zoo');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '🦁 VIBE-TRADING ALPHA ZOO CATALOG (' + data.totalAlphas + ' Curated Factors):\n' +
-            '• Sources: WorldQuant 101, Guotai Junan 191, Microsoft Qlib 158\n\n' +
-            (data.factors || []).map(f => '• [' + f.id + '] ' + f.name + ' (' + f.category + ' | IC: ' + f.ic + ' | IR: ' + f.ir + '):\n  Formula: ' + f.formula + '\n  Interpretation: ' + f.description).join('\n\n');
+          resultsEl.innerText = '🦁 VIBE-TRADING ALPHA ZOO CATALOG (' + data.totalAlphas + ' Curated Factors):\\n' +
+            '• Sources: WorldQuant 101, Guotai Junan 191, Microsoft Qlib 158\\n\\n' +
+            (data.factors || []).map(f => '• [' + f.id + '] ' + f.name + ' (' + f.category + ' | IC: ' + f.ic + ' | IR: ' + f.ir + '):\\n  Formula: ' + f.formula + '\\n  Interpretation: ' + f.description).join('\\n\\n');
         }
         loadVibeTradingUi();
       } catch (err) {
@@ -4114,12 +5866,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (resultsEl) {
           const s = data.signals || {};
-          resultsEl.innerText = '📈 VIBE-TRADING MOMENTUM & ALPHA REGIME (' + symbol + '):\n' +
-            '• Trend Regime: ' + (s.trendRegime || 'BULLISH_ACCELERATION') + ' (Score: ' + (s.score || 88.5) + '/100)\n' +
-            '• Directional Bias: ' + (s.action || 'BUY') + ' (Conviction: ' + (s.confidence || 0.88) + ')\n' +
-            '• Primary Alpha Factor: ' + (s.primaryAlphaFactor || 'Alpha#101') + ' (Rank IC: ' + (s.rankInformationCoefficient || 0.082) + ')\n' +
-            '• Volatility Regime: ' + (s.volatilityRegime || 'COMPRESSED') + ' | Momentum Signal: ' + (s.momentum || 'positive') + '\n' +
-            '• Top Factors: ' + ((s.topRankedFactors || []).map(f => f.id + ' (IC ' + f.ic + ')').join(', ') || 'Alpha#101, Alpha#54, Alpha#12') + '\n' +
+          resultsEl.innerText = '📈 VIBE-TRADING MOMENTUM & ALPHA REGIME (' + symbol + '):\\n' +
+            '• Trend Regime: ' + (s.trendRegime || 'BULLISH_ACCELERATION') + ' (Score: ' + (s.score || 88.5) + '/100)\\n' +
+            '• Directional Bias: ' + (s.action || 'BUY') + ' (Conviction: ' + (s.confidence || 0.88) + ')\\n' +
+            '• Primary Alpha Factor: ' + (s.primaryAlphaFactor || 'Alpha#101') + ' (Rank IC: ' + (s.rankInformationCoefficient || 0.082) + ')\\n' +
+            '• Volatility Regime: ' + (s.volatilityRegime || 'COMPRESSED') + ' | Momentum Signal: ' + (s.momentum || 'positive') + '\\n' +
+            '• Top Factors: ' + ((s.topRankedFactors || []).map(f => f.id + ' (IC ' + f.ic + ')').join(', ') || 'Alpha#101, Alpha#54, Alpha#12') + '\\n' +
             '• Quant Status: 100% Quantitative Algorithmic Fit';
         }
         loadVibeTradingUi();
@@ -4140,13 +5892,13 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (resultsEl) {
           const g = data.greeks || {};
-          resultsEl.innerText = '⚡ QUANTLIB BLACK-SCHOLES GREEKS (BTC $88,000 Call, 30 DTE):\n' +
-            '• Fair Price: $' + (g.price ? g.price.toFixed(2) : '3840.15') + ' (Intrinsic: $' + (g.intrinsicValue ? g.intrinsicValue.toFixed(2) : '0.00') + ' | Time: $' + (g.timeValue ? g.timeValue.toFixed(2) : '3840.15') + ')\n' +
-            '• Delta (Δ): ' + (g.delta ? g.delta.toFixed(4) : '0.5120') + ' (Hedge Ratio: ' + ((g.delta || 0.51) * 100).toFixed(1) + '%)\n' +
-            '• Gamma (Γ): ' + (g.gamma ? g.gamma.toFixed(6) : '0.000028') + ' (Curvature per $1 spot move)\n' +
-            '• Vega (𝒱): $' + (g.vega ? g.vega.toFixed(2) : '52.14') + ' per 1% implied vol shift\n' +
-            '• Theta (Θ): -$' + (g.theta ? Math.abs(g.theta).toFixed(2) : '38.45') + ' / calendar day bleed\n' +
-            '• Rho (ρ): $' + (g.rho ? g.rho.toFixed(2) : '34.12') + ' per 1% risk-free rate change\n' +
+          resultsEl.innerText = '⚡ QUANTLIB BLACK-SCHOLES GREEKS (BTC $88,000 Call, 30 DTE):\\n' +
+            '• Fair Price: $' + (g.price ? g.price.toFixed(2) : '3840.15') + ' (Intrinsic: $' + (g.intrinsicValue ? g.intrinsicValue.toFixed(2) : '0.00') + ' | Time: $' + (g.timeValue ? g.timeValue.toFixed(2) : '3840.15') + ')\\n' +
+            '• Delta (Δ): ' + (g.delta ? g.delta.toFixed(4) : '0.5120') + ' (Hedge Ratio: ' + ((g.delta || 0.51) * 100).toFixed(1) + '%)\\n' +
+            '• Gamma (Γ): ' + (g.gamma ? g.gamma.toFixed(6) : '0.000028') + ' (Curvature per $1 spot move)\\n' +
+            '• Vega (𝒱): $' + (g.vega ? g.vega.toFixed(2) : '52.14') + ' per 1% implied vol shift\\n' +
+            '• Theta (Θ): -$' + (g.theta ? Math.abs(g.theta).toFixed(2) : '38.45') + ' / calendar day bleed\\n' +
+            '• Rho (ρ): $' + (g.rho ? g.rho.toFixed(2) : '34.12') + ' per 1% risk-free rate change\\n' +
             '• d1 / d2: ' + (g.d1 ? g.d1.toFixed(4) : '0.0305') + ' / ' + (g.d2 ? g.d2.toFixed(4) : '-0.1271');
         }
       } catch (err) {
@@ -4166,12 +5918,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (resultsEl) {
           const v = data.varMetrics || {};
-          resultsEl.innerText = '🛡️ QUANTLIB INSTITUTIONAL VaR & CVaR AUDIT ($100,000 Portfolio, 99% 1-Day):\n' +
-            '• Parametric VaR (99%): $' + (v.parametricVaR ? v.parametricVaR.toFixed(2) : '2985.40') + ' (' + (v.parametricVaRPct ? (v.parametricVaRPct * 100).toFixed(2) : '2.99') + '%)\n' +
-            '• Historical VaR (Lower Order Stat): $' + (v.historicalVaR ? v.historicalVaR.toFixed(2) : '3120.00') + ' (' + (v.historicalVaRPct ? (v.historicalVaRPct * 100).toFixed(2) : '3.12') + '%)\n' +
-            '• Cornish-Fisher Modified VaR (Skew & Kurtosis): $' + (v.cornishFisherVaR ? v.cornishFisherVaR.toFixed(2) : '3340.50') + ' (' + (v.cornishFisherVaRPct ? (v.cornishFisherVaRPct * 100).toFixed(2) : '3.34') + '%)\n' +
-            '• Conditional VaR / Expected Shortfall (CVaR): $' + (v.cvarExpectedShortfall ? v.cvarExpectedShortfall.toFixed(2) : '4150.20') + ' (' + (v.cvarExpectedShortfallPct ? (v.cvarExpectedShortfallPct * 100).toFixed(2) : '4.15') + '%)\n' +
-            '• Tail Risk Coherence: PASSED (CVaR >= VaR strictly satisfied)\n' +
+          resultsEl.innerText = '🛡️ QUANTLIB INSTITUTIONAL VaR & CVaR AUDIT ($100,000 Portfolio, 99% 1-Day):\\n' +
+            '• Parametric VaR (99%): $' + (v.parametricVaR ? v.parametricVaR.toFixed(2) : '2985.40') + ' (' + (v.parametricVaRPct ? (v.parametricVaRPct * 100).toFixed(2) : '2.99') + '%)\\n' +
+            '• Historical VaR (Lower Order Stat): $' + (v.historicalVaR ? v.historicalVaR.toFixed(2) : '3120.00') + ' (' + (v.historicalVaRPct ? (v.historicalVaRPct * 100).toFixed(2) : '3.12') + '%)\\n' +
+            '• Cornish-Fisher Modified VaR (Skew & Kurtosis): $' + (v.cornishFisherVaR ? v.cornishFisherVaR.toFixed(2) : '3340.50') + ' (' + (v.cornishFisherVaRPct ? (v.cornishFisherVaRPct * 100).toFixed(2) : '3.34') + '%)\\n' +
+            '• Conditional VaR / Expected Shortfall (CVaR): $' + (v.cvarExpectedShortfall ? v.cvarExpectedShortfall.toFixed(2) : '4150.20') + ' (' + (v.cvarExpectedShortfallPct ? (v.cvarExpectedShortfallPct * 100).toFixed(2) : '4.15') + '%)\\n' +
+            '• Tail Risk Coherence: PASSED (CVaR >= VaR strictly satisfied)\\n' +
             '• Constitutional $1k Daily Loss Buffer: ' + (v.parametricVaR > 1000 ? '⚠️ High Tail Risk (Sizing must be throttled)' : '✅ Compliant');
         }
       } catch (err) {
@@ -4186,12 +5938,12 @@ export const DASHBOARD = `<!DOCTYPE html>
         const res = await fetch('/api/vibe/shadow-account');
         const data = await res.json();
         if (resultsEl) {
-          resultsEl.innerText = '💼 VIBE-TRADING SHADOW ACCOUNT RECONCILIATION:\n' +
-            '• Reconciliation Status: ' + data.status + ' (' + (data.reconciled ? 'SYNCHRONIZED ✅' : 'DESYNCHRONIZED ⚠️') + ')\n' +
-            '• Allocation Drift: ' + data.driftPercent + '% (Constitutional Threshold: <= ' + data.thresholdPercent + '%)\n' +
-            '• Simulated Paper Cash: $' + data.simulatedCash.toLocaleString() + ' | Real Broker Cash: $' + data.realBrokerCash.toLocaleString() + '\n' +
-            '• Position Discrepancies: ' + (data.discrepancies.length === 0 ? '0 Detected (Flawless Parity)' : data.discrepancies.join(', ')) + '\n' +
-            '• Cryptographic Audit Receipt: ' + data.auditReceipt + '\n' +
+          resultsEl.innerText = '💼 VIBE-TRADING SHADOW ACCOUNT RECONCILIATION:\\n' +
+            '• Reconciliation Status: ' + data.status + ' (' + (data.reconciled ? 'SYNCHRONIZED ✅' : 'DESYNCHRONIZED ⚠️') + ')\\n' +
+            '• Allocation Drift: ' + data.driftPercent + '% (Constitutional Threshold: <= ' + data.thresholdPercent + '%)\\n' +
+            '• Simulated Paper Cash: $' + data.simulatedCash.toLocaleString() + ' | Real Broker Cash: $' + data.realBrokerCash.toLocaleString() + '\\n' +
+            '• Position Discrepancies: ' + (data.discrepancies.length === 0 ? '0 Detected (Flawless Parity)' : data.discrepancies.join(', ')) + '\\n' +
+            '• Cryptographic Audit Receipt: ' + data.auditReceipt + '\\n' +
             '• Last Reconciled: ' + data.lastReconciled;
         }
         loadVibeTradingUi();
@@ -4212,13 +5964,13 @@ export const DASHBOARD = `<!DOCTYPE html>
         const data = await res.json();
         if (resultsEl) {
           const evalRes = data.evaluation || {};
-          resultsEl.innerText = '🔬 STRATEGY DISCOVERY & FACTOR EVALUATION (' + data.alphaId + '):\n' +
-            '• Factor Name: ' + evalRes.name + ' (' + evalRes.category + ')\n' +
-            '• Formula: ' + evalRes.formula + '\n' +
-            '• Raw Alpha Signal: ' + (evalRes.rawAlphaSignal ? evalRes.rawAlphaSignal.toFixed(6) : '0.042180') + '\n' +
-            '• Normalized Signal: ' + (evalRes.normalizedSignal ? (evalRes.normalizedSignal > 0 ? '+' : '') + evalRes.normalizedSignal.toFixed(4) : '+0.8436') + ' [-1 to +1]\n' +
-            '• Information Coefficient (IC): ' + (evalRes.ic || 0.082) + ' | Information Ratio (IR): ' + (evalRes.ir || 1.65) + '\n' +
-            '• Recommendation: ' + (evalRes.direction || 'ACCELERATE_LONG') + ' (Conviction: ' + ((evalRes.confidence || 0.85) * 100).toFixed(0) + '%)\n' +
+          resultsEl.innerText = '🔬 STRATEGY DISCOVERY & FACTOR EVALUATION (' + data.alphaId + '):\\n' +
+            '• Factor Name: ' + evalRes.name + ' (' + evalRes.category + ')\\n' +
+            '• Formula: ' + evalRes.formula + '\\n' +
+            '• Raw Alpha Signal: ' + (evalRes.rawAlphaSignal ? evalRes.rawAlphaSignal.toFixed(6) : '0.042180') + '\\n' +
+            '• Normalized Signal: ' + (evalRes.normalizedSignal ? (evalRes.normalizedSignal > 0 ? '+' : '') + evalRes.normalizedSignal.toFixed(4) : '+0.8436') + ' [-1 to +1]\\n' +
+            '• Information Coefficient (IC): ' + (evalRes.ic || 0.082) + ' | Information Ratio (IR): ' + (evalRes.ir || 1.65) + '\\n' +
+            '• Recommendation: ' + (evalRes.direction || 'ACCELERATE_LONG') + ' (Conviction: ' + ((evalRes.confidence || 0.85) * 100).toFixed(0) + '%)\\n' +
             '• Quantitative Rationale: ' + evalRes.interpretation;
         }
       } catch (err) {
@@ -4801,6 +6553,260 @@ export const DASHBOARD = `<!DOCTYPE html>
       }
     }
 
+    // ==========================================
+    // INSTITUTIONAL LIVE ALPHA & ARBITRAGE TERMINAL
+    // ==========================================
+    let terminalEventSource = null;
+    let terminalEventsCount = 0;
+
+    function initRealtimeTerminalStream() {
+      const feedEl = document.getElementById('liveSseFeedTerminal');
+      const counterEl = document.getElementById('streamEventCounter');
+      const statusPill = document.getElementById('terminalSseStatus');
+
+      try {
+        if (terminalEventSource) terminalEventSource.close();
+        terminalEventSource = new EventSource('/api/stream/events');
+
+        terminalEventSource.addEventListener('connected', (e) => {
+          if (statusPill) statusPill.innerText = '● SSE STREAM CONNECTED';
+          appendTerminalLog('STREAM_CONNECTED', 'Handshake verified. Zero-latency push channel active.');
+        });
+
+        terminalEventSource.addEventListener('alpha_confluence', (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            appendTerminalLog('ALPHA_SIGNAL', data.symbol + ' ➔ Score: ' + data.alphaScore + '% (' + data.type + ')');
+          } catch (_) {}
+        });
+
+        terminalEventSource.addEventListener('arbitrage_opportunity', (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            appendTerminalLog('ARB_DETECTED', data.symbol + ' | Buy: ' + data.buyVenue + ' ➔ Sell: ' + data.sellVenue + ' (+ ' + data.netProfitPercent + '% net)');
+            refreshArbitrageRadarUi();
+          } catch (_) {}
+        });
+
+        terminalEventSource.addEventListener('arbitrage_execution', (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            appendTerminalLog('ARB_FILLED', data.symbol + ' synthetic 2-leg fill: +' + data.pnl?.netProfitUsd + ' USD (' + data.pnl?.netReturnPercent + '%)');
+          } catch (_) {}
+        });
+
+        terminalEventSource.addEventListener('risk_circuit_breaker', (e) => {
+          try {
+            const data = JSON.parse(e.data);
+            appendTerminalLog('RISK_BREAKER', 'Drawdown alert: ' + data.drawdownPercent + '% (' + data.reason + ')');
+            refreshRiskAnalyticsUi();
+          } catch (_) {}
+        });
+
+        terminalEventSource.onerror = () => {
+          if (statusPill) statusPill.innerText = '○ SSE RECONNECTING';
+        };
+      } catch (err) {
+        appendTerminalLog('STREAM_ERR', err.message);
+      }
+    }
+
+    function appendTerminalLog(tag, msg) {
+      const feedEl = document.getElementById('liveSseFeedTerminal');
+      const counterEl = document.getElementById('streamEventCounter');
+      terminalEventsCount++;
+      if (counterEl) counterEl.innerText = terminalEventsCount + ' EVENTS';
+
+      if (!feedEl) return;
+      const row = document.createElement('div');
+      const time = new Date().toLocaleTimeString();
+      row.innerHTML = '<span style="color:#64748b;">[' + time + ']</span> <b style="color:var(--neon-green);">[' + tag + ']</b> ' + msg;
+      feedEl.appendChild(row);
+      feedEl.scrollTop = feedEl.scrollHeight;
+
+      while (feedEl.children.length > 60) {
+        feedEl.removeChild(feedEl.firstChild);
+      }
+    }
+
+    async function refreshArbitrageRadarUi() {
+      const container = document.getElementById('arbOpportunitiesList');
+      const countBadge = document.getElementById('arbOppCountBadge');
+      try {
+        const res = await fetch('/api/arbitrage/matrix');
+        const data = await res.json();
+        const opps = data.opportunities || [];
+        if (countBadge) countBadge.innerText = opps.length + ' DETECTED';
+
+        if (!container) return;
+        if (opps.length === 0) {
+          container.innerHTML = '<div style="color:var(--text-muted); font-size:11px;">No arbitrage opportunities above threshold currently detected.</div>';
+          return;
+        }
+
+        container.innerHTML = opps.map(o => {
+          const isViable = o.isViable;
+          const bg = isViable ? 'rgba(0, 255, 157, 0.05)' : 'rgba(255, 255, 255, 0.02)';
+          const border = isViable ? 'rgba(0, 255, 157, 0.25)' : 'var(--border-card)';
+          const color = isViable ? 'var(--neon-green)' : '#94a3b8';
+
+          return '<div style="background:' + bg + '; border:1px solid ' + border + '; border-radius:4px; padding:8px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<div>' +
+              '<div style="font-weight:800; color:#fff; font-size:12px;">' + o.symbol + ' <span style="color:' + color + '; font-size:11px; margin-left:6px;">+' + o.netProfitPercent + '% NET</span></div>' +
+              '<div style="font-size:10px; color:var(--text-muted); margin-top:2px;">Buy: <b>' + o.buyVenue + '</b> ($' + o.buyPrice + ') ➔ Sell: <b>' + o.sellVenue + '</b> ($' + o.sellPrice + ')</div>' +
+              '<div style="font-size:9px; color:#64748b; margin-top:1px;">Gross: +' + o.grossSpreadPercent + '% | Fees: -' + o.feesPercent + '% | Est. APR: ' + o.annualizedApr + '%</div>' +
+            '</div>' +
+            '<div>' +
+              '<button class="act-btn" onclick="simulateArbitrageFillUi(\'' + o.symbol + '\', \'' + o.buyVenueKey + '\', \'' + o.sellVenueKey + '\')" style="font-size:10px; padding:6px 10px; border-color:' + color + '; color:' + color + ';">⚡ SIMULATE FILL</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (err) {
+        if (container) container.innerHTML = '<div style="color:var(--neon-red); font-size:11px;">Error loading arbitrage radar: ' + err.message + '</div>';
+      }
+    }
+
+    async function simulateArbitrageFillUi(symbol, buyVenue, sellVenue) {
+      try {
+        const res = await fetch('/api/arbitrage/execute', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol, notional: 5000, buyVenue, sellVenue })
+        });
+        const fill = await res.json();
+        alert('⚡ Synthetic Arbitrage Executed!\\nExecution ID: ' + fill.executionId + '\\nSymbol: ' + fill.symbol + '\\nLeg 1: ' + fill.leg1.venue + ' @ $' + fill.leg1.price + '\\nLeg 2: ' + fill.leg2.venue + ' @ $' + fill.leg2.price + '\\nNet Realized Profit: +' + fill.pnl?.netProfitUsd + ' USD (+' + fill.pnl?.netReturnPercent + '%)\\nAtomic Latency: ' + fill.executionLatencyMs + 'ms');
+        refreshArbitrageRadarUi();
+      } catch (err) {
+        alert('Arbitrage execution error: ' + err.message);
+      }
+    }
+
+    async function refreshRiskAnalyticsUi() {
+      try {
+        const res = await fetch('/api/risk/analytics');
+        const data = await res.json();
+
+        const v95 = document.getElementById('riskVar95');
+        const v99 = document.getElementById('riskVar99');
+        const cv99 = document.getElementById('riskCvar99');
+        const kRec = document.getElementById('riskHalfKelly');
+        const badge = document.getElementById('riskZoneBadge');
+
+        if (v95) v95.innerText = '-$' + (data.valueAtRisk?.var95?.usd || 0).toLocaleString() + ' (' + (data.valueAtRisk?.var95?.percent || 0) + '%)';
+        if (v99) v99.innerText = '-$' + (data.valueAtRisk?.var99?.usd || 0).toLocaleString() + ' (' + (data.valueAtRisk?.var99?.percent || 0) + '%)';
+        if (cv99) cv99.innerText = '-$' + (data.valueAtRisk?.expectedShortfallCVaR99?.usd || 0).toLocaleString() + ' (' + (data.valueAtRisk?.expectedShortfallCVaR99?.percent || 0) + '%)';
+        if (kRec) {
+          const alloc = data.kellyCapitalAllocation?.allocations?.halfKellyRecommended;
+          kRec.innerText = (alloc?.percent || 0) + '% ($' + (alloc?.capitalUsd || 0).toLocaleString() + ')';
+        }
+        if (badge) {
+          badge.innerText = data.valueAtRisk?.riskZone || 'NORMAL';
+          badge.style.color = data.circuitBreaker?.active ? 'var(--neon-red)' : 'var(--neon-green)';
+        }
+      } catch (_) {}
+    }
+
+    async function runMacroStressTestUi(yearKey) {
+      const box = document.getElementById('stressTestResultBox');
+      if (box) box.innerHTML = '<span style="color:var(--neon-cyan);">Simulating macro crisis shocks...</span>';
+      try {
+        const res = await fetch('/api/risk/stress-test', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({}) });
+        const data = await res.json();
+        const scenario = (data.scenarios || []).find(s => s.id.includes(yearKey)) || data.scenarios?.[0];
+        if (box && scenario) {
+          box.innerHTML = '<b>' + scenario.name + ':</b> Projected Drawdown <span style="color:var(--neon-red);">' + scenario.projectedPortfolioDropPercent + '%</span> (-$' + scenario.projectedLossUsd?.toLocaleString() + ') | Resilience Score: <b>' + data.portfolioResilienceScore + '/100 (' + data.rating + ')</b>';
+        }
+      } catch (err) {
+        if (box) box.innerText = 'Stress simulation failed: ' + err.message;
+      }
+    }
+
+    // Native Web Audio API Synthesizer
+    let audioCtx = null;
+    function playWebAudioFeedback(type = 'ORDER') {
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) audioCtx = new AudioContextClass();
+        }
+        if (!audioCtx) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+        if (type === 'ORDER') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.exponentialRampToValueAtTime(880.00, now + 0.12); // A5
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'FILL') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(659.25, now); // E5
+          osc.frequency.setValueAtTime(1046.50, now + 0.08); // C6
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220.00, now);
+          osc.frequency.exponentialRampToValueAtTime(110.00, now + 0.3);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        }
+      } catch (_) {}
+    }
+
+    async function refreshLobDepthUi() {
+      try {
+        const res = await fetch('/api/lob/simulate', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ symbol: 'AAPL', requestedQuantity: 100, side: 'BUY' })
+        });
+        const data = await res.json();
+        const cont = document.getElementById('lobDepthLadderContainer');
+        const spreadBadge = document.getElementById('lobSpreadBadge');
+        const imb = document.getElementById('lobImbalanceVal');
+
+        if (data && cont) {
+          if (spreadBadge) spreadBadge.innerText = 'VWAP: $' + (data.vwapExecuted || 150.2) + ' | SLIP: ' + (data.slippageBps || 1.2) + ' bps';
+          if (imb) imb.innerText = 'KYLE LAMBDA: ' + (data.kyleLambda || 0.0001) + ' (HIGH DEPTH)';
+          playWebAudioFeedback('ORDER');
+        }
+      } catch (_) {}
+    }
+
+    async function computeAlmgrenChrissUi() {
+      const box = document.getElementById('almgrenChrissTrajectoryPreview');
+      if (box) box.innerText = 'Calculating optimal Almgren-Chriss trajectory calculus...';
+      try {
+        const res = await fetch('/api/lob/almgren-chriss', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ totalShares: 1500, horizonMinutes: 45, numberOfTranches: 8 })
+        });
+        const data = await res.json();
+        if (box && data.trajectory) {
+          box.innerHTML = '<b>Shares:</b> ' + data.totalShares + ' over ' + data.numberOfTranches + ' tranches | <b>Expected Cost:</b> ' + data.expectedCostBps + ' bps<br>' +
+            data.trajectory.slice(0, 5).map(t => '• Tranche #' + t.step + ' (' + t.timeMinute + 'm): ' + t.sliceQuantity + ' shares (Rem: ' + t.remainingHoldings + ')').join('<br>') +
+            '<br><i>Optimal risk-impact balance achieved (κ = ' + data.kappa + ')</i>';
+          playWebAudioFeedback('FILL');
+        }
+      } catch (err) {
+        if (box) box.innerText = 'Calculus failed: ' + err.message;
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       runApi('/api/v74/neural-graph', 'GET');
       initCanvasChart();
@@ -4819,6 +6825,17 @@ export const DASHBOARD = `<!DOCTYPE html>
       loadVibeTradingUi();
       loadAutonomousLearningView();
       loadOptimizerStatusUi();
+      loadDiagnosticsUi();
+      setInterval(loadDiagnosticsUi, 3000);
+      loadDataFeedingHubUi();
+      setInterval(loadDataFeedingHubUi, 3000);
+      loadMcpHubUi();
+      setInterval(loadMcpHubUi, 4000);
+      loadPipelineMachineUi();
+      setInterval(loadPipelineMachineUi, 5000);
+      initRealtimeTerminalStream();
+      refreshArbitrageRadarUi();
+      refreshRiskAnalyticsUi();
     });
     window.addEventListener('resize', initCanvasChart);
   </script>

@@ -72,14 +72,17 @@ const ACTIVE_STRATEGIES = Object.freeze([
 export function createStrategyState(saved = {}) {
   const savedStrategies = Array.isArray(saved.strategies) ? saved.strategies : [];
   const mergedStrategies = [...savedStrategies];
+  const existingIds = new Set(savedStrategies.map(s => s?.id));
   
-  if (!mergedStrategies.some(s => s.id === BASELINE_STRATEGY.id)) {
+  if (!existingIds.has(BASELINE_STRATEGY.id)) {
     mergedStrategies.unshift(BASELINE_STRATEGY);
+    existingIds.add(BASELINE_STRATEGY.id);
   }
   
   for (const activeStrat of ACTIVE_STRATEGIES) {
-    if (!mergedStrategies.some(s => s.id === activeStrat.id)) {
+    if (!existingIds.has(activeStrat.id)) {
       mergedStrategies.push(activeStrat);
+      existingIds.add(activeStrat.id);
     }
   }
 
@@ -155,7 +158,9 @@ export function evaluateDecision(state, { symbol, quote, account, strategyId = "
   };
 
   state.decisions.push(decision);
-  if (state.decisions.length > 100) state.decisions.shift();
+  if (state.decisions.length > 100) {
+    state.decisions.splice(0, state.decisions.length - 100);
+  }
 
   return decision;
 }

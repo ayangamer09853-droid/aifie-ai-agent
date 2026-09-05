@@ -10,16 +10,50 @@ export function createPaperState(saved = {}) {
   };
 }
 
+const VALID_SYMBOL_CACHE = new Set();
+const SYMBOL_FORMAT_REGEX = /^[A-Z0-9]+(?:[\.\/\-_][A-Z0-9]+)*$/;
+
+export class AsyncMutex {
+  constructor() {
+    this._queue = Promise.resolve();
+    this._locked = false;
+  }
+
+  async runExclusive(task) {
+    let release;
+    const nextWaiter = new Promise(resolve => { release = resolve; });
+    const currentQueue = this._queue;
+    this._queue = currentQueue.then(() => nextWaiter);
+    await currentQueue;
+    this._locked = true;
+    try {
+      return await task();
+    } finally {
+      this._locked = false;
+      release();
+    }
+  }
+
+  isLocked() {
+    return this._locked;
+  }
+}
+
 function validateQuote(symbol, price) {
   const normalized = String(symbol ?? "").trim().toUpperCase();
-  if (!/^[A-Z0-9]+(?:[\.\/\-_][A-Z0-9]+)*$/.test(normalized)) throw new Error("invalid symbol");
+  if (!VALID_SYMBOL_CACHE.has(normalized)) {
+    if (!SYMBOL_FORMAT_REGEX.test(normalized)) throw new Error("invalid symbol");
+    if (VALID_SYMBOL_CACHE.size < 5000) VALID_SYMBOL_CACHE.add(normalized);
+  }
   if (!Number.isFinite(price) || price <= 0) throw new Error("price must be a positive number");
   return normalized;
 }
 
 export function setQuote(state, { symbol, price, source = "manual" }) {
   const normalized = validateQuote(symbol, price);
-  state.quotes[normalized] = { price, source, updatedAt: new Date().toISOString() };
+  const now = Date.now();
+  const iso = new Date(now).toISOString();
+  state.quotes[normalized] = { price, source, updatedAt: iso, _cachedUpdatedAtStr: iso, _cachedTime: now };
   return state.quotes[normalized];
 }
 
@@ -38,7 +72,11 @@ export function placePaperOrder(state, { symbol, side, quantity }) {
   const snapshot = accountSnapshot(state);
   if (snapshot.drawdownPercent >= state.risk.maxDrawdownPercent) throw new Error("paper risk gate: maximum drawdown reached");
   const quote = state.quotes[normalized];
-  const quoteTime = Date.parse(quote.updatedAt);
+  if (quote._cachedUpdatedAtStr !== quote.updatedAt) {
+    quote._cachedTime = Date.parse(quote.updatedAt);
+    quote._cachedUpdatedAtStr = quote.updatedAt;
+  }
+  const quoteTime = quote._cachedTime;
   if (!Number.isFinite(quoteTime) || Date.now() - quoteTime > state.risk.maxQuoteAgeMs) throw new Error("paper risk gate: quote is stale or missing a timestamp");
   const fillPrice = side === "buy" ? quote.price * (1 + state.risk.slippageRate) : quote.price * (1 - state.risk.slippageRate);
   const notional = fillPrice * quantity;
@@ -62,6 +100,7 @@ export function placePaperOrder(state, { symbol, side, quantity }) {
   const after = accountSnapshot(state);
   state.account.peakEquity = Math.max(state.account.peakEquity, after.equity);
   const fill = { symbol: normalized, side, quantity, status: "simulated", mode: "paper", quotedPrice: quote.price, fillPrice, commission, slippageRate: state.risk.slippageRate, source: quote.source, createdAt: new Date().toISOString() };
-  state.journal.push({ type: "paper_fill", fill, account: accountSnapshot(state) });
+  state.journal.push({ type: "paper_fill", fill, account: after });
+  if (state.journal.length > 1000) state.journal.splice(0, state.journal.length - 1000);
   return fill;
 }

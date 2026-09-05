@@ -29,6 +29,8 @@ const agents = templates.map(template => ({
 const tasks = [];
 const replicationEvents = [];
 const heartbeatEvents = [];
+const MAX_STORED_TASKS = 1000;
+const MAX_STORED_EVENTS = 1000;
 const safety = { killSwitchActive: false, reason: null, updatedAt: new Date().toISOString() };
 
 function findHealthyAgent(lane) { return agents.find(agent => agent.lane === lane && agent.health === "healthy"); }
@@ -41,6 +43,7 @@ export function delegateTask({ lane, objective, priority = "normal", evidenceReq
   const agent = findHealthyAgent(lane);
   const task = { id: `task-${randomUUID()}`, lane, objective: String(objective).trim(), priority, evidenceRequired: Boolean(evidenceRequired), riskLevel, status: agent ? "assigned" : "needs_specialist", assignedAgentId: agent?.id ?? null, createdAt: new Date().toISOString(), result: null };
   tasks.push(task);
+  if (tasks.length > MAX_STORED_TASKS) tasks.splice(0, tasks.length - MAX_STORED_TASKS);
   return task;
 }
 
@@ -54,6 +57,7 @@ export function runHeartbeat() {
   if (!actions.length) actions.push({ type: "wait", reason: "No unsafe or unassigned work requires manager action." });
   const heartbeat = { id: `heartbeat-${randomUUID()}`, cycle: ["observe", "diagnose", "delegate", "collect", "assess", "learn", "improve"], safety: { ...safety }, agentCount: agents.length, pendingTaskCount: tasks.filter(task => task.status !== "completed").length, actions, createdAt: new Date().toISOString() };
   heartbeatEvents.push(heartbeat);
+  if (heartbeatEvents.length > MAX_STORED_EVENTS) heartbeatEvents.splice(0, heartbeatEvents.length - MAX_STORED_EVENTS);
   return heartbeat;
 }
 
@@ -72,6 +76,7 @@ export function requestReplica({ templateId, reason, requestedBy = "manager" }) 
   agents.push(replica);
   const event = { id: `replication-${randomUUID()}`, requestedBy, reason: String(reason).trim(), replicaId: replica.id, templateId, status: "validating", createdAt: new Date().toISOString() };
   replicationEvents.push(event);
+  if (replicationEvents.length > MAX_STORED_EVENTS) replicationEvents.splice(0, replicationEvents.length - MAX_STORED_EVENTS);
   return { event, replica, requiredValidation: ["health_check", "capability_test", "registry_review"] };
 }
 

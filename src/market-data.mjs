@@ -3,9 +3,20 @@ import { fetchAlpacaLatestTrade, normalizeAlpacaSymbol } from "./market-feed-alp
 import { fetchYahooFinanceQuote, resolveUniversalSymbol } from "./market-feed-universal.mjs";
 import { recordMarketTick } from "./timeseries-market-store.mjs";
 
+const SYMBOL_REGEX = /^[A-Z0-9]+(?:[./_-][A-Z0-9]+)?$/;
+const symbolCache = new Map();
+const MAX_SYMBOL_CACHE = 5000;
+
 export function normalizeSymbol(symbol) {
   const normalized = String(symbol ?? "").trim().toUpperCase();
-  if (!/^[A-Z0-9]+(?:[./_-][A-Z0-9]+)?$/.test(normalized)) throw new Error("invalid symbol");
+  const cached = symbolCache.get(normalized);
+  if (cached !== undefined) return cached;
+  if (!SYMBOL_REGEX.test(normalized)) throw new Error("invalid symbol");
+  if (symbolCache.size >= MAX_SYMBOL_CACHE) {
+    const oldestKey = symbolCache.keys().next().value;
+    symbolCache.delete(oldestKey);
+  }
+  symbolCache.set(normalized, normalized);
   return normalized;
 }
 

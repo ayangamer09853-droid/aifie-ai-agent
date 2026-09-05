@@ -295,10 +295,101 @@ export function generateTradingSignal(prices, strategyName = "sma_crossover") {
     }
   }
 
+  // AFML Meta-Labeling / Fractional Differentiation strategy
+  if (strategy === "afml_meta") {
+    const fd = calculateFractionalDifferentiation(prices, 0.4);
+    const lastFd = fd[fd.length - 1] ?? 0;
+    const prevFd = fd[fd.length - 2] ?? 0;
+    const isUp = lastFd > prevFd;
+    return {
+      signal: isUp ? "BUY" : "SELL",
+      confidence: 0.88,
+      rationale: `AFML Fractional Differentiation (d=0.4) signals ${isUp ? "positive" : "negative"} stationary memory impulse.`,
+      indicators: { ...indicators, fracDiff: lastFd }
+    };
+  }
+
   return {
     signal: "HOLD",
     confidence: 0.5,
     rationale: "SMA values are equal or converging. Market is consolidating.",
     indicators
+  };
+}
+
+/**
+ * Marcos López de Prado - Fractional Differentiation (AFML Chapter 3)
+ * Preserves memory in time series while achieving stationarity
+ */
+export function calculateFractionalDifferentiation(prices, d = 0.4, threshold = 1e-4) {
+  if (!Array.isArray(prices) || prices.length < 5) return prices || [];
+  
+  const weights = [1];
+  let k = 1;
+  while (true) {
+    const w = -weights[k - 1] * (d - k + 1) / k;
+    if (Math.abs(w) < threshold || k >= prices.length) break;
+    weights.push(w);
+    k++;
+  }
+
+  const result = [];
+  for (let i = 0; i < prices.length; i++) {
+    let dot = 0;
+    for (let j = 0; j < weights.length && i - j >= 0; j++) {
+      dot += weights[j] * prices[i - j];
+    }
+    result.push(Number(dot.toFixed(4)));
+  }
+  return result;
+}
+
+/**
+ * Triple-Barrier Method Labeling (AFML Chapter 3)
+ * Sets dynamic upper profit barrier, lower stop-loss barrier, and horizontal time expiration barrier
+ */
+export function evaluateTripleBarrierLabeling(prices, { entryIndex = 0, ptMultiplier = 2.0, slMultiplier = 1.0, maxHoldBars = 10, volatility = null } = {}) {
+  if (!Array.isArray(prices) || prices.length === 0) {
+    return { outcome: "INVALID", returnPct: 0, barrierHit: "none" };
+  }
+
+  const entryPrice = prices[entryIndex] || prices[0];
+  const vol = volatility || Math.max(0.01, 0.015);
+  const ptLevel = entryPrice * (1 + vol * ptMultiplier);
+  const slLevel = entryPrice * (1 - vol * slMultiplier);
+  const endIndex = Math.min(prices.length - 1, entryIndex + maxHoldBars);
+
+  for (let i = entryIndex + 1; i <= endIndex; i++) {
+    const p = prices[i];
+    if (p >= ptLevel) {
+      return {
+        outcome: "PROFIT_TAKE",
+        barrierHit: "UPPER_HORIZONTAL",
+        entryPrice,
+        exitPrice: p,
+        returnPct: Number((((p - entryPrice) / entryPrice) * 100).toFixed(2)),
+        barsHeld: i - entryIndex
+      };
+    }
+    if (p <= slLevel) {
+      return {
+        outcome: "STOP_LOSS",
+        barrierHit: "LOWER_HORIZONTAL",
+        entryPrice,
+        exitPrice: p,
+        returnPct: Number((((p - entryPrice) / entryPrice) * 100).toFixed(2)),
+        barsHeld: i - entryIndex
+      };
+    }
+  }
+
+  const finalPrice = prices[endIndex];
+  return {
+    outcome: "TIME_EXPIRATION",
+    barrierHit: "VERTICAL_EXPIRY",
+    entryPrice,
+    exitPrice: finalPrice,
+    returnPct: Number((((finalPrice - entryPrice) / entryPrice) * 100).toFixed(2)),
+    barsHeld: endIndex - entryIndex
   };
 }
