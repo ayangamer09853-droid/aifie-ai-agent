@@ -283,6 +283,8 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("⚡ Slippage Settings") || normalized === "/slippage") normalized = "/slippage";
   if (normalized === "/bypass" || normalized.startsWith("⚡ Driver Bypass") || normalized === "/driver_bypass") normalized = "/bypass";
   if (normalized === "/signup" || normalized === "/register") normalized = "/signup";
+  if (normalized === "/openhands" || normalized === "/control" || normalized.startsWith("🤖 OpenHands")) normalized = "/openhands";
+  if (normalized.startsWith("/exec") || normalized.startsWith("/cmd")) normalized = normalized;
   if (normalized === "/help" || normalized === "/commands" || normalized === "/menu") normalized = "/help";
   if (normalized === "/start" || normalized === "/login" || normalized === "/account") normalized = "/start";
 

@@ -67,6 +67,7 @@ import { binanceMultiServerCluster } from "../../mining/binance-multi-server-clu
 import { emailNotificationService } from "../../email-notification-service.mjs";
 import { nativeBrowserRunner } from "../../automation/native-browser-runner.mjs";
 import { autonomousSignupEngine } from "../../auth/autonomous-signup-engine.mjs";
+import { openHandsControlGateway } from "../../integrations/openhands-control-gateway.mjs";
 
 const mcpLob = new LimitOrderBook("AAPL", 150.0);
 const mcpGraphTopology = new GraphNetworkTopology(financialCausalityGraph);
@@ -1906,6 +1907,66 @@ export function createQuantResearchMcpServer() {
     },
     handler: async () => {
       return autonomousSignupEngine.getStatus();
+    }
+  });
+
+  // Tool 99: openhands_execute_action
+  server.registerTool({
+    name: "openhands_execute_action",
+    description: "Executes an autonomous action using the OpenHands engine (CMD_RUN, BROWSE_URL, FILE_READ, FILE_WRITE, AGENT_THINK) granting full control.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["CMD_RUN", "BROWSE_URL", "FILE_READ", "FILE_WRITE", "AGENT_THINK"],
+          description: "OpenHands action type to execute."
+        },
+        args: {
+          type: "object",
+          description: "Action arguments (command, url, path, content, thought)."
+        }
+      },
+      required: ["action"]
+    },
+    handler: async (args) => {
+      return openHandsControlGateway.executeAction(args);
+    }
+  });
+
+  // Tool 100: openhands_get_agent_state
+  server.registerTool({
+    name: "openhands_get_agent_state",
+    description: "Queries the OpenHands autonomous control gateway status, upstream repository availability (sources/OpenHands), and event stream metrics.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    },
+    handler: async () => {
+      return openHandsControlGateway.getStatus();
+    }
+  });
+
+  // Tool 101: openhands_autonomous_cycle
+  server.registerTool({
+    name: "openhands_autonomous_cycle",
+    description: "Triggers a multi-step autonomous goal-oriented cycle through OpenHands action/observation loops.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        goal: {
+          type: "string",
+          description: "High-level goal or task prompt for the autonomous agent."
+        },
+        maxSteps: {
+          type: "number",
+          description: "Maximum steps to execute in this autonomous cycle (default: 5)."
+        }
+      },
+      required: ["goal"]
+    },
+    handler: async (args) => {
+      return openHandsControlGateway.runAutonomousCycle(args);
     }
   });
 

@@ -233,6 +233,7 @@ import { binanceMultiServerCluster } from "./src/mining/binance-multi-server-clu
 import { emailNotificationService } from "./src/email-notification-service.mjs";
 import { nativeBrowserRunner } from "./src/automation/native-browser-runner.mjs";
 import { autonomousSignupEngine } from "./src/auth/autonomous-signup-engine.mjs";
+import { openHandsControlGateway } from "./src/integrations/openhands-control-gateway.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -624,6 +625,39 @@ export function app(request, response) {
         }
       }).catch(() => {});
       return;
+    }
+
+    // OpenHands Full Control Autonomous Gateway Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/openhands/status" || url.pathname === "/api/openhands")) {
+      return respond(response, 200, openHandsControlGateway.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/openhands/action") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await openHandsControlGateway.executeAction(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && (url.pathname === "/api/openhands/cycle" || url.pathname === "/api/openhands/step")) {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await openHandsControlGateway.runAutonomousCycle(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/openhands/events") {
+      return respond(response, 200, {
+        totalEvents: openHandsControlGateway.eventStream.length,
+        events: openHandsControlGateway.eventStream
+      });
     }
 
     // Unified Real-Market Multi-Broker & Free Data Hub Endpoints

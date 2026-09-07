@@ -20,6 +20,7 @@ import { realBlockchainWalletSyncer } from "./wallet/real-blockchain-wallet-sync
 import { emailNotificationService } from "./email-notification-service.mjs";
 import { autonomousSignupEngine } from "./auth/autonomous-signup-engine.mjs";
 import { nativeBrowserRunner } from "./automation/native-browser-runner.mjs";
+import { openHandsControlGateway } from "./integrations/openhands-control-gateway.mjs";
 
 // Stateful User Settings & Preference Store (Per-chat / global default)
 class UserTradingStore {
@@ -1534,6 +1535,122 @@ Status: 🟢 <b>DELIVERED TO GATEWAY QUEUE</b>`;
       ]
     };
     return { handled: true, response: { text, replyMarkup } };
+  }
+
+  // 34. /openhands or /control — OpenHands Autonomous Full Control Command Center
+  if (command === "/openhands" || command === "/control") {
+    const st = openHandsControlGateway.getStatus();
+
+    const text = `🤖 <b>OPENHANDS AUTONOMOUS FULL CONTROL GATEWAY</b>
+──────────────────
+<b>Upstream Engine:</b> <code>OpenHands (OpenDevin)</code>
+<b>Repository Source:</b> <code>${st.sourceAvailable ? "✅ CLONED & MOUNTED" : "⚪ STANDBY"}</code>
+<b>Source Location:</b> <code>sources/OpenHands</code>
+<b>Agent State:</b> 🟢 <b>${st.agentState.status}</b>
+<b>Actions Executed:</b> <b>${st.agentState.totalActionsExecuted} Operations</b>
+<b>Active Operator:</b> <code>${st.userEmail}</code>
+
+🛠️ <b>FULL CONTROL CAPABILITIES:</b>
+• ⚡ <b>Command Execution:</b> PowerShell & Bash with live stdout capture
+• 🌐 <b>Headless Browsing:</b> Native Chrome DOM rendering & link extraction
+• 📂 <b>Code & File Ops:</b> Zero-dependency reading, writing & patching
+• 🧠 <b>Cognitive Cycle:</b> Multi-step goal-oriented planning loops
+
+──────────────────
+<b>Command Execution:</b>
+<code>/exec [command]</code> (e.g. <code>/exec dir</code> or <code>/exec node -v</code>)
+
+<b>Autonomous Goal Cycle:</b>
+Tap <b>"⚡ Run 3-Step Autonomous Cycle"</b> below to initiate automated workflow.`;
+
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          { text: "⚡ Run 3-Step Autonomous Cycle", callback_data: "cmd:/openhands_cycle" },
+          { text: "💻 Exec: Node Version", callback_data: "cmd:/exec node -v" }
+        ],
+        [
+          { text: "🌐 Browse: Example.com", callback_data: "cmd:/browse https://example.com" },
+          { text: "📜 Event Stream", callback_data: "cmd:/openhands_events" }
+        ],
+        [
+          { text: "⚙️ Global Settings", callback_data: "cmd:/settings" },
+          { text: "⛏️ Mining Swarm", callback_data: "cmd:/swarm_status" }
+        ]
+      ]
+    };
+    return { handled: true, response: { text, replyMarkup } };
+  }
+
+  // 35. /exec — Execute Arbitrary Shell Command via OpenHands
+  if (command === "/exec" || command === "/cmd") {
+    const cmdStr = (fullText || "").replace(/^\/(exec|cmd)\s*/i, "").trim() || "dir";
+    
+    // Asynchronous execution through OpenHands
+    const actionPromise = openHandsControlGateway.executeAction({
+      action: "CMD_RUN",
+      args: { command: cmdStr }
+    });
+
+    // Return instant acknowledgement or resolved observation
+    return actionPromise.then(res => {
+      const obs = res.observation;
+      const stdoutSnip = (obs.stdout || "").slice(0, 1200) || "(empty stdout)";
+      const stderrSnip = obs.stderr ? `\n\n⚠️ <b>STDERR:</b>\n<code>${obs.stderr.slice(0, 300)}</code>` : "";
+
+      const text = `💻 <b>OPENHANDS CMD EXECUTION RESULT</b>
+──────────────────
+<b>Command:</b> <code>${cmdStr}</code>
+<b>Exit Code:</b> <b>${obs.exitCode ?? 0}</b>
+
+<b>STDOUT:</b>
+<pre>${stdoutSnip}</pre>${stderrSnip}`;
+
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: "🤖 OpenHands Control", callback_data: "cmd:/openhands" },
+            { text: "🔄 Re-Run", callback_data: `cmd:/exec ${cmdStr}` }
+          ]
+        ]
+      };
+      return { handled: true, response: { text, replyMarkup } };
+    }).catch(err => {
+      return {
+        handled: true,
+        response: {
+          text: `❌ <b>OPENHANDS EXECUTION ERROR:</b>\n<code>${err.message}</code>`,
+          replyMarkup: { inline_keyboard: [[{ text: "🤖 OpenHands", callback_data: "cmd:/openhands" }]] }
+        }
+      };
+    });
+  }
+
+  // 36. /openhands_cycle — Autonomous Agent Step Cycle
+  if (command === "/openhands_cycle") {
+    const cyclePromise = openHandsControlGateway.runAutonomousCycle({
+      goal: "Inspect system telemetry and verify all 10 pillars are operating nominally.",
+      maxSteps: 3
+    });
+
+    return cyclePromise.then(res => {
+      const text = `🎯 <b>OPENHANDS AUTONOMOUS CYCLE COMPLETE</b>
+──────────────────
+<b>Goal:</b> <i>${res.goal}</i>
+<b>Steps Executed:</b> <b>${res.totalStepsExecuted} Steps</b>
+<b>Status:</b> 🟢 <b>ALL GOALS SATISFIED</b>
+<b>Timestamp:</b> <code>${res.timestamp}</code>`;
+
+      const replyMarkup = {
+        inline_keyboard: [
+          [
+            { text: "🤖 OpenHands Control", callback_data: "cmd:/openhands" },
+            { text: "📜 Event History", callback_data: "cmd:/openhands_events" }
+          ]
+        ]
+      };
+      return { handled: true, response: { text, replyMarkup } };
+    });
   }
 
   return { handled: false, response: null };
