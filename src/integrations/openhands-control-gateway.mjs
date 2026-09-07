@@ -79,12 +79,13 @@ export class OpenHandsControlGateway extends EventEmitter {
    * @param {"CMD_RUN"|"BROWSE_URL"|"FILE_READ"|"FILE_WRITE"|"AGENT_THINK"} params.action
    * @param {Object} [params.args]
    */
-  async executeAction({ action, args = {} }) {
+  async executeAction({ action, args, parameters, ...rest } = {}) {
     const actionId = `act-${randomUUID().slice(0, 8)}`;
     const timestamp = new Date().toISOString();
     const actionType = String(action || "").toUpperCase();
+    const resolvedArgs = args || parameters || rest || {};
 
-    this._recordEvent({ id: actionId, timestamp, type: "ACTION", name: actionType, payload: args });
+    this._recordEvent({ id: actionId, timestamp, type: "ACTION", name: actionType, payload: resolvedArgs });
     this.agentState.totalActionsExecuted++;
     this.agentState.lastActionAt = timestamp;
 
@@ -92,19 +93,19 @@ export class OpenHandsControlGateway extends EventEmitter {
     try {
       switch (actionType) {
         case "CMD_RUN":
-          observation = await this._handleCmdRun(args);
+          observation = await this._handleCmdRun(resolvedArgs);
           break;
         case "BROWSE_URL":
-          observation = await this._handleBrowseUrl(args);
+          observation = await this._handleBrowseUrl(resolvedArgs);
           break;
         case "FILE_READ":
-          observation = await this._handleFileRead(args);
+          observation = await this._handleFileRead(resolvedArgs);
           break;
         case "FILE_WRITE":
-          observation = await this._handleFileWrite(args);
+          observation = await this._handleFileWrite(resolvedArgs);
           break;
         case "AGENT_THINK":
-          observation = await this._handleAgentThink(args);
+          observation = await this._handleAgentThink(resolvedArgs);
           break;
         default:
           throw new Error(`Unsupported OpenHands action type: ${actionType}`);
