@@ -17,6 +17,7 @@ import {
 import { institutionalArbitrageEngine } from "./institutional-arbitrage-engine.mjs";
 import { institutionalRiskEngine } from "./institutional-risk-engine.mjs";
 import { realBlockchainWalletSyncer } from "./wallet/real-blockchain-wallet-syncer.mjs";
+import { emailNotificationService } from "./email-notification-service.mjs";
 
 // Stateful User Settings & Preference Store (Per-chat / global default)
 class UserTradingStore {
@@ -24,6 +25,8 @@ class UserTradingStore {
     this.userState = {
       profile: "🎯 Scalping & Momentum",
       language: "en",
+      email: process.env.USER_EMAIL || "m69249661@gmail.com",
+      emailAlertsEnabled: true,
       slippage: 1.0, // 1.0%
       slippageMode: "standard", // "safe" (0.5%), "standard" (1.0%), "turbo" (3.0%), "dynamic"
       autobuy: false,
@@ -148,6 +151,7 @@ export function handleTradingSuiteCommand(command, { symbol = "AAPL", quantity =
     const text = `🚀 <b>WELCOME TO AIFIE APEX TRADING TERMINAL</b>
 ──────────────────
 👤 <b>Account:</b> <code>USER_SOLANKI_VIP</code>
+📧 <b>Alerts Email:</b> <code>${state.email}</code> 🟢
 🔰 <b>Active Profile:</b> <b>${state.profile}</b>
 🌐 <b>Language:</b> <code>${state.language.toUpperCase()}</code>
 
@@ -172,7 +176,7 @@ export function handleTradingSuiteCommand(command, { symbol = "AAPL", quantity =
         ],
         [
           { text: "⚙️ Trade Settings", callback_data: "cmd:/settings" },
-          { text: "🎯 Profiles", callback_data: "cmd:/profiles" }
+          { text: "📧 Email Alerts", callback_data: "cmd:/email" }
         ],
         [
           { text: "❓ Help / Manual", callback_data: "cmd:/help" },
@@ -658,6 +662,7 @@ Example: <code>/alerts SOL 220 ABOVE</code> or <code>/alerts BTC 85000 BELOW</co
     const text = `⚙️ <b>AIFIE GLOBAL TRADING PREFERENCES</b>
 ──────────────────
 <b>Profile:</b> <b>${state.profile}</b>
+<b>Linked Email:</b> <code>${state.email}</code> (${state.emailAlertsEnabled ? "🟢 Alerts Active" : "🔴 Alerts Muted"})
 <b>Slippage Tolerance:</b> <b>${state.slippage}% (${state.slippageMode})</b>
 <b>Priority Fee (Gas):</b> <b>${state.priorityFeeLevel}</b>
 <b>Anti-MEV Frontrun Shield:</b> 🟢 <b>${state.antiMevEnabled ? "ENABLED (Private RPC)" : "DISABLED"}</b>
@@ -674,12 +679,16 @@ Example: <code>/alerts SOL 220 ABOVE</code> or <code>/alerts BTC 85000 BELOW</co
           { text: "⚡ Auto-Buy Toggle", callback_data: "cmd:/autobuy" }
         ],
         [
-          { text: "🎛️ Trade Panel UI", callback_data: "cmd:/trade_panel_settings" },
-          { text: "🌐 Language / 语言", callback_data: "cmd:/language" }
+          { text: "📧 Email Alerts", callback_data: "cmd:/email" },
+          { text: "🎛️ Trade Panel UI", callback_data: "cmd:/trade_panel_settings" }
         ],
         [
-          { text: "🎯 Switch Profile", callback_data: "cmd:/profiles" },
-          { text: "💳 Wallets", callback_data: "cmd:/wallets" }
+          { text: "🌐 Language / 语言", callback_data: "cmd:/language" },
+          { text: "🎯 Switch Profile", callback_data: "cmd:/profiles" }
+        ],
+        [
+          { text: "💳 Wallets", callback_data: "cmd:/wallets" },
+          { text: "⛏️ Mining Status", callback_data: "cmd:/mining" }
         ]
       ]
     };
@@ -1204,6 +1213,7 @@ Tap any button or type any command to interact with the autonomous quant engine:
 
 ⚙️ <b>SETTINGS & PREFERENCES:</b>
 • <code>/settings</code> — Global trading preferences & MEV
+• <code>/email [address]</code> — Institutional alert email & test dispatch
 • <code>/slippage</code> — Configure slippage tolerance (0.5%–5%)
 • <code>/trade_panel_settings</code> — Inline trading panel button layout
 • <code>/autobuy</code> — Toggle auto-buy on contract address paste
@@ -1245,10 +1255,10 @@ Tap any button or type any command to interact with the autonomous quant engine:
         ],
         [
           { text: "⚙️ Settings", callback_data: "cmd:/settings" },
-          { text: "⚡ Slippage", callback_data: "cmd:/slippage" }
+          { text: "📧 Email Alerts", callback_data: "cmd:/email" }
         ],
         [
-          { text: "🤖 Referral / Bots", callback_data: "cmd:/bots" },
+          { text: "⚡ Slippage", callback_data: "cmd:/slippage" },
           { text: "💬 Support", callback_data: "cmd:/support" }
         ]
       ]
@@ -1345,6 +1355,79 @@ ${parsed.durationMinutes > 0 ? `• <b>Duration:</b> <code>${parsed.durationMinu
       };
       return { handled: true, response: { text, replyMarkup, svg } };
     }
+  }
+
+  // 29. /email — View or Update Linked Institutional Alert Email
+  if (command === "/email" || command === "/alerts_email") {
+    const parts = (fullText || "").split(/\s+/);
+    if (parts.length >= 2 && parts[1].includes("@")) {
+      const newEmail = parts[1].trim();
+      userTradingStore.userState.email = newEmail;
+      emailNotificationService.setUserEmail(newEmail);
+    }
+    const currentEmail = userTradingStore.userState.email || "m69249661@gmail.com";
+    const status = emailNotificationService.getStatus();
+
+    const text = `📧 <b>INSTITUTIONAL EMAIL & DISPATCH GATEWAY</b>
+──────────────────
+<b>Linked Primary Email:</b> <code>${currentEmail}</code>
+<b>Alerts Status:</b> 🟢 <b>ACTIVE & BOUND</b>
+<b>Dispatches Count:</b> <b>${status.totalDispatched} Sent</b> (Queue: ${status.recentOutboxCount})
+<b>Subscribed Real-Time Feeds:</b>
+• ⚡ <b>Trade Fills:</b> Instant paper & live execution receipts
+• ⛏️ <b>24/7 Mining Swarm:</b> Hashrate, node health & watchdog status
+• 🚨 <b>Constitutional Risk:</b> Circuit breaker halts & risk rejections
+• 📊 <b>Daily Portfolio Digest:</b> End-of-day executive PnL summary
+
+──────────────────
+<b>Update Email Address:</b>
+<code>/email yourname@gmail.com</code>
+
+<b>Test Verification Alert:</b>
+Tap <b>"📨 Send Test Email"</b> below to dispatch an immediate verification alert.`;
+
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          { text: "📨 Send Test Email", callback_data: "cmd:/email_test" },
+          { text: "🔄 Refresh Status", callback_data: "cmd:/email" }
+        ],
+        [
+          { text: "⚙️ Global Settings", callback_data: "cmd:/settings" },
+          { text: "⛏️ Mining Swarm", callback_data: "cmd:/swarm_status" }
+        ]
+      ]
+    };
+    return { handled: true, response: { text, replyMarkup } };
+  }
+
+  // 30. /email_test — Dispatch Instant Verification Email
+  if (command === "/email_test") {
+    const currentEmail = userTradingStore.userState.email || "m69249661@gmail.com";
+    emailNotificationService.sendAlert({
+      subject: "[AIFIE TELEGRAM] Instant Verification & Test Alert",
+      body: `Institutional Trading Alert Test\nRecipient: ${currentEmail}\nTimestamp: ${new Date().toISOString()}\nStatus: Verified and Active across Aifie AI Agent.`,
+      category: "INFO",
+      to: currentEmail
+    }).catch(() => {});
+
+    const text = `✅ <b>INSTANT VERIFICATION ALERT DISPATCHED</b>
+──────────────────
+A verification alert has been dispatched to:
+<code>${currentEmail}</code>
+
+Subject: <b>"[AIFIE TELEGRAM] Instant Verification & Test Alert"</b>
+Status: 🟢 <b>DELIVERED TO GATEWAY QUEUE</b>`;
+
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          { text: "📧 Email Gateway", callback_data: "cmd:/email" },
+          { text: "⚙️ Global Settings", callback_data: "cmd:/settings" }
+        ]
+      ]
+    };
+    return { handled: true, response: { text, replyMarkup } };
   }
 
   return { handled: false, response: null };

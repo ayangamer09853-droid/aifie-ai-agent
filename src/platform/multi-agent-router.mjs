@@ -213,22 +213,25 @@ export class EmailAgent extends SpecialistAgent {
       ["inbox_scanning", "draft_reply", "priority_classification", "send_email", "unsubscribe"],
       true // sending requires human approval
     );
+    this.defaultRecipient = process.env.USER_EMAIL || "m69249661@gmail.com";
   }
 
   async handleTask(task, context) {
     const action = context.action || "READ";
+    const recipient = context.to || this.defaultRecipient;
     if (action === "SEND" && !context.approved) {
       return {
         type: "APPROVAL_REQUIRED",
         action: "SEND_EMAIL",
-        recipient: context.to || "user@example.com",
-        subject: context.subject || "Subject",
+        recipient,
+        subject: context.subject || "Aifie AI Notification",
         status: "WAITING_FOR_HUMAN_APPROVAL",
       };
     }
     return {
       type: "EMAIL_OPERATION_RESULT",
       action,
+      recipient,
       processedCount: 1,
       status: "EXECUTED",
     };

@@ -239,7 +239,8 @@ export const MOBILE_KEYBOARD = {
     [{ text: "📊 Positions & PnL" }, { text: "💳 Manage Wallets" }],
     [{ text: "📥 Deposit Token" }, { text: "⚡ Bridge Funds" }],
     [{ text: "📈 View Limit Orders" }, { text: "🪜 DCA Ladder" }],
-    [{ text: "⚙️ Trade Settings" }, { text: "⚡ Slippage Settings" }],
+    [{ text: "⚙️ Trade Settings" }, { text: "📧 Email Alerts" }],
+    [{ text: "⚡ Slippage Settings" }, { text: "🪜 DCA Ladder" }],
     [{ text: "🔌 MCP Hub Status" }, { text: "🛠️ MCP Tool Runner" }],
     [{ text: "📜 Event Audit Journal" }, { text: "🛡️ Sovereign Risk Fortress" }],
     [{ text: "📥 Data Feeding Status" }, { text: "⚡ Feed Live BTC Tick" }],
@@ -278,6 +279,7 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("📈 View Limit Orders") || normalized === "/orders" || normalized === "/openorders") normalized = "/orders";
   if (normalized.startsWith("🪜 DCA Ladder") || normalized === "/dca" || normalized === "/ladder") normalized = "/dca";
   if (normalized.startsWith("⚙️ Trade Settings") || normalized === "/settings" || normalized === "/preferences") normalized = "/settings";
+  if (normalized.startsWith("📧 Email Alerts") || normalized === "/email") normalized = "/email";
   if (normalized.startsWith("⚡ Slippage Settings") || normalized === "/slippage") normalized = "/slippage";
   if (normalized === "/help" || normalized === "/commands" || normalized === "/menu") normalized = "/help";
   if (normalized === "/start" || normalized === "/login" || normalized === "/account") normalized = "/start";

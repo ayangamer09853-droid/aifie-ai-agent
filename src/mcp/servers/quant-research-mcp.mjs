@@ -64,6 +64,7 @@ import { realBlockchainWalletSyncer } from "../../wallet/real-blockchain-wallet-
 import { binanceMiningPoolMonitor } from "../../mining/binance-mining-pool-monitor.mjs";
 import { binanceStratumMiner } from "../../mining/binance-stratum-miner.mjs";
 import { binanceMultiServerCluster } from "../../mining/binance-multi-server-cluster.mjs";
+import { emailNotificationService } from "../../email-notification-service.mjs";
 
 const mcpLob = new LimitOrderBook("AAPL", 150.0);
 const mcpGraphTopology = new GraphNetworkTopology(financialCausalityGraph);
@@ -1795,6 +1796,56 @@ export function createQuantResearchMcpServer() {
         intensity: Number(args?.intensity) || 95,
         autoWatchdog: true
       });
+    }
+  });
+
+  // Tool 94: dispatch_institutional_email_alert
+  server.registerTool({
+    name: "dispatch_institutional_email_alert",
+    description: "Dispatches an institutional email alert for trades, 24/7 mining cluster metrics, risk breaches, or daily digests to the configured user email (m69249661@gmail.com).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        subject: {
+          type: "string",
+          description: "Subject line of the email notification."
+        },
+        body: {
+          type: "string",
+          description: "Plain text or formatted notification body."
+        },
+        category: {
+          type: "string",
+          enum: ["TRADE", "MINING", "RISK", "PERFORMANCE", "INFO"],
+          description: "Category of notification alert."
+        },
+        to: {
+          type: "string",
+          description: "Optional recipient email address (defaults to bound primary user email)."
+        }
+      },
+      required: ["subject", "body"]
+    },
+    handler: async (args) => {
+      return emailNotificationService.sendAlert({
+        subject: args.subject,
+        body: args.body,
+        category: args.category || "INFO",
+        to: args.to || null
+      });
+    }
+  });
+
+  // Tool 95: get_institutional_email_status
+  server.registerTool({
+    name: "get_institutional_email_status",
+    description: "Queries the institutional email notification gateway status, recipient binding, dispatch counters, and outbox history.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    },
+    handler: async () => {
+      return emailNotificationService.getStatus();
     }
   });
 

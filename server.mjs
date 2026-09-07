@@ -230,6 +230,7 @@ import { realBlockchainWalletSyncer } from "./src/wallet/real-blockchain-wallet-
 import { binanceMiningPoolMonitor } from "./src/mining/binance-mining-pool-monitor.mjs";
 import { binanceStratumMiner } from "./src/mining/binance-stratum-miner.mjs";
 import { binanceMultiServerCluster } from "./src/mining/binance-multi-server-cluster.mjs";
+import { emailNotificationService } from "./src/email-notification-service.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -527,6 +528,51 @@ export function app(request, response) {
           return respond(response, 200, { success: true, ...res });
         } catch (err) {
           return respond(response, 500, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Institutional Email & Sovereign Alert Notification Service
+    if (request.method === "GET" && (url.pathname === "/api/email/status" || url.pathname === "/api/email")) {
+      return respond(response, 200, emailNotificationService.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/email/send") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await emailNotificationService.sendAlert(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/email/test") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await emailNotificationService.sendAlert({
+            subject: payload.subject || "[AIFIE TEST] Sovereign Email Link Verification",
+            body: payload.body || `Aifie AI Institutional Alert Gateway Test.\nRecipient: ${emailNotificationService.userEmail}\nTimestamp: ${new Date().toISOString()}\nStatus: ACTIVE & LINKED`,
+            category: "INFO",
+            to: payload.to || emailNotificationService.userEmail
+          });
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/email/config") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          if (payload.email) {
+            emailNotificationService.setUserEmail(payload.email);
+          }
+          return respond(response, 200, { success: true, status: emailNotificationService.getStatus() });
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
         }
       }).catch(() => {});
       return;
@@ -1570,6 +1616,7 @@ export function app(request, response) {
               orders.push(order);
               if (orders.length > MAX_MEMORY_ORDERS) orders.splice(0, orders.length - MAX_MEMORY_ORDERS);
               persist();
+              emailNotificationService.sendTradeNotification(order).catch(() => {});
               return { status: 200, body: { success: true, order } };
             } else if (payload.mode === "live") {
               // Alpaca live
@@ -1578,6 +1625,7 @@ export function app(request, response) {
               orders.push(saved);
               if (orders.length > MAX_MEMORY_ORDERS) orders.splice(0, orders.length - MAX_MEMORY_ORDERS);
               persist();
+              emailNotificationService.sendTradeNotification(saved).catch(() => {});
               return { status: 200, body: { success: true, order: saved } };
             }
             return { status: 400, body: { error: `Unsupported mode: ${payload.mode}` } };
