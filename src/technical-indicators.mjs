@@ -273,6 +273,20 @@ export function generateTradingSignal(prices, strategyName = "sma_crossover") {
     };
   }
 
+  // AFML Meta-Labeling / Fractional Differentiation strategy
+  if (strategyName === "afml_meta") {
+    const fd = calculateFractionalDifferentiation(prices, 0.4);
+    const lastFd = fd[fd.length - 1] ?? 0;
+    const prevFd = fd[fd.length - 2] ?? 0;
+    const isUp = lastFd > prevFd;
+    return {
+      signal: isUp ? "BUY" : "SELL",
+      confidence: 0.88,
+      rationale: `AFML Fractional Differentiation (d=0.4) signals ${isUp ? "positive" : "negative"} stationary memory impulse.`,
+      indicators: { ...indicators, fracDiff: lastFd }
+    };
+  }
+
   // Default / SMA Crossover strategy
   if (sma9 !== null && sma21 !== null) {
     if (sma9 > sma21) {
@@ -293,20 +307,6 @@ export function generateTradingSignal(prices, strategyName = "sma_crossover") {
         indicators
       };
     }
-  }
-
-  // AFML Meta-Labeling / Fractional Differentiation strategy
-  if (strategy === "afml_meta") {
-    const fd = calculateFractionalDifferentiation(prices, 0.4);
-    const lastFd = fd[fd.length - 1] ?? 0;
-    const prevFd = fd[fd.length - 2] ?? 0;
-    const isUp = lastFd > prevFd;
-    return {
-      signal: isUp ? "BUY" : "SELL",
-      confidence: 0.88,
-      rationale: `AFML Fractional Differentiation (d=0.4) signals ${isUp ? "positive" : "negative"} stationary memory impulse.`,
-      indicators: { ...indicators, fracDiff: lastFd }
-    };
   }
 
   return {

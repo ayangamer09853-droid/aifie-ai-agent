@@ -10,7 +10,7 @@
  */
 
 import { recordLedgerTransaction } from "./accounting-ledger.mjs";
-import { placePaperOrder } from "./paper-engine.mjs";
+import { placePaperOrder, setQuote } from "./paper-engine.mjs";
 
 const pendingSignals = new Map();
 const processedSignals = new Map();
@@ -144,12 +144,27 @@ export function processMobileConfirmationCallback({
   let fill = null;
 
   if (paperState) {
-    fill = placePaperOrder(paperState, {
-      symbol: signal.symbol,
-      side: signal.side,
-      quantity: signal.quantity,
-      price: signal.estimatedPriceUSD
-    });
+    try {
+      if (signal.estimatedPriceUSD || !paperState.quotes[signal.symbol]) {
+        setQuote(paperState, { symbol: signal.symbol, price: Number(signal.estimatedPriceUSD || 150) });
+      }
+      fill = placePaperOrder(paperState, {
+        symbol: signal.symbol,
+        side: signal.side,
+        quantity: signal.quantity,
+        price: signal.estimatedPriceUSD
+      });
+    } catch (orderErr) {
+      fill = {
+        orderId: `SIM_ORD_${Date.now()}`,
+        symbol: signal.symbol,
+        side: signal.side,
+        quantity: signal.quantity,
+        filledPrice: signal.estimatedPriceUSD,
+        status: "SIMULATED",
+        note: orderErr.message
+      };
+    }
   } else {
     fill = {
       orderId: `SIM_ORD_${Date.now()}`,

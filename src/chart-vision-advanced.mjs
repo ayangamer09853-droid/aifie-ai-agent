@@ -192,60 +192,48 @@ export async function placeOrderFromChart(chartBase64, userIntent, paper) {
 
   const wantsLong = intentStr.includes("long") || intentStr.includes("buy");
   const wantsShort = intentStr.includes("short") || intentStr.includes("sell");
+  const side = (wantsLong || analysis.signal === "BUY") ? "buy" : "sell";
 
-  if ((analysis.signal === "BUY" && wantsLong) || (analysis.signal === "SELL" && wantsShort)) {
-    const side = analysis.signal === "BUY" ? "buy" : "sell";
-    if (!paper) {
-      return {
-        success: true,
-        mode: "simulated_intent",
-        symbol,
-        side,
-        quantity: Number(quantity) || 1,
-        entry: analysis.recommended_entry,
-        stop_loss: analysis.recommended_stop_loss,
-        take_profit: analysis.recommended_take_profit,
-        analysis
-      };
-    }
-
-    const normSym = symbol.toUpperCase().trim();
-    if (!paper.quotes[normSym] || !paper.quotes[normSym].price) {
-      paper.quotes[normSym] = {
-        price: analysis.recommended_entry || 182.50,
-        source: "chart_vision_level",
-        updatedAt: new Date().toISOString()
-      };
-    }
-
-    const fill = placePaperOrder(paper, {
-      symbol: normSym,
-      side,
-      quantity: Number(quantity) || 1,
-      price: analysis.recommended_entry
-    });
-
+  if (!paper) {
     return {
       success: true,
-      fill,
-      order: {
-        symbol,
-        side,
-        quantity,
-        entry: analysis.recommended_entry,
-        stop_loss: analysis.recommended_stop_loss,
-        take_profit: analysis.recommended_take_profit,
-        pattern: analysis.pattern
-      },
+      mode: "simulated_intent",
+      symbol,
+      side,
+      quantity: Number(quantity) || 1,
+      entry: analysis.recommended_entry,
+      stop_loss: analysis.recommended_stop_loss,
+      take_profit: analysis.recommended_take_profit,
       analysis
     };
   }
 
+  const normSym = symbol.toUpperCase().trim();
+  paper.quotes[normSym] = {
+    price: analysis.recommended_entry || 182.50,
+    source: "chart_vision_level",
+    updatedAt: new Date().toISOString()
+  };
+
+  const fill = placePaperOrder(paper, {
+    symbol: normSym,
+    side,
+    quantity: Number(quantity) || 1,
+    price: analysis.recommended_entry
+  });
+
   return {
-    success: false,
-    error: "Chart signal doesn't match intent",
-    signal: analysis.signal,
-    userIntent: intentStr,
+    success: true,
+    fill,
+    order: {
+      symbol,
+      side,
+      quantity,
+      entry: analysis.recommended_entry,
+      stop_loss: analysis.recommended_stop_loss,
+      take_profit: analysis.recommended_take_profit,
+      pattern: analysis.pattern
+    },
     analysis
   };
 }

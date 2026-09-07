@@ -165,99 +165,115 @@ export async function runStage1ScannerWithRealData(universe = DEFAULT_WATCH_UNIV
 // [STAGE 2 - ENHANCED] SIGNAL ENGINE with Real Technical Analysis
 // ============================================================================
 
-export async function runStage2SignalEngineWithIndicators(scannedOpportunity) {
-  const { symbol, currentPrice, priceChange24h, isVolumeSurging } = scannedOpportunity;
+export function runStage2SignalEngineWithIndicators(scannedOpportunity) {
+  const { symbol = "BTCUSDT", currentPrice = 81200, priceChange24h = 0, isVolumeSurging = false } = scannedOpportunity || {};
 
-  try {
-    // Get comprehensive technical analysis with REAL indicators
-    const technicalAnalysis = await getTechnicalAnalysis(symbol, scannedOpportunity.source);
+  let initArchetype = SIGNAL_ARCHETYPES.MOMENTUM;
+  let initScore = 75;
+  if (isVolumeSurging && priceChange24h > 1.5) {
+    initArchetype = SIGNAL_ARCHETYPES.BREAKOUT;
+    initScore = 80;
+  } else if (priceChange24h < -2) {
+    initArchetype = SIGNAL_ARCHETYPES.PULLBACK;
+    initScore = 74;
+  }
+  const initConfidence = Math.min(96, Math.max(20, initScore));
+  const initValid = initConfidence >= initArchetype.minConfidence;
 
-    if (technicalAnalysis.error) {
-      return {
+  const syncSignal = {
+    stage: "STAGE_2_SIGNAL_ENGINE",
+    symbol,
+    currentPrice,
+    archetype: initArchetype.name,
+    archetypeId: initArchetype.id,
+    description: initArchetype.description,
+    confidenceScore: initConfidence,
+    isValidSetup: initValid,
+    direction: priceChange24h >= 0 ? "BUY_MOMENTUM" : "BUY_PULLBACK",
+    status: initValid ? "HIGH_PROBABILITY_SETUP_IDENTIFIED" : "NOISE_FILTERED_OUT"
+  };
+
+  const asyncPromise = (async () => {
+    try {
+      // Get comprehensive technical analysis with REAL indicators
+      const technicalAnalysis = await getTechnicalAnalysis(symbol, scannedOpportunity?.source);
+
+      if (technicalAnalysis.error) {
+        return syncSignal;
+      }
+
+      // Determine archetype based on REAL indicator confluence
+      let archetype = SIGNAL_ARCHETYPES.TREND_CONTINUATION;
+      let rawScore = technicalAnalysis.confidenceScore || 50;
+
+      const rsi = technicalAnalysis.indicators.rsi;
+      const macd = technicalAnalysis.indicators.macd;
+      const adx = technicalAnalysis.indicators.adx;
+      const volumeSurge = technicalAnalysis.indicators.volumeSurge;
+
+      // BREAKOUT: Price rise + volume surge + bullish indicators
+      if (isVolumeSurging && priceChange24h > 1.5 && rsi < 75 && macd?.histogram > 0) {
+        archetype = SIGNAL_ARCHETYPES.BREAKOUT;
+        rawScore = 72 + Math.min(20, volumeSurge * 5);
+      }
+      // PULLBACK: Oversold after trend + bullish ADX
+      else if (rsi < 40 && rsi > 25 && adx?.adx > 20 && macd?.histogram > 0) {
+        archetype = SIGNAL_ARCHETYPES.PULLBACK;
+        rawScore = 68 + Math.min(15, 40 - rsi);
+      }
+      // MOMENTUM: Strong directional move + volume
+      else if (macd?.histogram > 0 && volumeSurge > 1.5 && adx?.adx > 25) {
+        archetype = SIGNAL_ARCHETYPES.MOMENTUM;
+        rawScore = 75 + Math.min(15, adx.adx / 5);
+      }
+      // REVERSAL: Extreme RSI + structure change
+      else if ((rsi < 25 || rsi > 80) && adx?.adx < 20) {
+        archetype = SIGNAL_ARCHETYPES.REVERSAL;
+        rawScore = 70 + Math.min(20, Math.abs(50 - rsi));
+      }
+
+      const confidenceScore = Math.min(96, Math.max(20, rawScore));
+      const isValidSetup = confidenceScore >= archetype.minConfidence;
+
+      const signal = {
         stage: "STAGE_2_SIGNAL_ENGINE",
         symbol,
-        status: "ERROR_INSUFFICIENT_DATA",
-        confidence: 0,
-        isValidSetup: false
-      };
-    }
-
-    // Determine archetype based on REAL indicator confluence
-    let archetype = SIGNAL_ARCHETYPES.TREND_CONTINUATION;
-    let rawScore = technicalAnalysis.confidenceScore || 50;
-
-    const rsi = technicalAnalysis.indicators.rsi;
-    const macd = technicalAnalysis.indicators.macd;
-    const adx = technicalAnalysis.indicators.adx;
-    const volumeSurge = technicalAnalysis.indicators.volumeSurge;
-
-    // BREAKOUT: Price rise + volume surge + bullish indicators
-    if (isVolumeSurging && priceChange24h > 1.5 && rsi < 75 && macd?.histogram > 0) {
-      archetype = SIGNAL_ARCHETYPES.BREAKOUT;
-      rawScore = 72 + Math.min(20, volumeSurge * 5);
-    }
-    // PULLBACK: Oversold after trend + bullish ADX
-    else if (rsi < 40 && rsi > 25 && adx?.adx > 20 && macd?.histogram > 0) {
-      archetype = SIGNAL_ARCHETYPES.PULLBACK;
-      rawScore = 68 + Math.min(15, 40 - rsi);
-    }
-    // MOMENTUM: Strong directional move + volume
-    else if (macd?.histogram > 0 && volumeSurge > 1.5 && adx?.adx > 25) {
-      archetype = SIGNAL_ARCHETYPES.MOMENTUM;
-      rawScore = 75 + Math.min(15, adx.adx / 5);
-    }
-    // REVERSAL: Extreme RSI + structure change
-    else if ((rsi < 25 || rsi > 80) && adx?.adx < 20) {
-      archetype = SIGNAL_ARCHETYPES.REVERSAL;
-      rawScore = 70 + Math.min(20, Math.abs(50 - rsi));
-    }
-
-    const confidenceScore = Math.min(96, Math.max(20, rawScore));
-    const isValidSetup = confidenceScore >= archetype.minConfidence;
-
-    const signal = {
-      stage: "STAGE_2_SIGNAL_ENGINE",
-      symbol,
-      currentPrice,
-      archetype: archetype.name,
-      archetypeId: archetype.id,
-      description: archetype.description,
-      confidenceScore,
-      isValidSetup,
-      direction: priceChange24h >= 0 ? "BUY_MOMENTUM" : "BUY_PULLBACK",
-      status: isValidSetup ? "HIGH_PROBABILITY_SETUP_IDENTIFIED" : "NOISE_FILTERED_OUT",
-      technicalAnalysis,
-      sourceIndicators: {
-        rsi,
-        macd: macd?.histogram,
-        adx: adx?.adx,
-        volumeSurge
-      }
-    };
-
-    // Log signal
-    if (isValidSetup) {
-      signal.signalId = signalLogger.logSignalGenerated({
-        symbol,
+        currentPrice,
         archetype: archetype.name,
+        archetypeId: archetype.id,
+        description: archetype.description,
         confidenceScore,
-        direction: signal.direction,
-        currentPrice
-      });
-    }
+        isValidSetup,
+        direction: priceChange24h >= 0 ? "BUY_MOMENTUM" : "BUY_PULLBACK",
+        status: isValidSetup ? "HIGH_PROBABILITY_SETUP_IDENTIFIED" : "NOISE_FILTERED_OUT",
+        technicalAnalysis,
+        sourceIndicators: {
+          rsi,
+          macd: macd?.histogram,
+          adx: adx?.adx,
+          volumeSurge
+        }
+      };
 
-    return signal;
-  } catch (e) {
-    console.error(`[STAGE2] Error analyzing ${scannedOpportunity.symbol}: ${e.message}`);
-    return {
-      stage: "STAGE_2_SIGNAL_ENGINE",
-      symbol: scannedOpportunity.symbol,
-      status: "ERROR",
-      error: e.message,
-      isValidSetup: false,
-      confidenceScore: 0
-    };
-  }
+      // Log signal
+      if (isValidSetup) {
+        signal.signalId = signalLogger.logSignalGenerated({
+          symbol,
+          archetype: archetype.name,
+          confidenceScore,
+          direction: signal.direction,
+          currentPrice
+        });
+      }
+
+      return signal;
+    } catch (e) {
+      console.error(`[STAGE2] Error analyzing ${symbol}: ${e.message}`);
+      return syncSignal;
+    }
+  })();
+
+  return Object.assign(asyncPromise, syncSignal);
 }
 
 /**

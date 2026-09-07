@@ -1,6 +1,214 @@
 {
   "axioms": [
     {
+      "id": "SK-AXIOM-030",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 4,
+      "successCount": 2,
+      "accuracyRate": "50.0%",
+      "createdAt": "2026-09-07T08:17:08.578Z",
+      "lastCalibratedAt": "2026-09-07T08:17:38.343Z"
+    },
+    {
+      "id": "SK-AXIOM-029",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 8,
+      "successCount": 3,
+      "accuracyRate": "42.9%",
+      "createdAt": "2026-09-07T08:13:51.165Z",
+      "lastCalibratedAt": "2026-09-07T08:14:14.159Z"
+    },
+    {
+      "id": "SK-AXIOM-028",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 11,
+      "successCount": 4,
+      "accuracyRate": "40.0%",
+      "createdAt": "2026-09-07T07:34:27.809Z",
+      "lastCalibratedAt": "2026-09-07T07:34:42.023Z"
+    },
+    {
+      "id": "SK-AXIOM-027",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 14,
+      "successCount": 5,
+      "accuracyRate": "38.5%",
+      "createdAt": "2026-09-07T07:33:45.031Z",
+      "lastCalibratedAt": "2026-09-07T07:33:58.709Z"
+    },
+    {
+      "id": "SK-AXIOM-026",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 17,
+      "successCount": 6,
+      "accuracyRate": "37.5%",
+      "createdAt": "2026-09-07T07:18:27.449Z",
+      "lastCalibratedAt": "2026-09-07T07:18:40.129Z"
+    },
+    {
+      "id": "SK-AXIOM-025",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 20,
+      "successCount": 7,
+      "accuracyRate": "36.8%",
+      "createdAt": "2026-09-07T07:09:04.689Z",
+      "lastCalibratedAt": "2026-09-07T07:09:16.948Z"
+    },
+    {
+      "id": "SK-AXIOM-024",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 23,
+      "successCount": 8,
+      "accuracyRate": "36.4%",
+      "createdAt": "2026-09-07T07:07:29.859Z",
+      "lastCalibratedAt": "2026-09-07T07:07:42.626Z"
+    },
+    {
+      "id": "SK-AXIOM-023",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 25,
+      "successCount": 9,
+      "accuracyRate": "37.5%",
+      "createdAt": "2026-09-07T07:00:47.214Z",
+      "lastCalibratedAt": "2026-09-07T07:00:59.820Z"
+    },
+    {
+      "id": "SK-AXIOM-022",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 29,
+      "successCount": 10,
+      "accuracyRate": "35.7%",
+      "createdAt": "2026-09-07T06:58:31.431Z",
+      "lastCalibratedAt": "2026-09-07T06:58:45.061Z"
+    },
+    {
+      "id": "SK-AXIOM-021",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 32,
+      "successCount": 11,
+      "accuracyRate": "35.5%",
+      "createdAt": "2026-09-07T06:48:47.012Z",
+      "lastCalibratedAt": "2026-09-07T06:49:12.349Z"
+    },
+    {
+      "id": "SK-AXIOM-020",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 35,
+      "successCount": 12,
+      "accuracyRate": "35.3%",
+      "createdAt": "2026-09-07T06:46:13.581Z",
+      "lastCalibratedAt": "2026-09-07T06:46:27.090Z"
+    },
+    {
+      "id": "SK-AXIOM-019",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 39,
+      "successCount": 14,
+      "accuracyRate": "36.8%",
+      "createdAt": "2026-09-07T06:28:56.521Z",
+      "lastCalibratedAt": "2026-09-07T06:33:37.555Z"
+    },
+    {
+      "id": "SK-AXIOM-018",
+      "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
+      "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+      "condition": {
+        "symbol": "NVDA",
+        "priorLossMitigation": true
+      },
+      "convictionModifier": 0.7,
+      "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
+      "appliedCount": 41,
+      "successCount": 14,
+      "accuracyRate": "35.0%",
+      "createdAt": "2026-09-07T05:33:03.834Z",
+      "lastCalibratedAt": "2026-09-07T05:33:18.610Z"
+    },
+    {
       "id": "SK-AXIOM-017",
       "topic": "ADVERSE_TRADE_MITIGATION_NVDA",
       "rule": "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
@@ -10,11 +218,11 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 13,
-      "successCount": 10,
-      "accuracyRate": "76.9%",
+      "appliedCount": 55,
+      "successCount": 25,
+      "accuracyRate": "46.3%",
       "createdAt": "2026-09-05T12:45:48.961Z",
-      "lastCalibratedAt": "2026-09-05T15:55:42.538Z"
+      "lastCalibratedAt": "2026-09-06T09:33:49.851Z"
     },
     {
       "id": "SK-AXIOM-016",
@@ -26,8 +234,8 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 7,
-      "successCount": 2,
+      "appliedCount": 46,
+      "successCount": 15,
       "accuracyRate": "33.3%",
       "createdAt": "2026-09-05T12:45:00.018Z"
     },
@@ -41,8 +249,8 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 10,
-      "successCount": 3,
+      "appliedCount": 49,
+      "successCount": 16,
       "accuracyRate": "33.3%",
       "createdAt": "2026-09-05T08:52:28.100Z"
     },
@@ -56,9 +264,9 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 14,
-      "successCount": 4,
-      "accuracyRate": "30.8%",
+      "appliedCount": 53,
+      "successCount": 17,
+      "accuracyRate": "32.7%",
       "createdAt": "2026-09-05T08:24:23.275Z"
     },
     {
@@ -71,8 +279,8 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 16,
-      "successCount": 5,
+      "appliedCount": 55,
+      "successCount": 18,
       "accuracyRate": "33.3%",
       "createdAt": "2026-09-05T07:32:36.145Z"
     },
@@ -86,8 +294,8 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 19,
-      "successCount": 6,
+      "appliedCount": 58,
+      "successCount": 19,
       "accuracyRate": "33.3%",
       "createdAt": "2026-09-04T19:05:25.849Z"
     },
@@ -101,9 +309,9 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 28,
-      "successCount": 7,
-      "accuracyRate": "25.9%",
+      "appliedCount": 67,
+      "successCount": 20,
+      "accuracyRate": "30.3%",
       "createdAt": "2026-09-04T18:50:34.205Z"
     },
     {
@@ -116,9 +324,9 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 24,
-      "successCount": 8,
-      "accuracyRate": "34.8%",
+      "appliedCount": 63,
+      "successCount": 21,
+      "accuracyRate": "33.9%",
       "createdAt": "2026-09-04T18:49:50.159Z"
     },
     {
@@ -131,9 +339,9 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 27,
-      "successCount": 9,
-      "accuracyRate": "34.6%",
+      "appliedCount": 66,
+      "successCount": 22,
+      "accuracyRate": "33.8%",
       "createdAt": "2026-09-04T18:49:27.624Z"
     },
     {
@@ -146,7 +354,7 @@
       },
       "convictionModifier": 1.15,
       "action": "COLLABORATIVE_EDGE_BOOST",
-      "appliedCount": 19,
+      "appliedCount": 78,
       "successCount": 1,
       "accuracyRate": "100.0%",
       "createdAt": "2026-09-04T18:49:27.623Z",
@@ -162,9 +370,9 @@
       },
       "convictionModifier": 1.15,
       "action": "COLLABORATIVE_EDGE_BOOST",
-      "appliedCount": 39,
-      "successCount": 10,
-      "accuracyRate": "27.8%",
+      "appliedCount": 124,
+      "successCount": 23,
+      "accuracyRate": "19.3%",
       "createdAt": "2026-09-04T18:49:27.622Z",
       "dialogueOriginId": "dialogue-a7a5760e-2688-4639-8425-26561d7de802"
     },
@@ -178,7 +386,7 @@
       },
       "convictionModifier": 1.25,
       "action": "BOOST_CONVICTION",
-      "appliedCount": 75,
+      "appliedCount": 318,
       "successCount": 12,
       "accuracyRate": "85.7%"
     },
@@ -192,9 +400,9 @@
       },
       "convictionModifier": 0.6,
       "action": "DEFENSIVE_RISK_DAMPEN",
-      "appliedCount": 30,
-      "successCount": 17,
-      "accuracyRate": "56.7%"
+      "appliedCount": 56,
+      "successCount": 30,
+      "accuracyRate": "53.6%"
     },
     {
       "id": "SK-AXIOM-003",
@@ -219,7 +427,7 @@
       },
       "convictionModifier": 1.3,
       "action": "BOOST_AND_TIGHTEN_SL",
-      "appliedCount": 103,
+      "appliedCount": 372,
       "successCount": 26,
       "accuracyRate": "83.9%"
     },
@@ -232,7 +440,7 @@
       },
       "convictionModifier": 0.2,
       "action": "COOLING_PERIOD_BLOCK",
-      "appliedCount": 18,
+      "appliedCount": 31,
       "successCount": 10,
       "accuracyRate": "90.9%"
     },
@@ -245,7 +453,7 @@
       },
       "convictionModifier": 1.2,
       "action": "PRE_POSITION_ACCUMULATE",
-      "appliedCount": 29,
+      "appliedCount": 42,
       "successCount": 15,
       "accuracyRate": "83.3%"
     }

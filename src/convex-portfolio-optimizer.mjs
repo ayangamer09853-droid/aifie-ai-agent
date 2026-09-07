@@ -198,6 +198,7 @@ export function optimizeHierarchicalRiskParity({
   return {
     method: "HIERARCHICAL_RISK_PARITY_HRP",
     assets,
+    assetsCount: assets.length,
     weights: weightMap,
     sortedAssetOrder: sortedOrder.map(idx => assets[idx]),
     portfolioDailyVolatilityPercent: Number((portVol * 100).toFixed(4)),

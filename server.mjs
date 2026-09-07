@@ -74,6 +74,42 @@ import { runMacroStressTestingMatrix, computeExtremeValueTheoryTailRisk } from "
 import { knowledgeGraphFeedbackEngine } from "./src/learning/knowledge-graph-feedback-engine.mjs";
 import { geneticStrategyMutator } from "./src/strategies/genetic-strategy-mutator.mjs";
 import { multiTimeframeSmcEngine } from "./src/analysis/multi-timeframe-smc-engine.mjs";
+import { financialCausalityGraph } from "./src/graph/financial-causality-graph.mjs";
+import { GraphNetworkTopology } from "./src/graph/graph-network-topology.mjs";
+import { createAutonomousTradingWorkflow } from "./src/graph/agent-state-graph.mjs";
+import { graphRAGReasoningEngine } from "./src/graph/graph-rag-reasoning-engine.mjs";
+import { graphVisualizer } from "./src/graph/graph-visualizer.mjs";
+import { GraphTemporalEngine } from "./src/graph/graph-temporal-engine.mjs";
+import { GraphSpectralEmbeddings } from "./src/graph/graph-spectral-embeddings.mjs";
+import { GraphExecutionSlicer } from "./src/graph/graph-execution-slicer.mjs";
+import { graphAttentionNetwork } from "./src/graph/graph-attention-network.mjs";
+import { graphCEPEngine } from "./src/graph/graph-cep-engine.mjs";
+import { graphRLExecutionRouter } from "./src/graph/graph-rl-execution-router.mjs";
+import { graphStrategyBacktester } from "./src/graph/graph-strategy-backtester.mjs";
+import { autonomousClosedLoopSystem } from "./src/core/autonomous-closed-loop-trading-system.mjs";
+import { openBBEngine } from "./src/openbb-engine-adapter.mjs";
+import { masterPlatform, MasterPlatformOrchestrator } from "./src/platform/master-platform-orchestrator.mjs";
+const masterPlatformOrchestrator = masterPlatform;
+import { systemUpdateEngine } from "./src/platform/system-update-and-evolution-engine.mjs";
+import { masterRouter } from "./src/platform/multi-agent-router.mjs";
+const multiAgentRouter = masterRouter;
+import { documentProcessor } from "./src/platform/document-processor.mjs";
+import { mobileGateway } from "./src/platform/mobile-gateway.mjs";
+import { humanApprovalGate } from "./src/platform/human-approval-gate.mjs";
+import { autonomousScheduler } from "./src/platform/autonomous-scheduler-workflows.mjs";
+import { selfImprovingLoop } from "./src/platform/self-improving-feedback-loop.mjs";
+const selfImprovingFeedbackLoop = selfImprovingLoop;
+import { internetImprovementSentry } from "./src/platform/internet-self-improvement-sentry.mjs";
+const internetSelfImprovementSentry = internetImprovementSentry;
+import { unifiedRealMarketBrokerHub } from "./src/broker/unified-real-market-broker-hub.mjs";
+
+const serverGraphTopology = new GraphNetworkTopology(financialCausalityGraph);
+const serverGraphTemporal = new GraphTemporalEngine();
+const serverGraphEmbeddings = new GraphSpectralEmbeddings();
+const serverGraphSlicer = new GraphExecutionSlicer({ causalityGraph: financialCausalityGraph, topologyMetrics: serverGraphTopology.getCompleteTopologyReport() });
+
+// Initial baseline snapshot
+serverGraphTemporal.captureSnapshot(financialCausalityGraph, serverGraphTopology.getCompleteTopologyReport(), "INITIAL_SYSTEMIC_BASELINE");
 
 const serverLob = new LimitOrderBook("AAPL", 150.0);
 
@@ -183,6 +219,17 @@ import { dispatchV100Route } from "./src/api/v100-roadmap-router.mjs";
 import { mcpHub } from "./src/mcp/mcp-hub.mjs";
 import { institutionalMetricsExporter } from "./src/observability/institutional-metrics-exporter.mjs";
 import { securityAuthorizationGate } from "./src/security/security-authorization-gate.mjs";
+import { universalOrchestrationMesh } from "./src/integrations/universal-orchestration-mesh.mjs";
+import { l3MicrostructureEngine } from "./src/microstructure/l3-order-queue-dynamics.mjs";
+import { featureDriftSentinel } from "./src/microstructure/feature-drift-sentinel.mjs";
+import { globalWorkerPool } from "./src/concurrency/worker-thread-pool.mjs";
+import { symbolicAlphaMiningEngine } from "./src/quant/symbolic-alpha-mining-engine.mjs";
+import { drlAdaptiveExecutionPolicy } from "./src/execution/drl-adaptive-execution-policy.mjs";
+import { extremeValueTheorySentinel } from "./src/risk/extreme-value-theory-sentinel.mjs";
+import { realBlockchainWalletSyncer } from "./src/wallet/real-blockchain-wallet-syncer.mjs";
+import { binanceMiningPoolMonitor } from "./src/mining/binance-mining-pool-monitor.mjs";
+import { binanceStratumMiner } from "./src/mining/binance-stratum-miner.mjs";
+import { binanceMultiServerCluster } from "./src/mining/binance-multi-server-cluster.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -324,9 +371,9 @@ export function app(request, response) {
     // Roadmap /api/v100 Routes
     if (url.pathname === "/api/v100" || url.pathname.startsWith("/api/v100/")) {
       if (request.method === "POST") {
-        readJsonBody(request, response).then(payload => {
+        readJsonBody(request, response).then(async payload => {
           try {
-            const v100Result = dispatchV100Route(url.pathname, request.method, url.searchParams, payload);
+            const v100Result = await dispatchV100Route(url.pathname, request.method, url.searchParams, payload);
             return respond(response, v100Result.status, v100Result.payload);
           } catch (err) {
             return respond(response, 400, { error: err.message });
@@ -334,8 +381,10 @@ export function app(request, response) {
         }).catch(() => {});
         return;
       }
-      const v100Result = dispatchV100Route(url.pathname, request.method, url.searchParams);
-      return respond(response, v100Result.status, v100Result.payload);
+      Promise.resolve(dispatchV100Route(url.pathname, request.method, url.searchParams)).then(v100Result => {
+        return respond(response, v100Result.status, v100Result.payload);
+      }).catch(err => respond(response, 500, { error: err.message }));
+      return;
     }
 
     if (request.method === "GET" && (url.pathname === "/api/performance/telemetry" || url.pathname === "/api/telemetry/performance")) {
@@ -441,6 +490,401 @@ export function app(request, response) {
             res = executeMasterSourceOperation(repo, payload.operation, payload.params || {});
           }
           return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Autonomous System Update & Evolution Engine Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/system/update/status" || url.pathname === "/api/system/update")) {
+      return respond(response, 200, systemUpdateEngine.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/system/update") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await systemUpdateEngine.runFullSystemUpdate(payload);
+          return respond(response, 200, { success: true, ...res });
+        } catch (err) {
+          return respond(response, 500, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/system/update/reindex") {
+      try {
+        const indexed = systemUpdateEngine.reindexCoreKnowledge();
+        return respond(response, 200, { success: true, count: indexed.length, indexed });
+      } catch (err) {
+        return respond(response, 500, { error: err.message });
+      }
+    }
+    if (request.method === "POST" && url.pathname === "/api/system/update/benchmark") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = selfImprovingFeedbackLoop.runBenchmarkTournament(payload);
+          return respond(response, 200, { success: true, ...res });
+        } catch (err) {
+          return respond(response, 500, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Unified Real-Market Multi-Broker & Free Data Hub Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/brokers/status" || url.pathname === "/api/brokers")) {
+      return respond(response, 200, unifiedRealMarketBrokerHub.getBrokersStatus());
+    }
+    if (request.method === "GET" && url.pathname === "/api/brokers/quote") {
+      const sym = url.searchParams.get("symbol") || "BTCUSDT";
+      unifiedRealMarketBrokerHub.fetchFreeLiveMarketQuote(sym).then(quote => {
+        return respond(response, 200, { success: true, quote });
+      }).catch(err => {
+        return respond(response, 500, { error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/brokers/dhan/funds") {
+      unifiedRealMarketBrokerHub.dhan.getFundLimits().then(funds => {
+        return respond(response, 200, { success: true, funds });
+      }).catch(err => {
+        return respond(response, 500, { error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/brokers/binance/balances") {
+      unifiedRealMarketBrokerHub.binance.getAccountBalances().then(balances => {
+        return respond(response, 200, { success: true, balances });
+      }).catch(err => {
+        return respond(response, 500, { error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/brokers/execute-live") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await unifiedRealMarketBrokerHub.executeLiveOrder(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Level 3 (L3) Microstructure & Feature Drift Sentinel Endpoints
+    if (request.method === "GET" && url.pathname === "/api/microstructure/status") {
+      return respond(response, 200, {
+        status: "L3_MICROSTRUCTURE_AND_DRIFT_ONLINE",
+        microstructure: l3MicrostructureEngine.getMicrostructureTelemetry(),
+        driftSentinel: featureDriftSentinel.getDriftReport(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/microstructure/l3/feed") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = l3MicrostructureEngine.processL3Event(payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if ((request.method === "POST" || request.method === "GET") && url.pathname === "/api/microstructure/l3/queue-estimate") {
+      if (request.method === "POST") {
+        readJsonBody(request, response).then(payload => {
+          try {
+            const res = l3MicrostructureEngine.estimateQueuePriority(payload);
+            return respond(response, 200, res);
+          } catch (err) {
+            return respond(response, 400, { error: err.message });
+          }
+        }).catch(() => {});
+        return;
+      }
+      const side = url.searchParams.get("side") || "buy";
+      const price = Number(url.searchParams.get("price")) || 65000;
+      const quantity = Number(url.searchParams.get("quantity")) || 1;
+      return respond(response, 200, l3MicrostructureEngine.estimateQueuePriority({ side, price, quantity }));
+    }
+    if (request.method === "POST" && url.pathname === "/api/microstructure/drift/baseline") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = featureDriftSentinel.setFeatureBaseline(payload.feature, payload.values);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/microstructure/drift/evaluate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = featureDriftSentinel.auditFeature(payload.feature, payload.samples);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/microstructure/drift/report") {
+      return respond(response, 200, featureDriftSentinel.getDriftReport());
+    }
+
+    // High-Concurrency Worker Pool Endpoints
+    if (request.method === "POST" && (url.pathname === "/api/concurrency/montecarlo" || url.pathname === "/api/concurrency/monte-carlo")) {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await globalWorkerPool.executeTask("MONTE_CARLO", payload || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && (url.pathname === "/api/concurrency/status" || url.pathname === "/api/concurrency/telemetry")) {
+      return respond(response, 200, {
+        workerPool: globalWorkerPool.getStatus(),
+        ringBuffer: { capacity: 1024, count: 0, status: "ONLINE" }
+      });
+    }
+
+    // Symbolic Alpha Mining Engine Endpoints
+    if (request.method === "POST" && url.pathname === "/api/quant/symbolic-alpha/mine") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = symbolicAlphaMiningEngine.runMiningTournament(payload || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/quant/symbolic-alpha/status") {
+      return respond(response, 200, symbolicAlphaMiningEngine.getStatus());
+    }
+
+    // DRL Adaptive Execution Policy & TCA Endpoints
+    if (request.method === "POST" && url.pathname === "/api/execution/drl/select-action") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = drlAdaptiveExecutionPolicy.selectAction(payload || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/execution/drl/update-policy") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = drlAdaptiveExecutionPolicy.updatePolicy(payload || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/execution/drl/status") {
+      return respond(response, 200, drlAdaptiveExecutionPolicy.getPolicyStatus());
+    }
+
+    // Extreme Value Theory (EVT) & Liquidity-Adjusted VaR (L-VaR) Endpoints
+    if (request.method === "POST" && (url.pathname === "/api/risk/evt/tail-risk" || url.pathname === "/api/risk/evt/gpd-fit")) {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = payload.returns ? extremeValueTheorySentinel.calculateEvtTailRisk(payload.returns, payload.confidence || 0.99) : extremeValueTheorySentinel.fitGeneralizedPareto(payload.losses || []);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && (url.pathname === "/api/risk/lvar/portfolio" || url.pathname === "/api/risk/lvar/calculate")) {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = extremeValueTheorySentinel.calculateLiquidityAdjustedVaR(payload || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Real On-Chain Blockchain Wallet Endpoints (Zero Fake Data)
+    if (request.method === "POST" && url.pathname === "/api/wallet/sync-real-balance") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const addr = payload.address;
+          const val = realBlockchainWalletSyncer.validateAddress(addr);
+          if (!val.valid) return respond(response, 400, { error: val.error });
+          const res = val.chain === "Solana"
+            ? await realBlockchainWalletSyncer.fetchLiveSolanaBalance(val.address)
+            : await realBlockchainWalletSyncer.fetchLiveEvmBalance(val.address);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/wallet/real-balances") {
+      realBlockchainWalletSyncer.getWalletsWithRealBalances().then(wallets => {
+        return respond(response, 200, {
+          status: "ONLINE",
+          zeroFakeDataEnforced: true,
+          wallets
+        });
+      }).catch(err => respond(response, 500, { error: err.message }));
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/wallet/set-address") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await realBlockchainWalletSyncer.setWalletAddress(payload.walletId || "w-primary", payload.address, payload.name);
+          return respond(response, res.success ? 200 : 400, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Institutional Graph Engineering & Causality Engine Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/graph" || url.pathname === "/api/graph/status")) {
+      return respond(response, 200, {
+        status: "GRAPH_ENGINEERING_ONLINE",
+        summary: financialCausalityGraph.getGraphSummary(),
+        topology: serverGraphTopology.generateTopologyReport(),
+        timestamp: new Date().toISOString()
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/nodes") {
+      const category = url.searchParams.get("category");
+      const search = url.searchParams.get("search");
+      let nodes = Array.from(financialCausalityGraph.nodes.values());
+      if (category) {
+        nodes = nodes.filter(n => n.category.toUpperCase() === category.toUpperCase());
+      }
+      if (search) {
+        const s = search.toUpperCase();
+        nodes = nodes.filter(n => n.id.includes(s) || (n.label && n.label.toUpperCase().includes(s)));
+      }
+      return respond(response, 200, { total: nodes.length, nodes });
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/edges") {
+      const from = url.searchParams.get("from");
+      const to = url.searchParams.get("to");
+      const type = url.searchParams.get("type");
+      let edges = Array.from(financialCausalityGraph.edges.values());
+      if (from) edges = edges.filter(e => e.from === from.toUpperCase());
+      if (to) edges = edges.filter(e => e.to === to.toUpperCase());
+      if (type) edges = edges.filter(e => e.type === type.toUpperCase());
+      return respond(response, 200, { total: edges.length, edges });
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/causality") {
+      const source = url.searchParams.get("source") || "FED_RATE_HIKE";
+      const target = url.searchParams.get("target") || "AAPL";
+      const maxHops = parseInt(url.searchParams.get("maxHops") || "4", 10);
+      const paths = financialCausalityGraph.findCausalPaths(source, target, maxHops);
+      return respond(response, 200, {
+        source,
+        target,
+        maxHops,
+        pathsCount: paths.length,
+        paths
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/topology") {
+      return respond(response, 200, serverGraphTopology.generateTopologyReport());
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/mst") {
+      return respond(response, 200, serverGraphTopology.computeCorrelationMST());
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/centrality") {
+      return respond(response, 200, {
+        pageRank: serverGraphTopology.computePageRank(),
+        betweenness: serverGraphTopology.computeBetweennessCentrality(),
+        degreeCentrality: serverGraphTopology.computeDegreeCentrality(),
+        eigenvectorCentrality: serverGraphTopology.computeEigenvectorCentrality()
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/communities") {
+      return respond(response, 200, serverGraphTopology.detectCommunities());
+    }
+    if (request.method === "POST" && url.pathname === "/api/graph/simulate-shock") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = financialCausalityGraph.simulateShockCascade({
+            sourceNode: payload.sourceNode || payload.source || "CRUDE_OIL_SPIKE",
+            initialMagnitude: Number(payload.initialMagnitude || payload.magnitude || 1.0),
+            maxHops: Number(payload.maxHops || 3),
+            dampingFactor: Number(payload.dampingFactor || 0.75)
+          });
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/graph/workflow/execute") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const workflow = createAutonomousTradingWorkflow();
+          const res = await workflow.invoke(payload || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/visualize/svg") {
+      const highlighted = url.searchParams.get("highlight") || null;
+      const width = parseInt(url.searchParams.get("width") || "1000", 10);
+      const height = parseInt(url.searchParams.get("height") || "650", 10);
+      const svg = graphVisualizer.renderSvg({ width, height, highlightedNodeId: highlighted });
+      response.writeHead(200, { "content-type": "image/svg+xml; charset=utf-8", "access-control-allow-origin": "*" });
+      return response.end(svg);
+    }
+    if (request.method === "GET" && (url.pathname === "/api/graph/visualize/data" || url.pathname === "/api/graph/visualize")) {
+      return respond(response, 200, graphVisualizer.exportNetworkData());
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/rag") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const macroParam = url.searchParams.get("macroEvents");
+      const macroEvents = macroParam ? macroParam.split(",").map(s => s.trim()) : [];
+      const queryText = url.searchParams.get("query") || "";
+      return respond(response, 200, graphRAGReasoningEngine.generateReasoningContext({ symbol, macroEvents, queryText }));
+    }
+    if (request.method === "POST" && url.pathname === "/api/graph/nodes/add") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const node = financialCausalityGraph.addNode(payload);
+          return respond(response, 201, { success: true, node });
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/graph/edges/add") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const edge = financialCausalityGraph.addEdge(payload);
+          return respond(response, 201, { success: true, edge });
         } catch (err) {
           return respond(response, 400, { error: err.message });
         }
@@ -2136,6 +2580,1011 @@ export function app(request, response) {
       return respond(response, 200, { success: true, ...result });
     }
 
+    // =========================================================================
+    // INSTITUTIONAL GRAPH ENGINEERING & QUANTITATIVE REASONING SUITE (PHASE 1 & 2)
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/graph/status") {
+      return respond(response, 200, { success: true, summary: financialCausalityGraph.getGraphSummary() });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/nodes") {
+      const category = url.searchParams.get("category");
+      let nodes = financialCausalityGraph.getAllNodes();
+      if (category) {
+        nodes = nodes.filter(n => n.category.toUpperCase() === category.toUpperCase());
+      }
+      return respond(response, 200, { success: true, count: nodes.length, nodes });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/edges") {
+      const type = url.searchParams.get("type");
+      let edges = financialCausalityGraph.getAllEdges();
+      if (type) {
+        edges = edges.filter(e => e.type.toUpperCase() === type.toUpperCase());
+      }
+      return respond(response, 200, { success: true, count: edges.length, edges });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/causality") {
+      const source = url.searchParams.get("source") || "FED_RATE_HIKE";
+      const target = url.searchParams.get("target") || "AAPL";
+      const maxHops = Number(url.searchParams.get("maxHops") || 4);
+      const paths = financialCausalityGraph.findCausalPaths(source, target, maxHops);
+      return respond(response, 200, { success: true, source, target, pathsFound: paths.length, paths });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/simulate-shock") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const result = financialCausalityGraph.simulateShockCascade(payload || {});
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/topology") {
+      const report = serverGraphTopology.getCompleteTopologyReport();
+      return respond(response, 200, { success: true, ...report });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/mst") {
+      const mst = serverGraphTopology.computeMinimumSpanningTree();
+      return respond(response, 200, { success: true, mst });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/centrality") {
+      const pageRank = serverGraphTopology.computePageRank();
+      const betweenness = serverGraphTopology.computeBetweennessCentrality();
+      const degree = serverGraphTopology.computeDegreeCentrality();
+      return respond(response, 200, { success: true, centralities: { pageRank, betweenness, degree } });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/communities") {
+      const communities = serverGraphTopology.detectCommunitiesLouvain();
+      return respond(response, 200, { success: true, ...communities });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/visualize/svg") {
+      const highlight = url.searchParams.get("highlight");
+      const svg = graphVisualizer.renderSvg({ highlightedNodeId: highlight });
+      response.writeHead(200, {
+        "Content-Type": "image/svg+xml",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-cache"
+      });
+      response.end(svg);
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/visualize/shock-svg") {
+      const sourceNode = url.searchParams.get("source") || "CRUDE_OIL_SPIKE";
+      const shock = financialCausalityGraph.simulateShockCascade({ sourceNode, initialMagnitude: 1.0 });
+      const svg = graphVisualizer.renderShockwaveSvg({ shockResult: shock });
+      response.writeHead(200, {
+        "Content-Type": "image/svg+xml",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-cache"
+      });
+      response.end(svg);
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/rag") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const context = graphRAGReasoningEngine.extractPromptContext(symbol);
+      const subgraph = graphRAGReasoningEngine.extractEgoSubgraph(symbol);
+      return respond(response, 200, { success: true, symbol, formattedPromptContext: context, subgraph });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/workflow/execute") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const workflow = createAutonomousTradingWorkflow();
+          const result = await workflow.run(payload || { symbol: "AAPL", price: 230.0, rsi: 55 });
+          return respond(response, 200, { success: true, ...result });
+        } catch (err) {
+          return respond(response, 500, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/nodes/add") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const node = financialCausalityGraph.addNode(payload || {});
+          return respond(response, 200, { success: true, node });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/edges/add") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const edge = financialCausalityGraph.addEdge(payload || {});
+          return respond(response, 200, { success: true, edge });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Phase 2 Advanced Endpoints: Temporal Diff, Embeddings, Order Slicing, Event Ingestion
+    if (request.method === "GET" && url.pathname === "/api/graph/temporal-diff") {
+      const list = serverGraphTemporal.getSnapshotList();
+      if (list.length < 2) {
+        // Automatically create comparison target
+        serverGraphTemporal.captureSnapshot(financialCausalityGraph, serverGraphTopology.getCompleteTopologyReport(), "CURRENT_ACTIVE_STATE");
+      }
+      const allSnaps = serverGraphTemporal.getSnapshotList();
+      const baseId = url.searchParams.get("baseline") || allSnaps[0].id;
+      const targetId = url.searchParams.get("target") || allSnaps[allSnaps.length - 1].id;
+      try {
+        const diff = serverGraphTemporal.compareSnapshots(baseId, targetId);
+        return respond(response, 200, { success: true, diff });
+      } catch (err) {
+        return respond(response, 400, { success: false, error: err.message });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/snapshots/capture") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const label = payload?.label || "MANUAL_SNAPSHOT";
+          const snap = serverGraphTemporal.captureSnapshot(financialCausalityGraph, serverGraphTopology.getCompleteTopologyReport(), label);
+          return respond(response, 200, { success: true, snapshot: snap });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/embeddings") {
+      const targetNode = url.searchParams.get("node") || "AAPL";
+      const topK = Number(url.searchParams.get("k") || 5);
+      const train = url.searchParams.get("train") === "true" || serverGraphEmbeddings.embeddings.size === 0;
+
+      if (train) {
+        serverGraphEmbeddings.train(financialCausalityGraph);
+      }
+
+      const vector = serverGraphEmbeddings.getVector(targetNode);
+      const neighbors = serverGraphEmbeddings.findNearestNeighbors(targetNode, topK);
+
+      return respond(response, 200, {
+        success: true,
+        node: targetNode,
+        vector,
+        dimensions: serverGraphEmbeddings.dimensions,
+        nearestNeighbors: neighbors,
+        totalTrainedNodes: serverGraphEmbeddings.embeddings.size
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/execution/slice") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          serverGraphSlicer.setTopology(serverGraphTopology.getCompleteTopologyReport());
+          const plan = serverGraphSlicer.createExecutionPlan(payload || {});
+          return respond(response, 200, { success: true, plan });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/events/ingest") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const eventRecord = financialCausalityGraph.applyMarketEvent(payload || {});
+          // Ingest into CEP stream engine
+          graphCEPEngine.ingestEvent({ type: eventRecord.type, symbol: eventRecord.targetNode, payload: eventRecord });
+          // Capture dynamic snapshot
+          serverGraphTemporal.captureSnapshot(financialCausalityGraph, serverGraphTopology.getCompleteTopologyReport(), `EVENT_${eventRecord.type}`);
+          return respond(response, 200, { success: true, eventRecord });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // =========================================================================
+    // PHASE 3: GRAPH ATTENTION NETWORK, CEP, RL ROUTING & GRAPH BACKTESTING
+    // =========================================================================
+    if (request.method === "POST" && url.pathname === "/api/graph/gat/predict") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const symbol = payload?.symbol || "AAPL";
+          const prediction = graphAttentionNetwork.predictContagion(financialCausalityGraph, symbol, payload?.marketContext || {});
+          return respond(response, 200, { success: true, prediction });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/gat/attention") {
+      try {
+        const result = graphAttentionNetwork.forward(financialCausalityGraph);
+        return respond(response, 200, result);
+      } catch (err) {
+        return respond(response, 500, { success: false, error: err.message });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/cep/evaluate") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const triggers = graphCEPEngine.ingestEvent(payload || {});
+          return respond(response, 200, { success: true, triggersCount: triggers.length, triggers });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/cep/status") {
+      return respond(response, 200, { success: true, window: graphCEPEngine.getWindowSummary() });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/rl/route") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const routePlan = graphRLExecutionRouter.routeExecutionSlice(payload || {});
+          return respond(response, 200, { success: true, routePlan });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/graph/backtest") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const report = graphStrategyBacktester.runBacktest(payload || {});
+          return respond(response, 200, { success: true, report });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/graph/timeline/scrub") {
+      const snapId = url.searchParams.get("snapshotId") || "latest";
+      const snap = serverGraphTemporal.getSnapshot(snapId);
+      if (!snap) {
+        return respond(response, 404, { success: false, error: `Snapshot ${snapId} not found` });
+      }
+      return respond(response, 200, { success: true, snapshot: snap });
+    }
+
+    // =========================================================================
+    // 8-PILLAR AUTONOMOUS CLOSED-LOOP TRADING & SELF-EVOLUTION ENGINE ENDPOINTS
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/autonomous/status") {
+      return respond(response, 200, {
+        success: true,
+        status: autonomousClosedLoopSystem.getSystemStatus()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/autonomous/execute") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const result = await autonomousClosedLoopSystem.executor.executeOrder(payload || {});
+          return respond(response, 200, { success: true, execution: result });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/autonomous/performance") {
+      const equity = Number(url.searchParams.get("equity") || 100000);
+      const metrics = autonomousClosedLoopSystem.evaluator.calculateMetrics(equity);
+      return respond(response, 200, { success: true, metrics });
+    }
+
+    if (request.method === "POST" && (url.pathname === "/api/autonomous/position-sizing" || url.pathname === "/api/autonomous/risk-sizing")) {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const sizing = autonomousClosedLoopSystem.riskManager.calculateOptimalPositionSize(payload || {});
+          return respond(response, 200, { success: true, sizing });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/autonomous/optimize") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const optResult = autonomousClosedLoopSystem.optimizer.runBayesianOptimization(payload || {});
+          return respond(response, 200, { success: true, optimization: optResult });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && (url.pathname === "/api/autonomous/edge-attribution" || url.pathname === "/api/autonomous/attribution")) {
+      const attribution = autonomousClosedLoopSystem.edgeSentry.getAttributionReport();
+      return respond(response, 200, { success: true, attribution });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/autonomous/adapt-regime") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const regime = autonomousClosedLoopSystem.regimeAdapter.classifyAndAdapt(payload || {});
+          return respond(response, 200, { success: true, regime });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/autonomous/learn-outcome") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const learningResult = autonomousClosedLoopSystem.learner.ingestTradeOutcome(payload || {});
+          return respond(response, 200, { success: true, learning: learningResult });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/autonomous/cycle") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const cycleResult = await autonomousClosedLoopSystem.runAutonomousCycle(payload || {});
+          return respond(response, 200, { success: true, cycle: cycleResult });
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // ==========================================
+    // OpenBB Quantitative Platform API Endpoints
+    // ==========================================
+    if (request.method === "GET" && url.pathname === "/api/openbb/status") {
+      return respond(response, 200, openBBEngine.getStatus());
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/openbb/equity") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const data = openBBEngine.getEquityFundamentals(symbol);
+      return respond(response, 200, data);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/openbb/derivatives") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const spot = Number(url.searchParams.get("spotPrice") || 220);
+      const data = openBBEngine.getDerivativesOptionsChain(symbol, spot);
+      return respond(response, 200, data);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/openbb/economy") {
+      const data = openBBEngine.getMacroYieldCurveAndEconomy();
+      return respond(response, 200, data);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/openbb/regulators") {
+      const symbol = url.searchParams.get("symbol") || "AAPL";
+      const data = openBBEngine.getInstitutionalRegulatorsAndFilings(symbol);
+      return respond(response, 200, data);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/openbb/fama-french") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const symbol = payload?.symbol || "AAPL";
+          const returns = payload?.returns || [];
+          const data = openBBEngine.calculateFamaFrenchFactors(symbol, returns);
+          return respond(response, 200, data);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/openbb/commodities") {
+      const data = openBBEngine.getCommoditiesAndForexMatrix();
+      return respond(response, 200, data);
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/openbb/generate-script") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const domain = payload?.domain || "EQUITY_ANALYSIS";
+          const data = openBBEngine.generateOpenBBScript(domain, payload || {});
+          return respond(response, 200, data);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/openbb/technical-scan") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const data = openBBEngine.calculateOpenBBTechnicalIndicators(payload?.ohlcv || []);
+          return respond(response, 200, data);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // =========================================================================
+    // Universal Integration & Orchestration Mesh (UIOM) Endpoints (Pillars 1-10)
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/mesh/status") {
+      return respond(response, 200, universalOrchestrationMesh.getMeshStatus());
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/mesh/execute-flow") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await universalOrchestrationMesh.executeCoordinatedIntegrationFlow(payload || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 1: n8n Workflow Endpoints
+    if (request.method === "GET" && url.pathname === "/api/n8n/status") {
+      return respond(response, 200, universalOrchestrationMesh.n8n.getStatus());
+    }
+    if (request.method === "GET" && url.pathname === "/api/n8n/workflows") {
+      return respond(response, 200, { workflows: universalOrchestrationMesh.n8n.listWorkflows() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/n8n/dispatch") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await universalOrchestrationMesh.n8n.dispatchWorkflow(payload?.workflowId || "wf-trade-alert", payload?.payload || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/n8n/webhook") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.n8n.processInboundWebhook(payload, request.headers);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 2: MCP Extended Mesh Endpoints
+    if (request.method === "GET" && url.pathname === "/api/mcp-mesh/tools") {
+      return respond(response, 200, { tools: universalOrchestrationMesh.mcp.listTools() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/mcp-mesh/call") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await universalOrchestrationMesh.mcp.callTool(payload?.name, payload?.arguments || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 3: Universal Multi-LLM Gateway Endpoints
+    if (request.method === "GET" && url.pathname === "/api/llm/status") {
+      return respond(response, 200, universalOrchestrationMesh.llm.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/llm/chat") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await universalOrchestrationMesh.llm.chatCompletion(payload || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 4: Native WebSocket Hub Status
+    if (request.method === "GET" && url.pathname === "/api/ws/status") {
+      return respond(response, 200, universalOrchestrationMesh.ws.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/ws/broadcast") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.ws.broadcast(payload?.topic || "telemetry", payload?.data || {});
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 5: Webhook Management Hub Endpoints
+    if (request.method === "GET" && url.pathname === "/api/webhooks/status") {
+      return respond(response, 200, universalOrchestrationMesh.webhooks.getStatus());
+    }
+    if (request.method === "POST" && (url.pathname === "/api/webhooks/inbound" || url.pathname === "/api/webhooks/tradingview")) {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.webhooks.processInboundWebhook({
+          source: url.pathname.includes("tradingview") ? "tradingview" : "generic",
+          rawBody: payload,
+          headers: request.headers
+        });
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/webhooks/dispatch") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await universalOrchestrationMesh.webhooks.dispatchOutboundEvent(payload?.eventType || "CUSTOM_EVENT", payload?.data || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 6: Universal Database Layer Endpoints
+    if (request.method === "GET" && url.pathname === "/api/db/status") {
+      return respond(response, 200, universalOrchestrationMesh.db.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/db/query") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await universalOrchestrationMesh.db.executeQuery(payload?.query, payload?.params || []);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/db/kv") {
+      readJsonBody(request, response).then((payload) => {
+        if (payload?.action === "set") {
+          const result = universalOrchestrationMesh.db.setKv(payload.key, payload.value, payload.ttlSeconds);
+          return respond(response, 200, result);
+        } else if (payload?.action === "delete") {
+          const result = universalOrchestrationMesh.db.deleteKv(payload.key);
+          return respond(response, 200, { deleted: result });
+        } else {
+          const val = universalOrchestrationMesh.db.getKv(payload?.key);
+          return respond(response, 200, { key: payload?.key, value: val });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 7: Enterprise Message Queue Endpoints
+    if (request.method === "GET" && url.pathname === "/api/queue/status") {
+      return respond(response, 200, universalOrchestrationMesh.queue.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/queue/enqueue") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const result = universalOrchestrationMesh.queue.enqueue(payload?.queueName || "default", payload?.payload || {}, {
+            priority: payload?.priority || "P2"
+          });
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/queue/ack") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.queue.ack(payload?.msgId);
+        return respond(response, 200, { msgId: payload?.msgId, acked: result });
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 8: Enterprise Auth & RBAC Gateway Endpoints
+    if (request.method === "GET" && url.pathname === "/api/auth/status") {
+      return respond(response, 200, universalOrchestrationMesh.auth.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/auth/issue-token") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.auth.generateJwt({
+          subject: payload?.subject || "user-1",
+          role: payload?.role || "EXECUTION_TRADER",
+          customScopes: payload?.customScopes || []
+        });
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/auth/verify-token") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.auth.verifyJwt(payload?.token);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 9: Institutional Risk API Gateway Endpoints
+    if (request.method === "GET" && url.pathname === "/api/risk-gateway/status") {
+      return respond(response, 200, universalOrchestrationMesh.risk.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk-gateway/pre-trade-check") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.risk.evaluatePreTradeRisk(payload || {});
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/risk-gateway/kill-switch") {
+      readJsonBody(request, response).then((payload) => {
+        const result = universalOrchestrationMesh.risk.setKillSwitch(payload?.active, payload?.reason);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+
+    // Pillar 10: Open Observability & Probes
+    if (request.method === "GET" && url.pathname === "/api/observability/status") {
+      return respond(response, 200, universalOrchestrationMesh.observability.getStatus());
+    }
+    if (request.method === "GET" && (url.pathname === "/livez" || url.pathname === "/api/livez")) {
+      return respond(response, 200, universalOrchestrationMesh.observability.getLivenessProbe());
+    }
+    if (request.method === "GET" && (url.pathname === "/readyz" || url.pathname === "/healthz" || url.pathname === "/api/readyz")) {
+      return respond(response, 200, universalOrchestrationMesh.observability.getReadinessProbe());
+    }
+    if (request.method === "GET" && url.pathname === "/metrics") {
+      const promMetrics = universalOrchestrationMesh.observability.toPrometheusMetrics();
+      return respond(response, 200, promMetrics, "text/plain");
+    }
+
+    // ==========================================
+    // 10-Layer Autonomous Agent Platform Routes
+    // ==========================================
+
+    // Platform Orchestrator Status & Command Execution
+    if (request.method === "GET" && url.pathname === "/api/platform/status") {
+      return respond(response, 200, masterPlatform.getSystemStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/platform/command") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await masterPlatform.processUserCommand(payload?.prompt || "", payload?.context || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // 10-Agent Specialist Fleet Routes
+    if (request.method === "GET" && url.pathname === "/api/agents/fleet") {
+      return respond(response, 200, { fleet: masterRouter.getFleetStatus() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/agents/route") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await masterRouter.routeAndExecute(payload?.prompt || "", payload?.context || {});
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Document Intelligence & Semantic Vector Search
+    if (request.method === "GET" && url.pathname === "/api/documents/status") {
+      return respond(response, 200, documentProcessor.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/documents/index") {
+      readJsonBody(request, response).then((payload) => {
+        const docId = payload?.docId || `doc-${Date.now()}`;
+        const result = documentProcessor.indexDocument(docId, payload?.filename || "file.txt", payload?.content || "", payload?.metadata || {});
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/documents/search") {
+      readJsonBody(request, response).then((payload) => {
+        const result = documentProcessor.searchSemantic(payload?.query || "", payload?.topK || 5);
+        return respond(response, 200, { query: payload?.query, results: result });
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/documents/summarize") {
+      readJsonBody(request, response).then((payload) => {
+        const result = documentProcessor.summarize(payload?.text || "", payload?.maxSentences || 3);
+        return respond(response, 200, { summary: result });
+      }).catch(() => {});
+      return;
+    }
+
+    // Mobile Control & Command Approval Screen
+    if (request.method === "GET" && url.pathname === "/api/mobile/status") {
+      return respond(response, 200, mobileGateway.getMobileDashboardStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/mobile/login") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const result = mobileGateway.authenticateMobileUser(payload?.username, payload?.deviceId, payload?.pinCode);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/mobile/approvals") {
+      return respond(response, 200, { pending: mobileGateway.getPendingApprovals() });
+    }
+    if (request.method === "POST" && url.pathname === "/api/mobile/respond") {
+      readJsonBody(request, response).then((payload) => {
+        const result = mobileGateway.respondToApproval(payload?.approvalId, Boolean(payload?.approved), payload?.respondedBy || "mobile-user");
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mobile/emergency-stop") {
+      readJsonBody(request, response).then((payload) => {
+        const result = mobileGateway.triggerEmergencyStop(payload?.operator || "mobile-admin", payload?.reason);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mobile/resume") {
+      readJsonBody(request, response).then((payload) => {
+        const result = mobileGateway.resumeFromEmergencyStop(payload?.operator || "mobile-admin");
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+
+    // Human Approval Gate & Policy Risk Fortress
+    if (request.method === "POST" && url.pathname === "/api/approval-gate/evaluate") {
+      readJsonBody(request, response).then((payload) => {
+        const result = humanApprovalGate.evaluateActionPolicy(payload?.actionName || "READ_EMAIL", payload?.context || {});
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/approval-gate/request") {
+      readJsonBody(request, response).then((payload) => {
+        const result = humanApprovalGate.createApprovalRequest(payload?.actionName, payload?.payload || {}, payload?.requester);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/approval-gate/authorize") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const result = humanApprovalGate.authorizeRequest(payload?.requestId, payload?.approverUser, payload?.twoFactorCode);
+          return respond(response, 200, result);
+        } catch (err) {
+          return respond(response, 400, { success: false, error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/approval-gate/audit") {
+      return respond(response, 200, { audit: humanApprovalGate.getAuditLog(parseInt(url.searchParams.get("limit") || "20", 10)) });
+    }
+
+    // Autonomous Scheduler & Website Sentry
+    if (request.method === "GET" && url.pathname === "/api/scheduler/status") {
+      return respond(response, 200, autonomousScheduler.getSchedulerStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/scheduler/job") {
+      readJsonBody(request, response).then((payload) => {
+        const result = autonomousScheduler.scheduleJob(payload?.name || "job", payload?.scheduleType || "INTERVAL", payload?.config || { intervalMs: 60000 });
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/scheduler/sentry") {
+      readJsonBody(request, response).then((payload) => {
+        const result = autonomousScheduler.registerWebsiteSentry(payload?.targetUrl || "https://example.com", payload?.checkIntervalMs || 300000, payload?.selector);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+
+    // 7-System Controlled Self-Improvement Loop
+    if (request.method === "GET" && url.pathname === "/api/learning-loop/status") {
+      return respond(response, 200, selfImprovingLoop.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/learning-loop/experience") {
+      readJsonBody(request, response).then((payload) => {
+        const result = selfImprovingLoop.recordExperience(payload || {});
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/learning-loop/benchmark") {
+      readJsonBody(request, response).then((payload) => {
+        const candidate = selfImprovingLoop.proposeCandidateVersion(payload?.improvementSummary || "Optimized routing heuristic");
+        const result = selfImprovingLoop.runBenchmarkTournament(candidate);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/learning-loop/rollback") {
+      const result = selfImprovingLoop.rollbackToPreviousVersion();
+      return respond(response, 200, result);
+    }
+
+    // 4-Loop Internet Self-Improvement Sentry
+    if (request.method === "GET" && url.pathname === "/api/internet-improvement/status") {
+      return respond(response, 200, internetImprovementSentry.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/internet-improvement/research") {
+      readJsonBody(request, response).then(async (payload) => {
+        const result = await internetImprovementSentry.performInternetResearch(payload?.query);
+        return respond(response, 200, result);
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/internet-improvement/cycle") {
+      internetImprovementSentry.runFullSelfImprovementCycle().then((result) => {
+        return respond(response, 200, result);
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+
+    // Binance Mining Pool & Stratum Monitor Routes
+    if (request.method === "GET" && url.pathname === "/api/mining/status") {
+      return respond(response, 200, binanceMiningPoolMonitor.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/probe") {
+      readJsonBody(request, response).then(async (payload) => {
+        const timeoutMs = Number(payload?.timeoutMs) || 4000;
+        const results = await binanceMiningPoolMonitor.probeAllPools(timeoutMs);
+        return respond(response, 200, { success: true, timestamp: new Date().toISOString(), pools: results });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/connect") {
+      readJsonBody(request, response).then(async (payload) => {
+        const poolIndex = Number(payload?.poolIndex) || 0;
+        const connected = await binanceMiningPoolMonitor.connect(poolIndex);
+        return respond(response, 200, { success: connected, status: binanceMiningPoolMonitor.getStatus() });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/disconnect") {
+      binanceMiningPoolMonitor.disconnect();
+      return respond(response, 200, { success: true, status: binanceMiningPoolMonitor.getStatus() });
+    }
+
+    // Full Binance Mining Rig & Stratum Miner Endpoints
+    if (request.method === "GET" && url.pathname === "/api/mining/rig/stats") {
+      return respond(response, 200, binanceStratumMiner.getStats());
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/rig/start") {
+      readJsonBody(request, response).then(async (payload) => {
+        const stats = await binanceStratumMiner.startMining(payload || {});
+        return respond(response, 200, { success: true, stats });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/rig/stop") {
+      const stats = binanceStratumMiner.stopMining();
+      return respond(response, 200, { success: true, stats });
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/rig/threads") {
+      readJsonBody(request, response).then((payload) => {
+        const threads = Number(payload?.threads) || 1;
+        const res = binanceStratumMiner.setThreads(threads);
+        return respond(response, 200, { success: true, ...res });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/rig/benchmark") {
+      readJsonBody(request, response).then(async (payload) => {
+        const durationSec = Number(payload?.durationSec) || 5;
+        const bench = await binanceStratumMiner.runBenchmark(durationSec);
+        return respond(response, 200, { success: true, benchmark: bench });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/mining/proxy/status") {
+      return respond(response, 200, binanceStratumMiner.getStats().proxy);
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/proxy/start") {
+      readJsonBody(request, response).then(async (payload) => {
+        const port = Number(payload?.port) || 3333;
+        const status = await binanceStratumMiner.startProxy(port);
+        return respond(response, 200, { success: true, proxy: status });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/proxy/stop") {
+      binanceStratumMiner.stopProxy().then((status) => {
+        return respond(response, 200, { success: true, proxy: status });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+
+    // Binance Multi-Server Mining Cluster & 24/7 Watchdog Endpoints
+    if (request.method === "GET" && url.pathname === "/api/mining/cluster/stats") {
+      return respond(response, 200, binanceMultiServerCluster.getClusterStats());
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/cluster/start") {
+      readJsonBody(request, response).then(async (payload) => {
+        const stats = await binanceMultiServerCluster.startCluster(payload || {});
+        return respond(response, 200, { success: true, stats });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/cluster/stop") {
+      const stats = binanceMultiServerCluster.stopCluster();
+      return respond(response, 200, { success: true, stats });
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/cluster/boost") {
+      readJsonBody(request, response).then((payload) => {
+        const threads = Number(payload?.threads) || 8;
+        const intensity = Number(payload?.intensity) || 95;
+        const res = binanceMultiServerCluster.setBoost(threads, intensity);
+        return respond(response, 200, { success: true, ...res, stats: binanceMultiServerCluster.getClusterStats() });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/mining/watchdog/status") {
+      return respond(response, 200, binanceMultiServerCluster.watchdog.getStatus());
+    }
+
     return respond(response, 404, { error: "not found" });
   } catch (err) {
     return respond(response, 500, { error: `Internal Server Error: ${err.message}` });
@@ -2150,11 +3599,20 @@ process.on("unhandledRejection", (reason) => {
   console.error("[AIFIE_PROCESS_REJECTION_SHIELD]", reason?.message || reason);
 });
 
-if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta.url) {
+if (process.argv[1] && (process.argv[1].endsWith("server.mjs") || process.argv[1].replace(/\\/g, "/").endsWith("server.mjs"))) {
   const port = Number(process.env.PORT || 8787);
   const host = process.env.HOST || "0.0.0.0";
   const httpServer = createServer(app);
   initializeWebSocketGateway({ server: httpServer });
+
+  // Bind Native WebSocket Hub on HTTP upgrade for /ws/* paths
+  httpServer.on("upgrade", (req, socket, head) => {
+    const parsedUrl = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+    if (parsedUrl.pathname.startsWith("/ws")) {
+      universalOrchestrationMesh.ws.handleUpgrade(req, socket, head);
+    }
+  });
+
   httpServer.listen(port, host, () => {
     startTelegramCommandListener({ paper, orders: paper.orders || [] });
     console.log(`\n==================================================`);
@@ -2163,6 +3621,21 @@ if (process.argv[1] && new URL(`file://${process.argv[1]}`).href === import.meta
     console.log(`🌐 Network URL:         http://${host}:${port}`);
     console.log(`🤖 Core Paper Engine:   READY`);
     console.log(`📱 Telegram Bot:        ACTIVE`);
+    console.log(`🔌 Integration Mesh:    10 PILLARS ONLINE`);
     console.log(`==================================================\n`);
+
+    if (process.env.MINING_AUTOSTART_247 === "true" || process.env.MINING_CLUSTER_ENABLED === "true") {
+      console.log(`[MINING-SWARM] Auto-starting 24/7 Multi-Server Mining Cluster across all Binance endpoints...`);
+      binanceMultiServerCluster.startCluster({
+        threads: Number(process.env.MINING_MAX_THREADS) || 8,
+        intensity: Number(process.env.MINING_INTENSITY) || 95,
+        autoWatchdog: true
+      }).then((stats) => {
+        console.log(`[MINING-SWARM] 24/7 Swarm ACTIVE with ${stats.threads} threads across ${stats.totalNodesCount} Binance servers!`);
+      }).catch((err) => {
+        console.error(`[MINING-SWARM] Autostart warning:`, err.message);
+      });
+    }
   });
 }
+

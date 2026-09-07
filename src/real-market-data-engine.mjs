@@ -41,7 +41,7 @@ class BinanceWebSocketManager extends EventEmitter {
 
   simulateWebSocketWithPolling(symbols) {
     // Poll Binance REST API every 1 second (simulates WebSocket)
-    setInterval(async () => {
+    const handle = setInterval(async () => {
       for (const symbol of symbols) {
         try {
           const data = await this.fetchBinanceTicker(symbol);
@@ -60,6 +60,9 @@ class BinanceWebSocketManager extends EventEmitter {
         } catch (_) {}
       }
     }, 1000);
+    if (handle && typeof handle.unref === "function") {
+      handle.unref();
+    }
   }
 
   async fetchBinanceTicker(symbol) {
@@ -84,7 +87,10 @@ class BinanceWebSocketManager extends EventEmitter {
     if (this.reconnectAttempts < this.maxReconnect) {
       this.reconnectAttempts++;
       console.log(`[BINANCE] Reconnecting... (attempt ${this.reconnectAttempts}/${this.maxReconnect})`);
-      setTimeout(() => this.connect(symbols), 5000);
+      const timer = setTimeout(() => this.connect(symbols), 5000);
+      if (timer && typeof timer.unref === "function") {
+        timer.unref();
+      }
     }
   }
 
@@ -192,7 +198,7 @@ class AlpacaDataConnector {
   }
 
   async pollStockTickers(symbols, intervalMs = 5000) {
-    setInterval(async () => {
+    const handle = setInterval(async () => {
       for (const symbol of symbols) {
         try {
           const bar = await this.getLatestBar(symbol);
@@ -202,6 +208,9 @@ class AlpacaDataConnector {
         } catch (_) {}
       }
     }, intervalMs);
+    if (handle && typeof handle.unref === "function") {
+      handle.unref();
+    }
   }
 
   getTicker(symbol) {

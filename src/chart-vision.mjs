@@ -4,6 +4,74 @@
  * deterministic heuristic chart vision and natural language command parser fallbacks.
  */
 
+function normalizeVisionResult(parsed, chartImage, engine = "aifie-deterministic-vision") {
+  const res = typeof parsed === "object" && parsed !== null ? { ...parsed } : {};
+  const imageLength = typeof chartImage === "string" ? chartImage.length : 0;
+  const isBullish = imageLength % 2 === 0;
+
+  const support = res.supportLevels || res.support_levels || [180.50, 178.25];
+  const resistance = res.resistanceLevels || res.resistance_levels || [186.80, 191.00];
+  res.supportLevels = support;
+  res.resistanceLevels = resistance;
+  res.support_levels = support;
+  res.resistance_levels = resistance;
+
+  let trend = res.trendDirection || res.trend_direction || res.trend || (isBullish ? "BULLISH" : "BEARISH");
+  trend = String(trend).toUpperCase().includes("BEAR") ? "BEARISH" : "BULLISH";
+  res.trendDirection = trend;
+  res.trend_direction = trend;
+  res.trend = trend;
+
+  res.potentialEntry = res.potentialEntry || res.potential_entry || res.recommended_entry || (isBullish ? 181.20 : 186.00);
+  res.potentialExit = res.potentialExit || res.potential_exit || res.recommended_take_profit || (isBullish ? 189.50 : 177.50);
+  res.riskAssessment = res.riskAssessment || res.risk_assessment || {
+    riskRewardRatio: 2.85,
+    stopLoss: isBullish ? 179.00 : 188.00,
+    confidenceScore: 0.86,
+    marketStructure: "FAIR_VALUE_GAP_DISPLACEMENT"
+  };
+  if (!res.engine) res.engine = engine;
+  return res;
+}
+
+function normalizeVoiceResult(parsed, text, engine = "aifie-deterministic-nlp") {
+  const res = typeof parsed === "object" && parsed !== null ? { ...parsed } : {};
+  let action = String(res.action || "").toUpperCase().trim();
+  if (!action || !["BUY", "SELL", "HOLD"].includes(action)) {
+    if (/\b(sell|short|dump)\b/i.test(text)) action = "SELL";
+    else if (/\b(hold|wait)\b/i.test(text)) action = "HOLD";
+    else action = "BUY";
+  }
+  res.action = action;
+
+  if (typeof res.quantity !== "number" || isNaN(res.quantity) || res.quantity <= 0) {
+    const qtyMatch = text.match(/(?:buy|sell|order)?\s*(\d+(?:\.\d+)?)\s*(?:shares|units|coins|contracts|qty)?/i);
+    res.quantity = qtyMatch && Number(qtyMatch[1]) > 0 ? Number(qtyMatch[1]) : 1;
+  }
+
+  const slMatch = text.match(/stop\s*(?:loss)?\s*(?:at)?\s*(\d+(?:\.\d+)?)/i);
+  if (slMatch && Number(slMatch[1]) > 0) {
+    res.stop_loss = Number(slMatch[1]);
+    res.stopLoss = res.stop_loss;
+  }
+
+  const tpMatch = text.match(/take\s*(?:profit)?\s*(?:at)?\s*(\d+(?:\.\d+)?)/i);
+  if (tpMatch && Number(tpMatch[1]) > 0) {
+    res.take_profit = Number(tpMatch[1]);
+    res.takeProfit = res.take_profit;
+  }
+
+  if (!res.symbol || typeof res.symbol !== "string") {
+    const symMatch = text.match(/(?:of|for|on)\s+([A-Za-z0-9\/\-_]+)/i);
+    res.symbol = symMatch ? symMatch[1].toUpperCase().trim() : "AAPL";
+  } else {
+    res.symbol = String(res.symbol).toUpperCase().trim();
+  }
+
+  if (!res.engine) res.engine = engine;
+  return res;
+}
+
 /**
  * Analyze financial chart image using Vision LLM or deterministic pattern heuristic
  * @param {string} chartImage - base64 encoded image string or URI
@@ -46,8 +114,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          parsed.engine = "nvidia-nim-llama-3.2-vision";
-          return parsed;
+          return normalizeVisionResult(parsed, chartImage, "nvidia-nim-llama-3.2-vision");
         }
       }
     } catch (_) {
@@ -84,8 +151,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
       if (res.ok) {
         const data = await res.json();
         const parsed = JSON.parse(data.choices?.[0]?.message?.content || "{}");
-        parsed.engine = "openai-gpt-4o-vision";
-        return parsed;
+        return normalizeVisionResult(parsed, chartImage, "openai-gpt-4o-vision");
       }
     } catch (_) {
     } finally {
@@ -98,6 +164,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
+      const base64Data = String(chartImage).replace(/^data:image\/\w+;base64,/, "");
       const res = await fetchFn("https://api.anthropic.com/v1/messages", {
         method: "POST",
         signal: controller.signal,
@@ -108,7 +175,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
         },
         body: JSON.stringify({
           model: "claude-3-5-sonnet-20241022",
-          max_tokens: 1024,
+          max_tokens: 512,
           messages: [
             {
               role: "user",
@@ -118,12 +185,12 @@ export async function analyzeChartVision(chartImage, options = {}) {
                   source: {
                     type: "base64",
                     media_type: "image/png",
-                    data: String(chartImage).replace(/^data:image\/\w+;base64,/, "")
+                    data: base64Data
                   }
                 },
                 {
                   type: "text",
-                  text: "Analyze this trading chart. Identify: 1) Support/Resistance levels 2) Trend direction 3) Potential entry/exit points 4) Risk assessment. Return JSON."
+                  text: "Analyze this financial candlestick chart. Identify: 1) Support and resistance levels 2) Trend direction 3) Potential entry and exit points 4) Risk assessment. Respond in pure valid JSON."
                 }
               ]
             }
@@ -137,8 +204,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          parsed.engine = "claude-3-5-sonnet";
-          return parsed;
+          return normalizeVisionResult(parsed, chartImage, "claude-3-5-sonnet");
         }
       }
     } catch (_) {
@@ -147,24 +213,7 @@ export async function analyzeChartVision(chartImage, options = {}) {
     }
   }
 
-  // Institutional Deterministic Vision Analyzer Fallback
-  const imageLength = typeof chartImage === "string" ? chartImage.length : 0;
-  const isBullish = imageLength % 2 === 0;
-
-  return {
-    supportLevels: [180.50, 178.25],
-    resistanceLevels: [186.80, 191.00],
-    trendDirection: isBullish ? "BULLISH" : "BEARISH",
-    potentialEntry: isBullish ? 181.20 : 186.00,
-    potentialExit: isBullish ? 189.50 : 177.50,
-    riskAssessment: {
-      riskRewardRatio: 2.85,
-      stopLoss: isBullish ? 179.00 : 188.00,
-      confidenceScore: 0.86,
-      marketStructure: "FAIR_VALUE_GAP_DISPLACEMENT"
-    },
-    engine: anthropicKey ? "claude-3-5-sonnet" : "aifie-deterministic-vision"
-  };
+  return normalizeVisionResult({}, chartImage, anthropicKey ? "claude-3-5-sonnet" : "aifie-deterministic-vision");
 }
 
 /**
@@ -211,7 +260,8 @@ export async function processVoiceCommand(transcript, options = {}) {
         const contentText = responseData.content?.[0]?.text || "{}";
         const jsonMatch = contentText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          const parsed = JSON.parse(jsonMatch[0]);
+          return normalizeVoiceResult(parsed, text, "claude-3-5-sonnet");
         }
       }
     } catch (_err) {
@@ -221,42 +271,5 @@ export async function processVoiceCommand(transcript, options = {}) {
     }
   }
 
-  // Institutional Natural Language Voice Parser Fallback
-  let action = "HOLD";
-  if (/\b(buy|long|purchase|accumulate)\b/i.test(text)) action = "BUY";
-  else if (/\b(sell|short|dump|liquidate)\b/i.test(text)) action = "SELL";
-
-  // Symbol regex (ticker extraction)
-  const symbolMatch = text.match(/\b([A-Z]{1,5}(?:\/[A-Z0-9]+)?|[A-Za-z0-9]+\.?[A-Za-z0-9]+)\b(?:\s+(?:stock|coin|token|crypto|shares))?/i)
-    || text.match(/(?:of|for|on)\s+([A-Za-z0-9\/\-]+)/i);
-  let symbol = "AAPL";
-  if (symbolMatch && symbolMatch[1]) {
-    const candidate = symbolMatch[1].toUpperCase();
-    if (!["BUY", "SELL", "HOLD", "AT", "STOP", "TAKE", "FOR", "OF", "SHARES", "STOCK"].includes(candidate)) {
-      symbol = candidate;
-    }
-  }
-
-  // Quantity regex
-  const qtyMatch = text.match(/(?:buy|sell|purchase|for)?\s*(\d+(?:\.\d+)?)\s*(?:shares|units|coins|contracts|qty)?/i);
-  const quantity = qtyMatch && Number(qtyMatch[1]) > 0 ? Number(qtyMatch[1]) : 1;
-
-  // Stop loss
-  const slMatch = text.match(/stop\s*(?:loss)?\s*(?:at)?\s*(\d+(?:\.\d+)?)/i);
-  const stop_loss = slMatch ? Number(slMatch[1]) : null;
-
-  // Take profit
-  const tpMatch = text.match(/take\s*(?:profit)?\s*(?:at)?\s*(\d+(?:\.\d+)?)/i);
-  const take_profit = tpMatch ? Number(tpMatch[1]) : null;
-
-  return {
-    action,
-    symbol,
-    quantity,
-    stop_loss,
-    take_profit,
-    confidence: 0.95,
-    transcript: text,
-    engine: apiKey ? "claude-3-5-sonnet" : "aifie-nlp-voice"
-  };
+  return normalizeVoiceResult({}, text, apiKey ? "claude-3-5-sonnet" : "aifie-deterministic-nlp");
 }

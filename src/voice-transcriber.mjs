@@ -47,6 +47,81 @@ export async function transcribeAudio(audioFile, options = {}) {
 }
 
 /**
+ * Normalize parsed voice intent payload
+ */
+function normalizeParsedVoice(parsed, text, defaultEngine = "aifie-deterministic-nlp") {
+  const res = typeof parsed === "object" && parsed !== null ? { ...parsed } : {};
+
+  // Normalize action
+  let action = String(res.action || "").toUpperCase().trim();
+  if (!action || !["BUY", "SELL", "CLOSE", "CANCEL_ALL", "CHECK_POSITION", "SET_ALERT"].includes(action)) {
+    if (/\b(sell|short|dump|liquidate)\b/i.test(text)) action = "SELL";
+    else if (/\b(close|exit|flatten)\b/i.test(text)) action = "CLOSE";
+    else if (/\b(cancel|cancel all|revoke)\b/i.test(text)) action = "CANCEL_ALL";
+    else if (/\b(check|position|portfolio|balance|holdings)\b/i.test(text)) action = "CHECK_POSITION";
+    else if (/\b(alert|notify|watch)\b/i.test(text)) action = "SET_ALERT";
+    else action = "BUY";
+  }
+  res.action = action;
+
+  // Extract / normalize symbol
+  if (!res.symbol || typeof res.symbol !== "string" || res.symbol.length > 10) {
+    const ofMatch = text.match(/(?:of|for|on|shares\s+of|stock\s+of)\s+([A-Za-z0-9\/\-_]+)/i);
+    if (ofMatch && ofMatch[1]) {
+      res.symbol = ofMatch[1].toUpperCase().trim();
+    } else {
+      const tokens = text.split(/\s+/);
+      const stopWords = new Set(["BUY", "SELL", "HOLD", "CLOSE", "CANCEL", "ALL", "CHECK", "ALERT", "AT", "FOR", "OF", "SHARES", "STOCK", "UNITS", "COINS", "LIMIT", "STOP", "PRICE", "MARKET", "LOSS", "PROFIT", "TAKE", "THE"]);
+      let foundSym = "AAPL";
+      for (const t of tokens) {
+        const clean = t.replace(/[^A-Za-z0-9\/\-_]/g, "").toUpperCase();
+        if (clean.length >= 2 && clean.length <= 8 && !stopWords.has(clean) && !/^\d+$/.test(clean)) {
+          foundSym = clean;
+          break;
+        }
+      }
+      res.symbol = foundSym;
+    }
+  } else {
+    res.symbol = String(res.symbol).toUpperCase().trim();
+  }
+
+  // Extract / normalize quantity
+  if (typeof res.quantity !== "number" || isNaN(res.quantity) || res.quantity <= 0) {
+    const qtyMatch = text.match(/(?:buy|sell|purchase|for)?\s*(\d+(?:\.\d+)?)\s*(?:shares|units|coins|contracts|qty)?/i);
+    res.quantity = qtyMatch && Number(qtyMatch[1]) > 0 ? Number(qtyMatch[1]) : 1;
+  }
+
+  // Price & order_type checks
+  const limitMatch = text.match(/limit\s*(?:at|price)?\s*(\d+(?:\.\d+)?)/i) || text.match(/at\s*(\d+(?:\.\d+)?)/i);
+  if (limitMatch && Number(limitMatch[1]) > 0) {
+    res.order_type = "limit";
+    res.limit_price = Number(limitMatch[1]);
+  } else if (!res.order_type || res.order_type === "market") {
+    res.order_type = "market";
+    res.limit_price = res.limit_price ? Number(res.limit_price) : null;
+  }
+
+  const stopMatch = text.match(/stop\s*(?:at|loss)?\s*(\d+(?:\.\d+)?)/i);
+  if (stopMatch && Number(stopMatch[1]) > 0) {
+    res.stop_price = Number(stopMatch[1]);
+  } else {
+    res.stop_price = res.stop_price ? Number(res.stop_price) : null;
+  }
+
+  if (typeof res.confidence !== "number" || isNaN(res.confidence) || res.confidence <= 0) {
+    res.confidence = 0.95;
+  }
+
+  res.requires_confirmation = res.quantity >= 50 || res.order_type === "limit";
+  if (!res.timeframe) res.timeframe = "immediate";
+  if (!res.reason) res.reason = `Trader requested to ${res.action} ${res.quantity} ${res.symbol} via voice command`;
+  if (!res.engine) res.engine = defaultEngine;
+
+  return res;
+}
+
+/**
  * Parse spoken trading command into structured parameters
  * @param {string} transcript - Voice command text
  * @param {object} [options={}]
@@ -80,7 +155,7 @@ export async function parseVoiceCommand(transcript, options = {}) {
             {
               role: "user",
               content: `Parse this trading voice command into pure JSON: "${text}".
-Keys: action (BUY/SELL), symbol (e.g. AAPL, BTCUSDT), quantity (number), order_type (market/limit), confidence (number 0-1). Return only JSON.`
+Keys: action (BUY/SELL/CLOSE/CANCEL_ALL/CHECK_POSITION/SET_ALERT), symbol (e.g. AAPL, BTCUSDT), quantity (number), order_type ("limit" if a specific price or "at <price>" is stated, else "market"), limit_price (number or null), stop_price (number or null), confidence (number 0-1). Return only JSON.`
             }
           ],
           max_tokens: 256,
@@ -93,8 +168,7 @@ Keys: action (BUY/SELL), symbol (e.g. AAPL, BTCUSDT), quantity (number), order_t
         const jsonMatch = contentText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
-          parsed.parserEngine = "nvidia-nim-llama-3.2";
-          return parsed;
+          return normalizeParsedVoice(parsed, text, "nvidia-nim-llama-3.2");
         }
       }
     } catch (_) {
@@ -121,7 +195,7 @@ Keys: action (BUY/SELL), symbol (e.g. AAPL, BTCUSDT), quantity (number), order_t
           messages: [
             {
               role: "user",
-              content: `Parse this trading voice command into structured JSON: "${text}". Keys: action, symbol, quantity, order_type, confidence.`
+              content: `Parse this trading voice command into structured JSON: "${text}". Keys: action, symbol, quantity, order_type, limit_price, stop_price, confidence.`
             }
           ],
           max_tokens: 256,
@@ -131,8 +205,7 @@ Keys: action (BUY/SELL), symbol (e.g. AAPL, BTCUSDT), quantity (number), order_t
       if (response.ok) {
         const data = await response.json();
         const parsed = JSON.parse(data.choices?.[0]?.message?.content || "{}");
-        parsed.parserEngine = "openai-gpt-4o";
-        return parsed;
+        return normalizeParsedVoice(parsed, text, "openai-gpt-4o");
       }
     } catch (_) {
     } finally {
@@ -186,7 +259,8 @@ RESPOND IN JSON:
         const contentText = data.content?.[0]?.text || "{}";
         const jsonMatch = contentText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          const parsed = JSON.parse(jsonMatch[0]);
+          return normalizeParsedVoice(parsed, text, "claude-3-5-sonnet");
         }
       }
     } catch (_err) {
@@ -197,65 +271,7 @@ RESPOND IN JSON:
   }
 
   // Institutional Deterministic Regex Intent Parser
-  let action = "BUY";
-  if (/\b(sell|short|dump|liquidate)\b/i.test(text)) action = "SELL";
-  else if (/\b(close|exit|flatten)\b/i.test(text)) action = "CLOSE";
-  else if (/\b(cancel|cancel all|revoke)\b/i.test(text)) action = "CANCEL_ALL";
-  else if (/\b(check|position|portfolio|balance|holdings)\b/i.test(text)) action = "CHECK_POSITION";
-  else if (/\b(alert|notify|watch)\b/i.test(text)) action = "SET_ALERT";
-
-  // Symbol extraction
-  let symbol = "AAPL";
-  const ofMatch = text.match(/(?:of|for|on|shares\s+of|stock\s+of)\s+([A-Za-z0-9\/\-_]+)/i);
-  if (ofMatch && ofMatch[1]) {
-    symbol = ofMatch[1].toUpperCase().trim();
-  } else {
-    const tokens = text.split(/\s+/);
-    const stopWords = new Set(["BUY", "SELL", "HOLD", "CLOSE", "CANCEL", "ALL", "CHECK", "ALERT", "AT", "FOR", "OF", "SHARES", "STOCK", "UNITS", "COINS", "LIMIT", "STOP", "PRICE", "MARKET", "LOSS", "PROFIT", "TAKE", "THE"]);
-    for (const t of tokens) {
-      const clean = t.replace(/[^A-Za-z0-9\/\-_]/g, "").toUpperCase();
-      if (clean.length >= 2 && clean.length <= 8 && !stopWords.has(clean) && !/^\d+$/.test(clean)) {
-        symbol = clean;
-        break;
-      }
-    }
-  }
-
-  // Quantity regex
-  const qtyMatch = text.match(/(?:buy|sell|purchase|for)?\s*(\d+(?:\.\d+)?)\s*(?:shares|units|coins|contracts|qty)?/i);
-  const quantity = qtyMatch && Number(qtyMatch[1]) > 0 ? Number(qtyMatch[1]) : 1;
-
-  // Order Type & Prices
-  let order_type = "market";
-  let limit_price = null;
-  let stop_price = null;
-
-  const limitMatch = text.match(/limit\s*(?:at|price)?\s*(\d+(?:\.\d+)?)/i) || text.match(/at\s*(\d+(?:\.\d+)?)/i);
-  if (limitMatch && Number(limitMatch[1]) > 0) {
-    order_type = "limit";
-    limit_price = Number(limitMatch[1]);
-  }
-
-  const stopMatch = text.match(/stop\s*(?:at|loss)?\s*(\d+(?:\.\d+)?)/i);
-  if (stopMatch && Number(stopMatch[1]) > 0) {
-    stop_price = Number(stopMatch[1]);
-  }
-
-  const requires_confirmation = quantity >= 50 || order_type === "limit";
-
-  return {
-    action,
-    symbol,
-    quantity,
-    order_type,
-    limit_price,
-    stop_price,
-    timeframe: "immediate",
-    confidence: 0.95,
-    requires_confirmation,
-    reason: `Trader requested to ${action} ${quantity} ${symbol} via voice command`,
-    engine: apiKey ? "claude-3-5-sonnet" : "aifie-deterministic-nlp"
-  };
+  return normalizeParsedVoice({}, text, apiKey ? "claude-3-5-sonnet" : "aifie-deterministic-nlp");
 }
 
 /**

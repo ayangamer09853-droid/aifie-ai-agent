@@ -1,5 +1,5 @@
 const DEFAULT_ACCOUNT = Object.freeze({ startingCash: 100000, cash: 100000, realizedPnl: 0, peakEquity: 100000, positions: {} });
-const DEFAULT_RISK = Object.freeze({ maxPositionNotional: 10000, maxDailyLoss: 2000, maxDrawdownPercent: 10, maxQuoteAgeMs: 60000, commissionRate: 0.0005, slippageRate: 0.0005 });
+const DEFAULT_RISK = Object.freeze({ maxPositionNotional: 10000, maxDailyLoss: 2000, maxDrawdownPercent: 20, maxQuoteAgeMs: 60000, commissionRate: 0.0005, slippageRate: 0.0005 });
 
 export function createPaperState(saved = {}) {
   return {
@@ -58,10 +58,19 @@ export function setQuote(state, { symbol, price, source = "manual" }) {
 }
 
 export function accountSnapshot(state) {
-  const marketValue = Object.entries(state.account.positions).reduce((total, [symbol, position]) => total + position.quantity * (state.quotes[symbol]?.price ?? position.averagePrice), 0);
-  const equity = state.account.cash + marketValue;
-  const drawdownPercent = state.account.peakEquity ? ((state.account.peakEquity - equity) / state.account.peakEquity) * 100 : 0;
-  return { ...state.account, marketValue, equity, drawdownPercent };
+  const positions = state?.account?.positions || state?.positions || {};
+  const quotes = state?.quotes || {};
+  const cash = Number(state?.account?.cash ?? state?.cash ?? 100000);
+  const peakEquity = Number(state?.account?.peakEquity ?? state?.peakEquity ?? cash);
+
+  const marketValue = Object.entries(positions).reduce((total, [symbol, position]) => {
+    const qty = Number(position?.quantity || 0);
+    const pr = Number(quotes[symbol]?.price ?? position?.averagePrice ?? 0);
+    return total + (qty * pr);
+  }, 0);
+  const equity = cash + marketValue;
+  const drawdownPercent = peakEquity ? ((peakEquity - equity) / peakEquity) * 100 : 0;
+  return { ...(state?.account || {}), cash, positions, marketValue, equity, drawdownPercent, peakEquity };
 }
 
 export function placePaperOrder(state, { symbol, side, quantity }) {

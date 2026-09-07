@@ -14,9 +14,88 @@ import { generateCpcvSplits, evaluateWalkForwardAlpha } from "../walkforward-alp
 import { recordTradePostMortem, getTradeMemoryStatus, queryTradingLessons } from "../trade-attribution-memory.mjs";
 import { getModelRegistryStatus, promoteModelStage } from "../model-governance-registry.mjs";
 import { getSourceQualityStatus, evaluateSourceQuality } from "../source-quality-evaluator.mjs";
+import { runEventDrivenBacktest, runMonteCarloSimulation, getBacktesterStatus } from "../event-driven-backtester.mjs";
+import { analyzeChartVision, processNaturalVoiceCommand } from "../chart-vision-copilot.mjs";
+import { getWeb3DexRouterStatus, scanCrossVenueDexArbitrage, simulatePrivateMevBundle } from "../web3-dex-deep-router.mjs";
+import { getRwaTreasuryStatus, sweepIdleCashToRwaYield, triggerTimelockCircuitBreaker } from "../tokenized-rwa-treasury.mjs";
+import { getSwarmMeshStatus, broadcastNodeHeartbeat, evaluateBftConsensusVote } from "../multi-node-swarm-mesh.mjs";
+import { getLiquidityHeatmapMatrix } from "../liquidity-depth-heatmap-engine.mjs";
+import { getCloudSovereignNodeStatus, get1ClickCloudDeploymentBlueprints, startCloudKeepAliveDaemon } from "../cloud-independent-sovereign-node.mjs";
+import { getTimeseriesStoreStatus } from "../timeseries-market-store.mjs";
+import { calculateDeflatedSharpeRatio } from "../strategy-validation-pipeline.mjs";
+import { calculateValueAtRiskMetrics } from "../portfolio-risk-fortress.mjs";
+import { verifyBrokerConnectivityStatus } from "../broker-adapters-suite.mjs";
+import { getEvolvedGenomeLibrary, getEvolutionStatus, runEvolutionCycle } from "../self-evolving-swarm.mjs";
+import { getMultiBrokerSandboxStatus, executeSandboxBrokerOrder } from "../institutional-multi-broker-sandbox-gateway.mjs";
+import { getStrategyOptimizationRankings } from "../strategy-hyper-optimizer.mjs";
+import { calculateDynamicLotSize, evaluateMultiGenomeConsensus } from "../trading-bot.mjs";
+import {
+  startAutoTrader,
+  stopAutoTrader,
+  getAutoTraderStatus,
+  executeAutonomousTradeCycle
+} from "../autonomous-auto-trader.mjs";
 
-export function dispatchV100Route(pathname, method = "GET", searchParams = new URLSearchParams(), body = {}) {
+export async function dispatchV100Route(pathname, method = "GET", searchParams = new URLSearchParams(), body = {}) {
   const path = pathname.toLowerCase();
+
+  // --- Apex Phase 1: Event-Driven Backtest & Monte Carlo ---
+  if (path === "/api/v100/backtest/run" && method === "POST") {
+    return { status: 200, payload: runEventDrivenBacktest(body) };
+  }
+  if (path === "/api/v100/backtest/montecarlo") {
+    const paths = Number(searchParams.get("paths")) || Number(body.paths) || 500;
+    return { status: 200, payload: runMonteCarloSimulation({ pathsCount: paths, ...body }) };
+  }
+  if (path === "/api/v100/backtest/status") {
+    return { status: 200, payload: getBacktesterStatus() };
+  }
+
+  // --- Apex Phase 1: Vision & Voice ---
+  if (path === "/api/v100/vision/analyze" && method === "POST") {
+    return { status: 200, payload: analyzeChartVision(body) };
+  }
+  if (path === "/api/v100/voice/command" && method === "POST") {
+    return { status: 200, payload: processNaturalVoiceCommand(body.transcript || body.text || "") };
+  }
+
+  // --- Apex Phase 2: Web3 DEX Arbitrage & MEV ---
+  if (path === "/api/v100/dex/status") {
+    return { status: 200, payload: getWeb3DexRouterStatus() };
+  }
+  if (path === "/api/v100/dex/arbitrage" && method === "POST") {
+    return { status: 200, payload: scanCrossVenueDexArbitrage(body) };
+  }
+  if (path === "/api/v100/dex/mev-bundle" && method === "POST") {
+    return { status: 200, payload: simulatePrivateMevBundle(body) };
+  }
+
+  // --- Apex Phase 2: RWA Treasury ---
+  if (path === "/api/v100/rwa/status") {
+    return { status: 200, payload: getRwaTreasuryStatus() };
+  }
+  if (path === "/api/v100/rwa/sweep" && method === "POST") {
+    return { status: 200, payload: sweepIdleCashToRwaYield(body.amountUSD || body.amount || 2000) };
+  }
+  if (path === "/api/v100/rwa/timelock" && method === "POST") {
+    return { status: 200, payload: triggerTimelockCircuitBreaker(body.reason || "BLACK_SWAN_DEFENSE") };
+  }
+
+  // --- Apex Phase 3: Swarm Mesh & Heatmap ---
+  if (path === "/api/v100/mesh/status") {
+    return { status: 200, payload: getSwarmMeshStatus() };
+  }
+  if (path === "/api/v100/mesh/heartbeat" && method === "POST") {
+    return { status: 200, payload: broadcastNodeHeartbeat(body) };
+  }
+  if (path === "/api/v100/mesh/vote" && method === "POST") {
+    return { status: 200, payload: evaluateBftConsensusVote(body) };
+  }
+  if (path === "/api/v100/heatmap/matrix") {
+    const symbol = searchParams.get("symbol") || "ETH-USD";
+    const centerPrice = Number(searchParams.get("centerPrice")) || 3400;
+    return { status: 200, payload: getLiquidityHeatmapMatrix({ symbol, centerPrice }) };
+  }
 
   // --- Universe ---
   if (path === "/api/v100/universe/status") {
@@ -139,6 +218,85 @@ export function dispatchV100Route(pathname, method = "GET", searchParams = new U
   }
   if (path === "/api/v100/sources/evaluate-quality" && method === "POST") {
     return { status: 200, payload: evaluateSourceQuality(body.repository, body.metrics || {}) };
+  }
+
+  // --- Cloud Sovereign Node ---
+  if (path === "/api/v100/cloud/status") {
+    return { status: 200, payload: getCloudSovereignNodeStatus() };
+  }
+  if (path === "/api/v100/cloud/blueprints") {
+    return { status: 200, payload: get1ClickCloudDeploymentBlueprints() };
+  }
+  if (path === "/api/v100/cloud/keepalive" && method === "POST") {
+    return { status: 200, payload: startCloudKeepAliveDaemon(body) };
+  }
+
+  // --- Timeseries, DSR, VaR, Brokers, Swarm ---
+  if (path === "/api/v100/timeseries/status") {
+    return { status: 200, payload: getTimeseriesStoreStatus() };
+  }
+  if (path === "/api/v100/validation/dsr") {
+    const sharpe = Number(searchParams.get("sharpe")) || 1.5;
+    const trials = Number(searchParams.get("trials")) || 20;
+    const variance = Number(searchParams.get("variance")) || 0.5;
+    const skewness = Number(searchParams.get("skewness")) || -0.2;
+    const kurtosis = Number(searchParams.get("kurtosis")) || 3.5;
+    const sampleLength = Number(searchParams.get("sampleLength")) || 252;
+    return { status: 200, payload: calculateDeflatedSharpeRatio({ observedSharpe: sharpe, numTrials: trials, varianceOfSharpeEstimates: variance, skewness, kurtosis, sampleLength }) };
+  }
+  if (path === "/api/v100/risk/var") {
+    const value = Number(searchParams.get("value")) || Number(body.value) || 100000;
+    return { status: 200, payload: calculateValueAtRiskMetrics({ portfolioValue: value }) };
+  }
+  if (path === "/api/v100/brokers/status") {
+    return { status: 200, payload: verifyBrokerConnectivityStatus() };
+  }
+  if (path === "/api/v100/swarm/genomes") {
+    return { status: 200, payload: getEvolvedGenomeLibrary() };
+  }
+  if (path === "/api/v100/swarm/evolution-status") {
+    return { status: 200, payload: getEvolutionStatus() };
+  }
+  if (path === "/api/v100/swarm/trigger-evolution" && method === "POST") {
+    return { status: 200, payload: { success: true, ...runEvolutionCycle() } };
+  }
+
+  // --- Multi-Broker Sandbox Gateway & Hyper Optimizer ---
+  if (path === "/api/v100/broker-sandbox/status") {
+    return { status: 200, payload: getMultiBrokerSandboxStatus() };
+  }
+  if (path === "/api/v100/broker-sandbox/order" && method === "POST") {
+    return { status: 200, payload: executeSandboxBrokerOrder(body) };
+  }
+  if (path === "/api/v100/optimizer/rankings") {
+    return { status: 200, payload: getStrategyOptimizationRankings() };
+  }
+
+  // --- Bot Sizing & Consensus ---
+  if (path === "/api/v100/bot/sizing") {
+    const symbol = searchParams.get("symbol") || body.symbol || "AAPL";
+    const price = Number(searchParams.get("price")) || Number(body.price) || 150;
+    const cash = Number(searchParams.get("cash")) || Number(body.cash) || 100000;
+    return { status: 200, payload: calculateDynamicLotSize({ symbol, currentPrice: price, cash }) };
+  }
+  if (path === "/api/v100/bot/consensus") {
+    const symbol = searchParams.get("symbol") || body.symbol || "AAPL";
+    return { status: 200, payload: evaluateMultiGenomeConsensus(symbol) };
+  }
+
+  // --- Autonomous 24/7 Auto-Trader ---
+  if (path === "/api/v100/autotrade/status") {
+    return { status: 200, payload: getAutoTraderStatus() };
+  }
+  if (path === "/api/v100/autotrade/start" && method === "POST") {
+    return { status: 200, payload: startAutoTrader(body) };
+  }
+  if (path === "/api/v100/autotrade/stop" && method === "POST") {
+    return { status: 200, payload: stopAutoTrader() };
+  }
+  if (path === "/api/v100/autotrade/trigger-now" && method === "POST") {
+    const result = await executeAutonomousTradeCycle({ forceExecute: true, ...body });
+    return { status: 200, payload: result };
   }
 
   return { status: 404, payload: { error: "Route not found in /api/v100" } };
