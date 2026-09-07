@@ -10,6 +10,11 @@ import { GraphNetworkTopology } from "../graph/graph-network-topology.mjs";
 import { symbolicAlphaMiningEngine } from "../quant/symbolic-alpha-mining-engine.mjs";
 import { drlAdaptiveExecutionPolicy } from "../execution/drl-adaptive-execution-policy.mjs";
 import { extremeValueTheorySentinel } from "../risk/extreme-value-theory-sentinel.mjs";
+import { defaultTradingGraph } from "../graph-engineering/graphs/trading.graph.mjs";
+import { graphTracer } from "../graph-engineering/observability/graph-tracer.mjs";
+import { globalShadowModeEngine } from "../execution/shadow-mode-engine.mjs";
+import { globalCriticAgent } from "../intelligence/critic-agent.mjs";
+import { strategyModelRegistry } from "../learning/model-registry.mjs";
 
 /**
  * Token-Bucket Rate Limiter to prevent Telegram 429 Too Many Requests errors.
@@ -116,17 +121,29 @@ ${mitigations.reasons?.length ? `\n<b>Learned Rules:</b>\n${mitigations.reasons.
     this.registerHandler("/graph", async () => {
       const summary = financialCausalityGraph.getGraphSummary();
       const report = this.topology.generateTopologyReport();
-      const text = `🕸️ <b>AIFIE FINANCIAL GRAPH ENGINEERING SYSTEM</b>
+      const taskNodes = defaultTradingGraph?.nodes?.size || 7;
+      const taskEdges = defaultTradingGraph?.edges?.length || 8;
+      const graphVer = defaultTradingGraph?.versionManager?.getCurrentVersion() || "1.0.0";
+      const traceSummary = graphTracer.getSummary();
+
+      const text = `🕸️ <b>AIFIE GRAPH ENGINEERING & TOPOLOGY SYSTEM</b>
 ──────────────────
-• <b>Graph Nodes:</b> <code>${summary.totalNodes} entities</code>
+<b>Task / Agent Graph (Deterministic Nervous System):</b>
+• <b>Active Graph:</b> <code>TradingGraph_momentum-v3 (v${graphVer})</code>
+• <b>Deterministic Nodes:</b> <code>${taskNodes} nodes</code> (EVENT, FUNCTION, AGENT, RISK_GATE)
+• <b>Conditional Edges:</b> <code>${taskEdges} edges</code> (Priority-scored rules)
+• <b>Causal Executions Traced:</b> <code>${traceSummary.totalTraces}</code> (Recorded backwards)
+
+<b>Causality & Knowledge Network:</b>
+• <b>Knowledge Entities:</b> <code>${summary.totalNodes} entities</code>
 • <b>Causal Edges:</b> <code>${summary.totalEdges} relationships</code>
 • <b>Network Density:</b> <code>${(summary.density * 100).toFixed(2)}%</code>
-• <b>Central Hub Asset:</b> <code>${report.mstOverview.centralHub}</code> (MST Degree: ${report.topBellwethers[0]?.totalDegree || 4})
+• <b>Central Hub Asset:</b> <code>${report.mstOverview.centralHub}</code> (Degree: ${report.topBellwethers[0]?.totalDegree || 4})
 
 <b>Top Bellwethers (PageRank Centrality):</b>
-${report.topBellwethers.slice(0, 4).map((b, i) => `${i + 1}. <b>${b.id || b.nodeId}</b> — PR: <code>${(b.pageRank * 100).toFixed(2)}%</code>`).join("\n")}
+${report.topBellwethers.slice(0, 3).map((b, i) => `${i + 1}. <b>${b.id || b.nodeId}</b> — PR: <code>${(b.pageRank * 100).toFixed(2)}%</code>`).join("\n")}
 
-<i>Use /causality &lt;source&gt; &lt;target&gt; or /shock &lt;event&gt; to simulate propagation.</i>`;
+<i>Core Principle: AI reasons inside nodes; deterministic graph governs what happens next.</i>`;
 
       return {
         handled: true,
@@ -135,8 +152,136 @@ ${report.topBellwethers.slice(0, 4).map((b, i) => `${i + 1}. <b>${b.id || b.node
           replyMarkup: {
             inline_keyboard: [
               [
-                { text: "🌳 MST Backbone", callback_data: "cmd:/mst" },
-                { text: "🎯 Top Centrality", callback_data: "cmd:/centrality" }
+                { text: "👤 Shadow Mode", callback_data: "cmd:/shadow" },
+                { text: "🧐 Critic Agent", callback_data: "cmd:/critic" }
+              ],
+              [
+                { text: "🏆 Leaderboard", callback_data: "cmd:/leaderboard" },
+                { text: "🌳 MST Backbone", callback_data: "cmd:/mst" }
+              ]
+            ]
+          }
+        }
+      };
+    });
+
+    // 2b. Shadow Mode Counterfactual Trading Engine
+    this.registerHandler("/shadow", async () => {
+      const portfolio = globalShadowModeEngine.getPortfolioStatus();
+      const openCount = portfolio.openPositionsCount || 0;
+      const text = `👤 <b>AIFIE SHADOW TRADING ENGINE</b>
+──────────────────
+• <b>Status:</b> 🟢 <b>ACTIVE (Counterfactual Real-Tick Simulator)</b>
+• <b>Cash Balance:</b> <code>$${(portfolio.cash || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</code>
+• <b>Net Equity:</b> <b>$${(portfolio.equity || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}</b>
+• <b>Unrealized PnL:</b> <code>$${(portfolio.unrealizedPnl || 0).toFixed(2)}</code>
+• <b>Realized PnL:</b> <code>$${(portfolio.realizedPnl || 0).toFixed(2)}</code>
+• <b>Open Shadow Positions:</b> <code>${openCount}</code>
+• <b>Total Closed Trades:</b> <code>${portfolio.closedTradesCount || 0}</code>
+• <b>Slippage Modeled (0.05%):</b> <code>$${(portfolio.totalSlippageUsd || 0).toFixed(4)}</code>
+• <b>Fees Modeled:</b> <code>$${(portfolio.totalFeesUsd || 0).toFixed(4)}</code>
+
+<i>Shadow mode executes simulated orders against live ticks with realistic slippage and zero capital risk.</i>`;
+
+      return {
+        handled: true,
+        response: {
+          text,
+          replyMarkup: {
+            inline_keyboard: [
+              [
+                { text: "🕸️ Task Graph", callback_data: "cmd:/graph" },
+                { text: "🧐 Critic Agent", callback_data: "cmd:/critic" }
+              ],
+              [
+                { text: "🏆 Leaderboard", callback_data: "cmd:/leaderboard" },
+                { text: "📊 Positions", callback_data: "cmd:/positions" }
+              ]
+            ]
+          }
+        }
+      };
+    });
+
+    // 2c. Adversarial Critic Agent Falsifier
+    this.registerHandler("/critic", async ({ fullText = "", symbol = "BTCUSDT" }) => {
+      const parts = fullText.trim().split(/\s+/);
+      const sym = parts[1] || symbol || "BTCUSDT";
+      const status = globalCriticAgent.getStatus();
+
+      const critique = await globalCriticAgent.critiqueTradeProposal({
+        strategy: "momentum-v3",
+        symbol: sym,
+        direction: "BUY",
+        confidence: 0.78
+      }, {
+        regime: "RANGE_CHOPPY",
+        spreadPercent: 0.08,
+        activeCorrelatedExposure: 0.25,
+        imminentHighImpactNews: false
+      });
+
+      const badge = critique.approved ? "🟢 <b>APPROVED</b>" : "🔴 <b>VETOED (REJECTED)</b>";
+      const text = `🧐 <b>AIFIE ADVERSARIAL CRITIC AGENT</b>
+──────────────────
+• <b>Specialist ID:</b> <code>${status.id}</code> (Role: <code>${status.role}</code>)
+• <b>Lifetime Critiques:</b> <code>${status.totalCritiques}</code>
+• <b>Lifetime Vetoes:</b> <code>${status.totalRejections}</code> (${status.rejectionRatePercent}% rejection rate)
+
+<b>Adversarial Stress-Test on ${sym}:</b>
+• <b>Verdict:</b> ${badge}
+• <b>Rejection Conviction:</b> <code>${(critique.rejectionConviction * 100).toFixed(1)}%</code>
+• <b>Reason Codes:</b> <code>${critique.reasonCodes.length ? critique.reasonCodes.join(", ") : "CLEAN"}</code>
+${critique.warnings.length ? `• <b>Falsification Warnings:</b>\n${critique.warnings.map(w => `  - <i>${w}</i>`).join("\n")}` : ""}
+
+<i>Principle: AI proposes trades; deterministic systems & adversarial critics enforce risk and falsification.</i>`;
+
+      return {
+        handled: true,
+        response: {
+          text,
+          replyMarkup: {
+            inline_keyboard: [
+              [
+                { text: "🕸️ Task Graph", callback_data: "cmd:/graph" },
+                { text: "👤 Shadow Mode", callback_data: "cmd:/shadow" }
+              ],
+              [
+                { text: "🏆 Leaderboard", callback_data: "cmd:/leaderboard" }
+              ]
+            ]
+          }
+        }
+      };
+    });
+
+    // 2d. Strategy Leaderboard & Model Registry
+    this.registerHandler("/leaderboard", async () => {
+      const rankings = strategyModelRegistry.getLeaderboard();
+      const asciiTable = strategyModelRegistry.getLeaderboardAscii();
+
+      const text = `🏆 <b>AIFIE QUANT STRATEGY LEADERBOARD</b>
+──────────────────
+<pre>${asciiTable}</pre>
+
+• <b>Active Strategies:</b> <code>${rankings.filter(r => r.status === "ACTIVE").length}</code>
+• <b>Quarantined:</b> <code>${rankings.filter(r => r.status === "QUARANTINE").length}</code>
+• <b>Validation Pipeline:</b> 5-Stage Anti-Overfitting (DSR, Walk-Forward, Monte Carlo)
+
+<i>Strategies degrading below Sharpe 1.0 or exceeding 10% drawdown are automatically quarantined.</i>`;
+
+      return {
+        handled: true,
+        response: {
+          text,
+          replyMarkup: {
+            inline_keyboard: [
+              [
+                { text: "🕸️ Task Graph", callback_data: "cmd:/graph" },
+                { text: "👤 Shadow Mode", callback_data: "cmd:/shadow" }
+              ],
+              [
+                { text: "🧐 Critic Agent", callback_data: "cmd:/critic" }
               ]
             ]
           }

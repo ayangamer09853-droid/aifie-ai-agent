@@ -234,6 +234,16 @@ import { emailNotificationService } from "./src/email-notification-service.mjs";
 import { nativeBrowserRunner } from "./src/automation/native-browser-runner.mjs";
 import { autonomousSignupEngine } from "./src/auth/autonomous-signup-engine.mjs";
 import { openHandsControlGateway } from "./src/integrations/openhands-control-gateway.mjs";
+import { globalEventBus } from "./src/core/event-bus.mjs";
+import { globalLifecycle } from "./src/core/lifecycle.mjs";
+import { globalCriticAgent } from "./src/intelligence/critic-agent.mjs";
+import { globalDataQualityGate } from "./src/market/data-quality-gate.mjs";
+import { globalShadowModeEngine } from "./src/execution/shadow-mode-engine.mjs";
+import { createTradingTaskGraph } from "./src/graph-engineering/graphs/trading.graph.mjs";
+import { globalGraphTracer } from "./src/graph-engineering/observability/graph-tracer.mjs";
+import { globalEntityGraph } from "./src/graph-engineering/knowledge/entity-graph.mjs";
+import { globalGraphRag } from "./src/graph-engineering/knowledge/graph-rag.mjs";
+import { globalStrategyModelRegistry } from "./src/learning/model-registry.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -658,6 +668,80 @@ export function app(request, response) {
         totalEvents: openHandsControlGateway.eventStream.length,
         events: openHandsControlGateway.eventStream
       });
+    }
+
+    // Graph Engineering & Measurable Cognitive Architecture Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/graph/status" || url.pathname === "/api/graph")) {
+      return respond(response, 200, {
+        service: "GraphEngineeringEngine",
+        version: "1.2.0",
+        tradingGraph: createTradingTaskGraph().getStatus(),
+        entityGraph: globalEntityGraph.getStatus(),
+        lifecycle: globalLifecycle.getStatus(),
+        eventBus: globalEventBus.getStatus()
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/graph/run") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const taskGraph = createTradingTaskGraph({ strategyName: payload?.strategy || "momentum-v3" });
+          const res = await taskGraph.run("NODE_MARKET_DATA", {}, payload?.context || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 500, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/trace") {
+      const runId = url.searchParams.get("runId");
+      if (!runId) return respond(response, 400, { error: "Missing 'runId' query parameter" });
+      return respond(response, 200, globalGraphTracer.traceCausalLineage(runId));
+    }
+    if (request.method === "GET" && url.pathname === "/api/graph/rag") {
+      const entity = url.searchParams.get("entity") || "BTC";
+      const hops = Number(url.searchParams.get("hops") || 2);
+      return respond(response, 200, globalGraphRag.retrieveContext(entity, hops));
+    }
+
+    // Shadow Mode & Counterfactual Benchmarking Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/shadow/status" || url.pathname === "/api/shadow")) {
+      return respond(response, 200, globalShadowModeEngine.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/shadow/order") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const res = globalShadowModeEngine.recordShadowOrder(payload);
+          return respond(response, 200, { success: true, order: res });
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Adversarial Critic Agent Falsification Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/critic/status" || url.pathname === "/api/critic")) {
+      return respond(response, 200, globalCriticAgent.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/critic/critique") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await globalCriticAgent.critiqueTradeProposal(payload?.proposal || {}, payload?.context || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Strategy Leaderboard & Data Quality Status
+    if (request.method === "GET" && (url.pathname === "/api/leaderboard" || url.pathname === "/api/strategies/leaderboard")) {
+      return respond(response, 200, globalStrategyModelRegistry.getStatus());
+    }
+    if (request.method === "GET" && (url.pathname === "/api/data-quality/status" || url.pathname === "/api/data-quality")) {
+      return respond(response, 200, globalDataQualityGate.getStatus());
     }
 
     // Unified Real-Market Multi-Broker & Free Data Hub Endpoints

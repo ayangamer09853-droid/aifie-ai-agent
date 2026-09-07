@@ -68,6 +68,10 @@ import { emailNotificationService } from "../../email-notification-service.mjs";
 import { nativeBrowserRunner } from "../../automation/native-browser-runner.mjs";
 import { autonomousSignupEngine } from "../../auth/autonomous-signup-engine.mjs";
 import { openHandsControlGateway } from "../../integrations/openhands-control-gateway.mjs";
+import { createTradingTaskGraph } from "../../graph-engineering/graphs/trading.graph.mjs";
+import { globalShadowModeEngine } from "../../execution/shadow-mode-engine.mjs";
+import { globalCriticAgent } from "../../intelligence/critic-agent.mjs";
+import { strategyModelRegistry } from "../../learning/model-registry.mjs";
 
 const mcpLob = new LimitOrderBook("AAPL", 150.0);
 const mcpGraphTopology = new GraphNetworkTopology(financialCausalityGraph);
@@ -1967,6 +1971,97 @@ export function createQuantResearchMcpServer() {
     },
     handler: async (args) => {
       return openHandsControlGateway.runAutonomousCycle(args);
+    }
+  });
+
+  // Tool 102: run_graph_trading_cycle
+  server.registerTool({
+    name: "run_graph_trading_cycle",
+    description: "Executes an end-to-end Graph Engineering trading cycle (Market Data -> Feature Engine -> Strategy Agent -> Critic Agent -> Risk Gate -> Shadow/Paper Execution).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        symbol: { type: "string", description: "Asset symbol (e.g. BTCUSDT, AAPL)" },
+        price: { type: "number", description: "Current market price (default: 65000)" },
+        strategy: { type: "string", description: "Strategy name (default: momentum-v3)" },
+        regime: { type: "string", description: "Market regime (e.g. TRENDING_BULL, RANGE_CHOPPY)" }
+      }
+    },
+    handler: async (args = {}) => {
+      const graph = createTradingTaskGraph({ strategyName: args.strategy || "momentum-v3" });
+      const res = await graph.run("NODE_MARKET_DATA", {}, {
+        tick: {
+          symbol: args.symbol || "BTCUSDT",
+          price: args.price || 65000,
+          timestamp: Date.now()
+        },
+        regime: args.regime || "TRENDING_BULL"
+      });
+      return {
+        status: res.finalState?.executionState?.executed ? "EXECUTED" : "REJECTED",
+        reasonCode: res.finalState?.taskState?.criticReasonCode || res.finalState?.riskState?.reason || "NORMAL",
+        execution: res.finalState?.executionState,
+        stepsExecuted: res.totalSteps,
+        trace: res.trace
+      };
+    }
+  });
+
+  // Tool 103: get_shadow_mode_portfolio
+  server.registerTool({
+    name: "get_shadow_mode_portfolio",
+    description: "Queries the Shadow Mode Engine portfolio, open counterfactual positions, unrealized/realized PnL, and simulated slippage/fees.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    },
+    handler: async () => {
+      return globalShadowModeEngine.getPortfolioStatus();
+    }
+  });
+
+  // Tool 104: evaluate_proposal_with_critic
+  server.registerTool({
+    name: "evaluate_proposal_with_critic",
+    description: "Submits a trade proposal to the adversarial Critic Agent to probe for confirmation bias, regime mismatch, liquidity/spread penalty, and news risk.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        symbol: { type: "string", description: "Asset symbol" },
+        strategy: { type: "string", description: "Proposing strategy" },
+        direction: { type: "string", enum: ["BUY", "SELL", "LONG", "SHORT"], description: "Trade direction" },
+        confidence: { type: "number", description: "Strategy confidence (0 to 1)" },
+        regime: { type: "string", description: "Current market regime" },
+        spreadPercent: { type: "number", description: "Current spread percentage" }
+      },
+      required: ["symbol", "strategy", "direction"]
+    },
+    handler: async (args) => {
+      return globalCriticAgent.critiqueTradeProposal({
+        symbol: args.symbol,
+        strategy: args.strategy,
+        direction: args.direction,
+        confidence: args.confidence || 0.75
+      }, {
+        regime: args.regime || "RANGE_CHOPPY",
+        spreadPercent: args.spreadPercent || 0.05
+      });
+    }
+  });
+
+  // Tool 105: get_strategy_leaderboard
+  server.registerTool({
+    name: "get_strategy_leaderboard",
+    description: "Retrieves the quantitative strategy model registry leaderboard, rankings, Sharpe ratios, win rates, and quarantine status.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    },
+    handler: async () => {
+      return {
+        leaderboard: strategyModelRegistry.getLeaderboard(),
+        ascii: strategyModelRegistry.getLeaderboardAscii()
+      };
     }
   });
 

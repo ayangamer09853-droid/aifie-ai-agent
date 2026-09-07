@@ -234,6 +234,8 @@ export const MOBILE_KEYBOARD = {
   keyboard: [
     [{ text: "🔄 8-Plane Pipeline Process" }, { text: "📊 System Diagnostics" }],
     [{ text: "📉 Transaction Cost (TCA)" }, { text: "🎲 10k Monte Carlo Sim" }],
+    [{ text: "🕸️ Graph Engine" }, { text: "👤 Shadow Mode" }],
+    [{ text: "🧐 Critic Agent" }, { text: "🏆 Strategy Leaderboard" }],
     [{ text: "⛏️ 24/7 Mining Swarm" }, { text: "⚡ Boost 8 Cores (100%)" }],
     [{ text: "🛡️ Mining Watchdog" }, { text: "🌐 Multi-Server Grid" }],
     [{ text: "📊 Positions & PnL" }, { text: "💳 Manage Wallets" }],
@@ -266,6 +268,14 @@ export const MOBILE_KEYBOARD = {
 
 export function parseTelegramCommand(text = "") {
   let normalized = text.trim();
+
+  if (normalized.startsWith("🕸️ Graph Engine") || normalized === "/graph" || normalized === "/graphengine") normalized = "/graph";
+  if (normalized.startsWith("👤 Shadow Mode") || normalized === "/shadow" || normalized === "/shadowmode") normalized = "/shadow";
+  if (normalized.startsWith("🧐 Critic Agent") || normalized.startsWith("/critic")) {
+    const parts = normalized.split(/\s+/);
+    normalized = "/critic " + (parts[1] || "BTCUSDT");
+  }
+  if (normalized.startsWith("🏆 Strategy Leaderboard") || normalized === "/leaderboard" || normalized === "/strategies") normalized = "/leaderboard";
 
   if (normalized.startsWith("⛏️ 24/7 Mining Swarm") || normalized === "/swarm_status" || normalized === "/swarm") normalized = "/swarm_status";
   if (normalized.startsWith("⚡ Boost 8 Cores") || normalized === "/boost") normalized = "/boost 8 100";
