@@ -231,6 +231,8 @@ import { binanceMiningPoolMonitor } from "./src/mining/binance-mining-pool-monit
 import { binanceStratumMiner } from "./src/mining/binance-stratum-miner.mjs";
 import { binanceMultiServerCluster } from "./src/mining/binance-multi-server-cluster.mjs";
 import { emailNotificationService } from "./src/email-notification-service.mjs";
+import { nativeBrowserRunner } from "./src/automation/native-browser-runner.mjs";
+import { autonomousSignupEngine } from "./src/auth/autonomous-signup-engine.mjs";
 
 const globalQuantumVault = new QuantumVault(process.env.AIFIE_MASTER_VAULT_KEY || "AIFIE_POST_QUANTUM_SOVEREIGN_KEY_2026");
 
@@ -573,6 +575,52 @@ export function app(request, response) {
           return respond(response, 200, { success: true, status: emailNotificationService.getStatus() });
         } catch (err) {
           return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Autonomous Sign-Up, Authentication & Account Management
+    if (request.method === "GET" && (url.pathname === "/api/auth/status" || url.pathname === "/api/auth")) {
+      return respond(response, 200, autonomousSignupEngine.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/auth/signup") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await autonomousSignupEngine.signupAllServices(payload.email || "m69249661@gmail.com", payload.profile || {});
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/auth/login") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          const res = await autonomousSignupEngine.loginUser(payload.email || "m69249661@gmail.com", payload.password || "");
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 400, { error: err.message });
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // Native Headless Browser Automation & Bypass Gateway
+    if (request.method === "GET" && (url.pathname === "/api/browser/status" || url.pathname === "/api/browser")) {
+      return respond(response, 200, nativeBrowserRunner.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/browser/fetch") {
+      readJsonBody(request, response).then(async payload => {
+        try {
+          if (!payload.url) {
+            return respond(response, 400, { error: "Missing required 'url' parameter" });
+          }
+          const res = await nativeBrowserRunner.fetchPage(payload.url, payload);
+          return respond(response, 200, res);
+        } catch (err) {
+          return respond(response, 500, { error: err.message });
         }
       }).catch(() => {});
       return;

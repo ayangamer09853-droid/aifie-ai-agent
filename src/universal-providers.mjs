@@ -64,10 +64,12 @@ export const UNIVERSAL_PROVIDERS = Object.freeze([
 ]);
 
 export function getUniversalProvidersStatus() {
-  const activeCount = UNIVERSAL_PROVIDERS.filter(p => p.openAccess || process.env[p.envKey]).length;
+  const isRealKey = (key) => Boolean(key && !key.startsWith("your_") && key.trim() !== "");
+  const activeCount = UNIVERSAL_PROVIDERS.filter(p => p.openAccess || isRealKey(process.env[p.envKey])).length;
 
   const catalog = UNIVERSAL_PROVIDERS.map(p => {
-    const hasKey = Boolean(p.envKey && process.env[p.envKey]);
+    const rawKey = p.envKey ? process.env[p.envKey] : null;
+    const hasKey = isRealKey(rawKey);
     const isOnline = p.openAccess || hasKey;
     return {
       ...p,

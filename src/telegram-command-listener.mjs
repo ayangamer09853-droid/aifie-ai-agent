@@ -232,10 +232,10 @@ export function wrapTelegramResponse(res) {
 
 export const MOBILE_KEYBOARD = {
   keyboard: [
-    [{ text: "⛏️ 24/7 Mining Swarm" }, { text: "⚡ Boost 8 Cores (100%)" }],
-    [{ text: "🛡️ Mining Watchdog" }, { text: "🌐 Multi-Server Grid" }],
     [{ text: "🔄 8-Plane Pipeline Process" }, { text: "📊 System Diagnostics" }],
     [{ text: "📉 Transaction Cost (TCA)" }, { text: "🎲 10k Monte Carlo Sim" }],
+    [{ text: "⛏️ 24/7 Mining Swarm" }, { text: "⚡ Boost 8 Cores (100%)" }],
+    [{ text: "🛡️ Mining Watchdog" }, { text: "🌐 Multi-Server Grid" }],
     [{ text: "📊 Positions & PnL" }, { text: "💳 Manage Wallets" }],
     [{ text: "📥 Deposit Token" }, { text: "⚡ Bridge Funds" }],
     [{ text: "📈 View Limit Orders" }, { text: "🪜 DCA Ladder" }],
@@ -281,6 +281,8 @@ export function parseTelegramCommand(text = "") {
   if (normalized.startsWith("⚙️ Trade Settings") || normalized === "/settings" || normalized === "/preferences") normalized = "/settings";
   if (normalized.startsWith("📧 Email Alerts") || normalized === "/email") normalized = "/email";
   if (normalized.startsWith("⚡ Slippage Settings") || normalized === "/slippage") normalized = "/slippage";
+  if (normalized === "/bypass" || normalized.startsWith("⚡ Driver Bypass") || normalized === "/driver_bypass") normalized = "/bypass";
+  if (normalized === "/signup" || normalized === "/register") normalized = "/signup";
   if (normalized === "/help" || normalized === "/commands" || normalized === "/menu") normalized = "/help";
   if (normalized === "/start" || normalized === "/login" || normalized === "/account") normalized = "/start";
 

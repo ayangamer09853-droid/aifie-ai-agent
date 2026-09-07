@@ -65,6 +65,8 @@ import { binanceMiningPoolMonitor } from "../../mining/binance-mining-pool-monit
 import { binanceStratumMiner } from "../../mining/binance-stratum-miner.mjs";
 import { binanceMultiServerCluster } from "../../mining/binance-multi-server-cluster.mjs";
 import { emailNotificationService } from "../../email-notification-service.mjs";
+import { nativeBrowserRunner } from "../../automation/native-browser-runner.mjs";
+import { autonomousSignupEngine } from "../../auth/autonomous-signup-engine.mjs";
 
 const mcpLob = new LimitOrderBook("AAPL", 150.0);
 const mcpGraphTopology = new GraphNetworkTopology(financialCausalityGraph);
@@ -1846,6 +1848,64 @@ export function createQuantResearchMcpServer() {
     },
     handler: async () => {
       return emailNotificationService.getStatus();
+    }
+  });
+
+  // Tool 96: execute_autonomous_signup
+  server.registerTool({
+    name: "execute_autonomous_signup",
+    description: "Executes automated account sign-up and authentication across all Aifie subsystems using user email (defaults to m69249661@gmail.com).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        email: {
+          type: "string",
+          description: "Target email address to sign up and authenticate."
+        },
+        profile: {
+          type: "object",
+          description: "Optional profile metadata."
+        }
+      }
+    },
+    handler: async (args) => {
+      return autonomousSignupEngine.signupAllServices(args.email || "m69249661@gmail.com", args.profile || {});
+    }
+  });
+
+  // Tool 97: fetch_native_web_content
+  server.registerTool({
+    name: "fetch_native_web_content",
+    description: "Fetches and renders web content using the host system's native Chrome/Edge engine or direct high-fidelity HTTP, bypassing missing external Playwright drivers.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        url: {
+          type: "string",
+          description: "Target URL to navigate and fetch."
+        },
+        preferHttp: {
+          type: "boolean",
+          description: "If true, uses high-fidelity HTTP headers instead of headless Chrome CLI."
+        }
+      },
+      required: ["url"]
+    },
+    handler: async (args) => {
+      return nativeBrowserRunner.fetchPage(args.url, args);
+    }
+  });
+
+  // Tool 98: get_autonomous_auth_state
+  server.registerTool({
+    name: "get_autonomous_auth_state",
+    description: "Queries all registered accounts, authenticated sessions, and system permissions for m69249661@gmail.com.",
+    inputSchema: {
+      type: "object",
+      properties: {}
+    },
+    handler: async () => {
+      return autonomousSignupEngine.getStatus();
     }
   });
 
