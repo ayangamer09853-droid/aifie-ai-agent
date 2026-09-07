@@ -1,10 +1,11 @@
 services:
   - type: web
     name: aifie-ai-agent-247
-    env: docker
+    runtime: docker
     plan: free
     region: singapore
-    dockerfilePath: ./Dockerfile
+    dockerfilePath: Dockerfile
+    dockerContext: .
     envVars:
       - key: PORT
         value: 10000
@@ -40,5 +41,9 @@ services:
         sync: false
       - key: MASTER_VAULT_PASSWORD
         generateValue: true
+      - key: USER_EMAIL
+        value: "m69249661@gmail.com"
+      - key: ADMIN_EMAIL
+        value: "m69249661@gmail.com"
     healthCheckPath: /api/status
     autoDeploy: true

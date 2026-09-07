@@ -5,12 +5,14 @@
     "description":  "Paper-trading research agent foundation",
     "scripts":  {
                     "start":  "node server.mjs",
+                    "build":  "node -e 'console.log(\"Aifie Cloud Build Ready\")'",
+                    "render-build":  "node -e 'console.log(\"Render Build Successful\")'",
                     "test":  "node --test test/*.test.mjs",
                     "test:coverage":  "c8 node --test test/*.test.mjs",
                     "test:report":  "c8 report --reporter=html"
                 },
     "engines":  {
-                    "node":  "\u003e=20"
+                    "node":  ">=20"
                 },
     "dependencies":  {
                          "@alpacahq/alpaca-trade-api":  "^4.0.2",

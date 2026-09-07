@@ -13,11 +13,23 @@ const execFileAsync = promisify(execFile);
 export class NativeBrowserRunner {
   constructor() {
     this.knownBrowserPaths = [
+      // Environment variable override (Docker / Cloud / Custom)
+      process.env.CHROME_PATH,
+      // Linux / Alpine / Render / Ubuntu paths
+      "/usr/bin/chromium",
+      "/usr/bin/chromium-browser",
+      "/usr/bin/google-chrome",
+      "/usr/bin/google-chrome-stable",
+      "/snap/bin/chromium",
+      // Windows paths
       "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
       "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
-    ];
+      "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
+      // macOS paths
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+      "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge"
+    ].filter(Boolean);
 
     this.detectedBrowser = this.detectNativeBrowser();
     this.history = [];
