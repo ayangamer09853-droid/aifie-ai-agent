@@ -10,11 +10,11 @@
       },
       "convictionModifier": 0.7,
       "action": "TRIM_RISK_REQUIRE_CONFIRMATION",
-      "appliedCount": 4,
-      "successCount": 2,
-      "accuracyRate": "50.0%",
+      "appliedCount": 5,
+      "successCount": 3,
+      "accuracyRate": "60.0%",
       "createdAt": "2026-09-19T16:28:45.117Z",
-      "lastCalibratedAt": "2026-09-19T16:29:06.833Z"
+      "lastCalibratedAt": "2026-09-19T16:39:13.413Z"
     },
     {
       "id": "SK-AXIOM-034",
@@ -434,7 +434,7 @@
       },
       "convictionModifier": 1.15,
       "action": "COLLABORATIVE_EDGE_BOOST",
-      "appliedCount": 127,
+      "appliedCount": 131,
       "successCount": 1,
       "accuracyRate": "100.0%",
       "createdAt": "2026-09-04T18:49:27.623Z",
@@ -450,7 +450,7 @@
       },
       "convictionModifier": 1.15,
       "action": "COLLABORATIVE_EDGE_BOOST",
-      "appliedCount": 183,
+      "appliedCount": 187,
       "successCount": 28,
       "accuracyRate": "15.7%",
       "createdAt": "2026-09-04T18:49:27.622Z",
@@ -466,7 +466,7 @@
       },
       "convictionModifier": 1.25,
       "action": "BOOST_CONVICTION",
-      "appliedCount": 543,
+      "appliedCount": 563,
       "successCount": 12,
       "accuracyRate": "85.7%"
     },
@@ -507,7 +507,7 @@
       },
       "convictionModifier": 1.3,
       "action": "BOOST_AND_TIGHTEN_SL",
-      "appliedCount": 607,
+      "appliedCount": 627,
       "successCount": 26,
       "accuracyRate": "83.9%"
     },

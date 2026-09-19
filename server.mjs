@@ -4176,6 +4176,85 @@ export function app(request, response) {
       });
     }
 
+    // Level 3 Specialized Execution Agents
+    if (request.method === "GET" && url.pathname === "/api/empire/level3") {
+      const status = aifieBusinessEmpire.getEmpireStatus();
+      return respond(response, 200, {
+        ok: true,
+        agentsCount: status.level3ExecutionAgents.length,
+        agents: status.level3ExecutionAgents
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/level3/execute") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { agentKey, params } = payload || {};
+          if (!agentKey) {
+            return respond(response, 400, { ok: false, error: "Missing required 'agentKey' parameter" });
+          }
+          const deliverable = aifieBusinessEmpire.executeLevel3Agent(agentKey, params || {});
+          return respond(response, 200, { ok: true, deliverable });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 10-Step Autonomous Business Loop Step
+    if (request.method === "POST" && (url.pathname === "/api/empire/loop" || url.pathname === "/api/empire/loop/step")) {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const cycle = await aifieBusinessEmpire.runAutonomousBusinessLoop(payload || {});
+          return respond(response, 200, { ok: true, cycle });
+        } catch (err) {
+          return respond(response, 500, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
+      return;
+    }
+
+    // Self-Improvement System (Daily / Weekly / Monthly)
+    if (request.method === "GET" && url.pathname === "/api/empire/self-improvement") {
+      return respond(response, 200, {
+        ok: true,
+        selfImprovement: {
+          dailyReviews: aifieBusinessEmpire.selfImprovement.dailyReviews,
+          weeklyReviews: aifieBusinessEmpire.selfImprovement.weeklyReviews,
+          monthlyReviews: aifieBusinessEmpire.selfImprovement.monthlyReviews
+        }
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/self-improvement/run") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const cadence = (payload && payload.cadence) ? payload.cadence.toLowerCase() : "daily";
+          let review = null;
+          if (cadence === "weekly") {
+            review = aifieBusinessEmpire.selfImprovement.runWeeklyReview(payload || {});
+          } else if (cadence === "monthly") {
+            review = aifieBusinessEmpire.selfImprovement.runMonthlyReview(payload || {});
+          } else {
+            review = aifieBusinessEmpire.selfImprovement.runDailyReview(payload || {});
+          }
+          return respond(response, 200, { ok: true, cadence, review });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 10 Success Metrics
+    if (request.method === "GET" && url.pathname === "/api/empire/metrics") {
+      return respond(response, 200, {
+        ok: true,
+        metrics: aifieBusinessEmpire.metricsTracker.getMetrics()
+      });
+    }
+
     return respond(response, 404, { error: "not found" });
   } catch (err) {
     return respond(response, 500, { error: `Internal Server Error: ${err.message}` });

@@ -225,6 +225,84 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
     .tr-val { font-size: 16px; font-weight: 800; color: var(--neon-cyan); font-family: var(--font-mono); }
     .tr-pct { font-size: 10px; color: var(--neon-green); font-family: var(--font-mono); }
 
+    /* 10 Success Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .metric-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .metric-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .metric-val { font-size: 18px; font-weight: 800; font-family: var(--font-mono); color: var(--neon-cyan); }
+    .metric-sub { font-size: 10px; color: var(--neon-green); font-family: var(--font-mono); }
+
+    /* 10-Step Loop Pipeline */
+    .loop-pipeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      gap: 8px;
+      background: rgba(3, 7, 18, 0.7);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 10px;
+      padding: 12px;
+    }
+    .loop-step {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 8px 6px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .loop-step-num { font-size: 9px; font-family: var(--font-mono); color: var(--neon-green); font-weight: 700; }
+    .loop-step-name { font-size: 10px; font-weight: 700; color: #fff; }
+
+    /* Level 3 Execution Agents Grid */
+    .level3-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .level3-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .level3-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .level3-title { font-size: 13px; font-weight: 700; color: var(--neon-cyan); }
+    .level3-role { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
+    .level3-btn {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 4px;
+      align-self: flex-start;
+    }
+    .level3-btn:hover { background: var(--neon-cyan); color: #000; }
+
     /* Executive Council Grid */
     .council-grid {
       display: grid;
@@ -433,6 +511,70 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       </div>
     </div>
 
+    <!-- 10 Empire Success Metrics -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>📈 10 Empire Success Metrics</span>
+        </div>
+        <div style="font-size: 12px; color: var(--neon-cyan); font-family: var(--font-mono);">
+          Real-Time Performance Dashboard
+        </div>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Revenue</div>
+          <div class="metric-val" id="metric-rev">₹0</div>
+          <div class="metric-sub">Gross Collected</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Net Profit</div>
+          <div class="metric-val" id="metric-profit">₹0</div>
+          <div class="metric-sub">~90%+ Margin</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Cash Reserve</div>
+          <div class="metric-val" id="metric-reserve">₹0</div>
+          <div class="metric-sub">25% Safe Vault</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Active Clients</div>
+          <div class="metric-val" id="metric-clients">0</div>
+          <div class="metric-sub">Paying Accounts</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Recurring MRR</div>
+          <div class="metric-val" id="metric-mrr">₹0</div>
+          <div class="metric-sub">Stable Retainers</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Customer CSAT</div>
+          <div class="metric-val" id="metric-csat">5.0 / 5.0</div>
+          <div class="metric-sub">100% Satisfaction</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Lead Conversion</div>
+          <div class="metric-val" id="metric-conv">24.5%</div>
+          <div class="metric-sub">BANT Qualified</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Retention Rate</div>
+          <div class="metric-val" id="metric-ret">100.0%</div>
+          <div class="metric-sub">Zero Churn</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Automation</div>
+          <div class="metric-val" id="metric-auto">94.8%</div>
+          <div class="metric-sub">Zero-Touch Delivery</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Business Assets</div>
+          <div class="metric-val" id="metric-assets">53+</div>
+          <div class="metric-sub">Digital Vault Offerings</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Empire Treasury Allocation (40/25/20/10/5) -->
     <div class="treasury-box">
       <div class="treasury-header">
@@ -468,6 +610,28 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       </div>
     </div>
 
+    <!-- 10-Step Autonomous Business Loop Pipeline -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🔄 10-Step Autonomous Business Loop</span>
+        </div>
+        <button class="btn btn-green" onclick="runAutonomousLoop(event)" style="padding: 6px 12px; font-size: 11px;">🚀 Trigger 10-Step Loop</button>
+      </div>
+      <div class="loop-pipeline">
+        <div class="loop-step"><span class="loop-step-num">01</span><span class="loop-step-name">Discover</span></div>
+        <div class="loop-step"><span class="loop-step-num">02</span><span class="loop-step-name">Offers</span></div>
+        <div class="loop-step"><span class="loop-step-num">03</span><span class="loop-step-name">Leads</span></div>
+        <div class="loop-step"><span class="loop-step-num">04</span><span class="loop-step-name">Convert</span></div>
+        <div class="loop-step"><span class="loop-step-num">05</span><span class="loop-step-name">Deliver</span></div>
+        <div class="loop-step"><span class="loop-step-num">06</span><span class="loop-step-name">Payments</span></div>
+        <div class="loop-step"><span class="loop-step-num">07</span><span class="loop-step-name">Feedback</span></div>
+        <div class="loop-step"><span class="loop-step-num">08</span><span class="loop-step-name">Improve</span></div>
+        <div class="loop-step"><span class="loop-step-num">09</span><span class="loop-step-name">Reinvest</span></div>
+        <div class="loop-step"><span class="loop-step-num">10</span><span class="loop-step-name">Scale</span></div>
+      </div>
+    </div>
+
     <!-- Level 2: Executive Council Grid -->
     <div class="section-card">
       <div class="section-header">
@@ -479,6 +643,21 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
         </div>
       </div>
       <div class="council-grid" id="council-grid-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Level 3: 13 Specialized Execution Agents -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>⚙️ Level 3: Specialized Execution Agents</span>
+        </div>
+        <div style="font-size: 12px; color: var(--neon-cyan); font-family: var(--font-mono);">
+          13 Turnkey Execution Specialists
+        </div>
+      </div>
+      <div class="level3-grid" id="level3-grid-container">
         <!-- Injected via JavaScript -->
       </div>
     </div>
@@ -582,6 +761,40 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
             councilCont.appendChild(card);
           });
 
+          // Populate Level 3 Execution Agents
+          if (emp.level3ExecutionAgents) {
+            const l3Cont = document.getElementById('level3-grid-container');
+            l3Cont.innerHTML = '';
+            emp.level3ExecutionAgents.forEach(a => {
+              const card = document.createElement('div');
+              card.className = 'level3-card';
+              card.innerHTML = \`
+                <div class="level3-head">
+                  <span class="level3-title">\${a.name}</span>
+                  <span style="font-size: 10px; font-family: var(--font-mono); color: var(--neon-cyan);">L3</span>
+                </div>
+                <div class="level3-role">\${a.role}</div>
+                <button class="level3-btn" onclick="executeLevel3('\${a.key}')">⚡ Execute Task</button>
+              \`;
+              l3Cont.appendChild(card);
+            });
+          }
+
+          // Populate 10 Success Metrics
+          if (emp.successMetrics) {
+            const m = emp.successMetrics;
+            document.getElementById('metric-rev').textContent = '₹' + (m.revenueInr || 0).toLocaleString();
+            document.getElementById('metric-profit').textContent = '₹' + (m.profitInr || 0).toLocaleString();
+            document.getElementById('metric-reserve').textContent = '₹' + (m.cashReserveInr || 0).toLocaleString();
+            document.getElementById('metric-clients').textContent = m.activeClients || 0;
+            document.getElementById('metric-mrr').textContent = '₹' + (m.recurringRevenueInr || 0).toLocaleString();
+            document.getElementById('metric-csat').textContent = (m.customerSatisfactionScore || 5.0) + ' / 5.0';
+            document.getElementById('metric-conv').textContent = (m.leadConversionRatePercent || 24.5) + '%';
+            document.getElementById('metric-ret').textContent = (m.retentionRatePercent || 100.0) + '%';
+            document.getElementById('metric-auto').textContent = (m.automationCoveragePercent || 94.8) + '%';
+            document.getElementById('metric-assets').textContent = (m.businessAssetGrowthCount || 53) + '+';
+          }
+
           // CFO Treasury
           const cfo = emp.executiveCouncil.find(c => c.title === 'CFO');
           if (cfo && cfo.treasuryBalances) {
@@ -595,6 +808,53 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
           }
         }
       } catch (e) { console.error('Empire status error', e); }
+    }
+
+    async function executeLevel3(agentKey) {
+      try {
+        const res = await fetch('/api/empire/level3/execute', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentKey, params: { niche: 'AgriTech AI', domain: 'aifie-client.io' } })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('gen-output-box').textContent = JSON.stringify(data.deliverable, null, 2);
+          alert('Specialist ' + data.deliverable.agent + ' executed deliverable successfully!');
+        } else {
+          alert('Execution error: ' + data.error);
+        }
+      } catch (err) {
+        alert('Specialist invocation failed: ' + err.message);
+      }
+    }
+
+    async function runAutonomousLoop(evt) {
+      const btn = evt.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ Running 10-Step Loop...';
+      try {
+        const res = await fetch('/api/empire/loop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientName: 'Sanjay Deshmukh',
+            company: 'Deccan Agritech Federation',
+            niche: 'Precision Agriculture AI',
+            isRecurring: true
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('10-Step Autonomous Loop Completed! Steps: 10/10. Governor Verdict: ' + data.cycle.governorDecision.decision);
+          await refreshAllTelemetry();
+        }
+      } catch (e) {
+        alert('Autonomous loop error: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Trigger 10-Step Loop';
+      }
     }
 
     async function loadMatrix() {

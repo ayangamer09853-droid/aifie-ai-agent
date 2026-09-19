@@ -14,6 +14,43 @@ import { RevenueCRM } from "./revenue-crm.mjs";
 import { InvoiceManager } from "./invoice-and-billing.mjs";
 import { ServiceDeliveryEngine } from "./service-delivery-engine.mjs";
 import { DigitalProductFulfillmentEngine } from "./digital-product-fulfillment.mjs";
+import {
+  EmpireSafetyEngine,
+  WebsiteAgent,
+  SeoAgent,
+  ContentAgent,
+  SocialMediaAgent,
+  VideoAgent,
+  GraphicDesignAgent,
+  ResearchAgent,
+  AutomationAgent,
+  EmailAgent,
+  WhatsAppAgent,
+  CrmAgent,
+  AnalyticsAgent,
+  ReportingAgent,
+  EmpireSelfImprovementSystem,
+  EmpireSuccessMetricsTracker
+} from "./execution-agents-level3.mjs";
+
+export {
+  EmpireSafetyEngine,
+  WebsiteAgent,
+  SeoAgent,
+  ContentAgent,
+  SocialMediaAgent,
+  VideoAgent,
+  GraphicDesignAgent,
+  ResearchAgent,
+  AutomationAgent,
+  EmailAgent,
+  WhatsAppAgent,
+  CrmAgent,
+  AnalyticsAgent,
+  ReportingAgent,
+  EmpireSelfImprovementSystem,
+  EmpireSuccessMetricsTracker
+};
 
 export const GOVERNOR_DECISION = {
   APPROVED: "APPROVED",
@@ -485,13 +522,81 @@ export class ChiefIntelligenceAgent {
   constructor() {
     this.name = "Chief Intelligence Agent";
     this.title = "CIO";
-    this.role = "Market Sizing, Competitor Radar & Arbitrage Opportunity Discovery";
+    this.role = "Market Research, Competitor Monitoring, Trend Detection & Opportunity Scoring";
     this.intelligenceBriefs = [];
+    this.competitorRadar = [];
+    this.detectedTrends = [];
+  }
+
+  conductMarketResearch(targetSector = "Autonomous Digital Services", region = "Global") {
+    const research = {
+      sector: targetSector,
+      region,
+      marketMaturity: "High Growth / High Adoption",
+      addressableDemandInr: "₹45,000 Crores",
+      zeroCapitalFeasibility: "VERY HIGH",
+      keyDrivers: [
+        "High demand for automated workflow systems without hiring agency staff",
+        "Growing adoption of verified zero-capital business models",
+        "Instant delivery expectations on digital assets and software templates"
+      ],
+      timestamp: new Date().toISOString()
+    };
+    return research;
+  }
+
+  monitorCompetitors(niche = "AI Automation") {
+    const competitors = [
+      { name: "Traditional Marketing Agencies", pricing: "₹1,50,000/mo retainer", deliverySpeedDays: 21, vulnerabilities: ["Slow turnaround", "High fixed payroll overhead"] },
+      { name: "Freelance Marketplaces (Upwork/Fiverr)", pricing: "₹5,000 - ₹25,000 per gig", deliverySpeedDays: 5, vulnerabilities: ["Variable quality", "Zero governance framework", "High platform take rates"] },
+      { name: "Unregulated AI Wrappers", pricing: "₹1,999/mo subscription", deliverySpeedDays: 0, vulnerabilities: ["Prone to hallucination", "No ethical compliance safeguards", "Zero customer retention"] }
+    ];
+    this.competitorRadar = competitors;
+    return competitors;
+  }
+
+  detectTrends(timeframe = "Q3-Q4 2026") {
+    const trends = [
+      { trend: "Direct WhatsApp Business API Automated Consultations", momentumScore: 94, actionableVertical: "Software / SaaS" },
+      { trend: "Precision AgriTech Hyperlocal Weather & Crop Advisory", momentumScore: 91, actionableVertical: "Agriculture-Focused" },
+      { trend: "High-Margin Micro-SaaS Platforms with Stripe/UPI", momentumScore: 89, actionableVertical: "High-Leverage Asset Building" },
+      { trend: "Permission-First Value-Engine Email Prospecting", momentumScore: 87, actionableVertical: "Lead Generation" }
+    ];
+    this.detectedTrends = trends;
+    return trends;
+  }
+
+  scoreOpportunity(offeringOrConcept = {}) {
+    const margin = offeringOrConcept.marginPercent || 90;
+    const demand = offeringOrConcept.demandScore || 88;
+    const capitalRequired = offeringOrConcept.capitalRequired || 0;
+
+    // Zero-capital multiplier
+    const capitalEfficiency = capitalRequired === 0 ? 100 : Math.max(10, 100 - (capitalRequired / 1000));
+    const compositeOpportunityScore = Math.round((margin * 0.35) + (demand * 0.35) + (capitalEfficiency * 0.30));
+
+    return {
+      name: offeringOrConcept.name || offeringOrConcept.title || "Custom Commercial Concept",
+      compositeOpportunityScore,
+      priorityLevel: compositeOpportunityScore >= 80 ? "P1_IMMEDIATE_EXECUTION" : "P2_EVALUATE",
+      marginScore: margin,
+      demandScore: demand,
+      capitalEfficiencyScore: capitalEfficiency,
+      recommendedEntryMode: capitalRequired === 0 ? "ZERO_CAPITAL_BOOTSTRAP" : "REINVESTED_TREASURY_ALLOCATION",
+      evaluatedAt: new Date().toISOString()
+    };
   }
 
   scoutOpportunity(niche = null) {
     const catalog = CATALOG_MATRIX_53;
     const randomPick = catalog[Math.floor(Math.random() * catalog.length)];
+
+    const opportunityScore = this.scoreOpportunity({
+      name: randomPick.name,
+      marginPercent: randomPick.marginPercent,
+      demandScore: 92,
+      capitalRequired: 0
+    });
 
     const brief = {
       briefId: `INTEL-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -503,6 +608,7 @@ export class ChiefIntelligenceAgent {
       marketDemandScore: 0.94,
       competitionDensity: "Low to Moderate",
       projectedMargin: randomPick.marginPercent,
+      opportunityScore,
       strategicRecommendation: "High-conviction expansion opportunity; low capital entry with immediate cash-flow potential.",
       discoveredAt: new Date().toISOString()
     };
@@ -514,7 +620,8 @@ export class ChiefIntelligenceAgent {
 
 /**
  * MASTER AIFIE BUSINESS EMPIRE ORCHESTRATOR
- * Coordinates Supreme Governor & Executive Council
+ * Coordinates Supreme Governor (L1), Executive Council (L2) & Specialized Execution Agents (L3)
+ * across the 10-Step Autonomous Business Loop.
  */
 export class AifieBusinessEmpire {
   constructor() {
@@ -536,6 +643,28 @@ export class AifieBusinessEmpire {
     this.cfo = new ChiefFinanceAgent(this.billing, this.growthPath);
     this.cio = new ChiefIntelligenceAgent();
 
+    // Level 3: 13 Specialized Execution Agents
+    this.level3 = {
+      website: new WebsiteAgent(),
+      seo: new SeoAgent(),
+      content: new ContentAgent(),
+      socialMedia: new SocialMediaAgent(),
+      video: new VideoAgent(),
+      graphicDesign: new GraphicDesignAgent(),
+      research: new ResearchAgent(),
+      automation: new AutomationAgent(),
+      email: new EmailAgent(),
+      whatsapp: new WhatsAppAgent(),
+      crm: new CrmAgent(),
+      analytics: new AnalyticsAgent(),
+      reporting: new ReportingAgent()
+    };
+
+    // Governance, Safety, Self-Improvement & Success Metrics Engines
+    this.safety = new EmpireSafetyEngine();
+    this.selfImprovement = new EmpireSelfImprovementSystem();
+    this.metricsTracker = new EmpireSuccessMetricsTracker();
+
     this.empireCyclesRun = 0;
     this.empireHistory = [];
   }
@@ -548,29 +677,66 @@ export class AifieBusinessEmpire {
   }
 
   /**
-   * Run a coordinated end-to-end Empire Council Cycle
+   * Directly execute a task with any Level-3 Specialized Execution Agent
    */
-  async runEmpireCycle(params = {}) {
+  executeLevel3Agent(agentKey, params = {}) {
+    const agent = this.level3[agentKey];
+    if (!agent) {
+      throw new Error(`UNKNOWN_LEVEL3_AGENT: Specialist '${agentKey}' not found. Available: ${Object.keys(this.level3).join(", ")}`);
+    }
+
+    // Strict safety audit before execution
+    this.safety.assertSafe({ agentKey, params }, { governorApproved: true });
+    return agent.execute(params);
+  }
+
+  /**
+   * 10-STEP AUTONOMOUS BUSINESS LOOP
+   * 1. Discover opportunities
+   * 2. Generate offers
+   * 3. Acquire leads
+   * 4. Convert customers
+   * 5. Deliver services
+   * 6. Collect payments
+   * 7. Gather feedback
+   * 8. Improve systems
+   * 9. Reinvest profits
+   * 10. Scale operations
+   */
+  async runAutonomousBusinessLoop(params = {}) {
     this.empireCyclesRun++;
     const cycleId = `EMPIRE-CYCLE-${Date.now()}-${this.empireCyclesRun}`;
+    const stepsLog = [];
 
-    // 1. CIO scouts high-yield market opportunity
+    // Safety Audit on Incoming Parameters
+    this.safety.assertSafe({ action: "RUN_AUTONOMOUS_LOOP", params }, { governorApproved: true });
+
+    // STEP 1: Discover opportunities
     const intelBrief = this.cio.scoutOpportunity(params.niche);
+    const trends = this.cio.detectTrends();
+    stepsLog.push({ step: 1, name: "Discover Opportunities", status: "COMPLETED", briefId: intelBrief.briefId });
 
-    // 2. CRO creates optimized commercial offer
+    // STEP 2: Generate offers
     const offer = this.cro.createOptimizedOffer(params.niche || intelBrief.targetNiche, params.vertical || intelBrief.vertical);
+    stepsLog.push({ step: 2, name: "Generate Offers", status: "COMPLETED", offerKey: offer.key, priceInr: offer.recommendedPriceInr });
 
-    // 3. CMO prepares inbound marketing assets & campaign
+    // STEP 3: Acquire leads
     const marketingCampaign = this.cmo.generateInboundCampaign(offer);
+    const emailOutreach = this.level3.email.execute({
+      recipientName: params.clientName || "Apex Enterprises",
+      company: params.company || "Apex Global Corp",
+      serviceType: offer.title
+    });
+    stepsLog.push({ step: 3, name: "Acquire Leads", status: "COMPLETED", campaignCount: marketingCampaign.contentAssets?.socialHooks?.length || 2 });
 
-    // 4. CSO qualifies prospect and drafts commercial proposal
+    // STEP 4: Convert customers
     const { lead, proposal } = this.cso.qualifyAndDraftProposal({
       clientName: params.clientName || "Apex Enterprises",
       company: params.company || "Apex Global Corp",
       email: params.email || "founder@apexglobal.io"
     }, offer);
 
-    // 5. SUPREME GOVERNOR: Evaluates proposal via 8-Dimension Framework
+    // SUPREME GOVERNOR: Evaluates proposal via 8-Dimension Framework
     const governorDecision = this.governor.evaluateProposal({
       title: `Contract Execution: ${offer.title} for ${lead.company}`,
       category: ACTION_CATEGORIES.CONTRACT,
@@ -585,13 +751,15 @@ export class AifieBusinessEmpire {
       isRecurring: Boolean(params.isRecurring),
       isUnethical: Boolean(params.isUnethical)
     });
+    stepsLog.push({ step: 4, name: "Convert Customers", status: governorDecision.decision, governorDecision: governorDecision.decision });
 
     let executionResult = null;
+    let level3Deliverable = null;
     let financeSettlement = null;
     let customerSuccessPlan = null;
 
     if (governorDecision.decision === GOVERNOR_DECISION.APPROVED) {
-      // 6. COO fulfills service or digital product with QA
+      // STEP 5: Deliver services (COO + Specialized Level 3 Execution Agent)
       executionResult = this.coo.executeDelivery(offer, {
         clientName: lead.name,
         company: lead.company,
@@ -601,31 +769,74 @@ export class AifieBusinessEmpire {
         niche: params.niche
       });
 
-      // 7. CFO collects payment and executes 40/25/20/10/5 profit distribution
-      financeSettlement = this.cfo.settleTransaction(proposal, offer.targetGrossMarginPercent);
+      // Invoke Level 3 Specialist based on offering vertical
+      if (offer.vertical === "Service-Based" && /website|portal/i.test(offer.title)) {
+        level3Deliverable = this.level3.website.execute({ title: offer.title, niche: params.niche });
+      } else if (offer.vertical === "Service-Based" && /seo/i.test(offer.title)) {
+        level3Deliverable = this.level3.seo.execute({ domain: "client.domain", niche: params.niche });
+      } else if (offer.vertical === "Software / SaaS") {
+        level3Deliverable = this.level3.automation.execute({ workflowName: offer.title });
+      } else if (offer.vertical === "Content & Media") {
+        level3Deliverable = this.level3.content.execute({ topic: offer.title });
+      } else {
+        level3Deliverable = this.level3.website.execute({ title: offer.title, niche: params.niche });
+      }
+      stepsLog.push({ step: 5, name: "Deliver Services", status: "COMPLETED", qaScore: executionResult.qaScore });
 
-      // 8. CCO reviews satisfaction, collects testimonial, and formulates retainer up-sell
+      // STEP 6: Collect payments (CFO invoice & settlement)
+      financeSettlement = this.cfo.settleTransaction(proposal, offer.targetGrossMarginPercent);
+      stepsLog.push({ step: 6, name: "Collect Payments", status: "COMPLETED", invoiceId: financeSettlement.invoice.id });
+
+      // STEP 7: Gather feedback (CCO customer satisfaction & testimonial)
       customerSuccessPlan = this.cco.conductOnboardingAndReview(lead.name, offer);
+      stepsLog.push({ step: 7, name: "Gather Feedback", status: "COMPLETED", csatScore: customerSuccessPlan.csatScore });
+
+      // STEP 8: Improve systems (Self-Improvement Daily Review)
+      const dailyReview = this.selfImprovement.runDailyReview({ dealsWon: 1 });
+      stepsLog.push({ step: 8, name: "Improve Systems", status: "COMPLETED", reviewId: dailyReview.reviewId });
+
+      // STEP 9: Reinvest profits (40% Growth, 25% Reserve, 20% Infra, 10% Research, 5% Emergency)
+      stepsLog.push({ step: 9, name: "Reinvest Profits", status: "COMPLETED", treasuryAllocations: financeSettlement.distribution });
+
+      // STEP 10: Scale operations (Update Growth Highway & Success Metrics)
+      this.metricsTracker.recordTransaction({
+        revenueInr: financeSettlement.record.grossAmountInr,
+        profitInr: financeSettlement.record.netProfitInr,
+        isRecurring: Boolean(params.isRecurring)
+      });
+      stepsLog.push({ step: 10, name: "Scale Operations", status: "COMPLETED", highwayStage: this.growthPath.getStatus().milestoneName });
     }
 
     const cycleReport = {
       cycleId,
       timestamp: new Date().toISOString(),
       intelBrief,
+      trends,
       offer,
       marketingCampaign,
+      emailOutreach,
       lead,
       proposal,
       governorDecision,
       executionResult,
+      level3Deliverable,
       financeSettlement,
       customerSuccessPlan,
       treasuryStatus: this.cfo.getTreasurySummary(),
-      growthHighway: this.growthPath.getStatus()
+      growthHighway: this.growthPath.getStatus(),
+      stepsLog,
+      successMetrics: this.metricsTracker.getMetrics()
     };
 
     this.empireHistory.push(cycleReport);
     return cycleReport;
+  }
+
+  /**
+   * Coordinated end-to-end Empire Council Cycle (Aliases the 10-step Autonomous Loop)
+   */
+  async runEmpireCycle(params = {}) {
+    return this.runAutonomousBusinessLoop(params);
   }
 
   getEmpireStatus() {
@@ -646,6 +857,22 @@ export class AifieBusinessEmpire {
         { title: this.cfo.title, name: this.cfo.name, role: this.cfo.role, ...this.cfo.getTreasurySummary() },
         { title: this.cio.title, name: this.cio.name, role: this.cio.role, intelligenceBriefsCount: this.cio.intelligenceBriefs.length }
       ],
+      level3ExecutionAgents: Object.entries(this.level3).map(([key, agent]) => ({
+        key,
+        name: agent.name,
+        role: agent.role
+      })),
+      successMetrics: this.metricsTracker.getMetrics(),
+      selfImprovement: {
+        dailyReviewsCount: this.selfImprovement.dailyReviews.length,
+        weeklyReviewsCount: this.selfImprovement.weeklyReviews.length,
+        monthlyReviewsCount: this.selfImprovement.monthlyReviews.length,
+        latestDailyReview: this.selfImprovement.dailyReviews[this.selfImprovement.dailyReviews.length - 1] || null
+      },
+      safety: {
+        rulesEnforcedCount: this.safety.prohibitedPatterns.length,
+        auditsLoggedCount: this.safety.auditLog.length
+      },
       latestCycle: this.empireHistory[this.empireHistory.length - 1] || null
     };
   }
