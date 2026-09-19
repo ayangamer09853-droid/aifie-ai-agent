@@ -238,6 +238,9 @@ import { globalEventBus } from "./src/core/event-bus.mjs";
 import { globalLifecycle, LIFECYCLE_STATES } from "./src/core/lifecycle.mjs";
 import { classifyError } from "./src/core/errors.mjs";
 import { globalCriticAgent } from "./src/intelligence/critic-agent.mjs";
+import { aifieRevenueAgent } from "./src/revenue/aifie-revenue-agent.mjs";
+import { getAllServices, getServiceById } from "./src/revenue/service-catalog.mjs";
+import { REVENUE_DASHBOARD_HTML } from "./src/revenue/revenue-dashboard.mjs";
 import { globalDataQualityGate } from "./src/market/data-quality-gate.mjs";
 import { globalShadowModeEngine } from "./src/execution/shadow-mode-engine.mjs";
 import { createTradingTaskGraph } from "./src/graph-engineering/graphs/trading.graph.mjs";
@@ -442,6 +445,9 @@ export function app(request, response) {
         return response.end();
       }
       return respond(response, 200, WAR_ROOM_HTML, "text/html", { "ETag": WAR_ROOM_ETAG, "Cache-Control": "public, max-age=60" });
+    }
+    if (request.method === "GET" && (url.pathname === "/revenue" || url.pathname === "/revenue-agent")) {
+      return respond(response, 200, REVENUE_DASHBOARD_HTML, "text/html", { "Cache-Control": "no-cache" });
     }
     if (request.method === "GET" && url.pathname === "/api/status") return respond(response, 200, { name: "Aifie AI Agent", mode: "paper", liveExecution: false, liveBroker: { isLiveModeUnlocked: false }, orders, paper: accountSnapshot(paper) });
     if (request.method === "GET" && url.pathname === "/api/metrics") {
@@ -3932,6 +3938,124 @@ export function app(request, response) {
       }).catch((err) => {
         return respond(response, 500, { success: false, error: err.message });
       });
+      return;
+    }
+
+    // =========================================================================
+    // AIFIE Autonomous Revenue & Business Agent Routes
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/revenue/status") {
+      const metrics = aifieRevenueAgent.getDashboardMetrics();
+      const pipeline = aifieRevenueAgent.crm.getPipelineMetrics();
+      const financial = aifieRevenueAgent.invoicing.getFinancialSummary();
+      return respond(response, 200, {
+        ok: true,
+        service: "Aifie Autonomous Revenue Agent",
+        mission: "Generate real revenue from ₹0 capital via ethical digital services",
+        metrics,
+        pipeline,
+        financial,
+        reinvestmentLedger: aifieRevenueAgent.reinvestmentLedger,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/revenue/services") {
+      const services = getAllServices();
+      return respond(response, 200, {
+        ok: true,
+        count: services.length,
+        services
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/revenue/crm") {
+      return respond(response, 200, {
+        ok: true,
+        pipeline: aifieRevenueAgent.crm.getPipelineMetrics(),
+        leads: Array.from(aifieRevenueAgent.crm.leads.values()),
+        clients: Array.from(aifieRevenueAgent.crm.clients.values()),
+        campaigns: aifieRevenueAgent.crm.outreachCampaigns
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/revenue/leads") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const lead = aifieRevenueAgent.crm.captureLead(payload || {});
+          return respond(response, 201, { ok: true, lead });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/revenue/proposals") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const proposal = aifieRevenueAgent.crm.generateProposal(payload.leadId);
+          return respond(response, 200, { ok: true, proposal });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/revenue/invoices") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const invoice = aifieRevenueAgent.invoicing.createInvoice(payload || {});
+          return respond(response, 201, { ok: true, invoice });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/revenue/invoices/pay") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const result = aifieRevenueAgent.invoicing.recordPayment(payload.invoiceId, payload || {});
+          if (result.success && result.invoice?.calculatedProfitInr) {
+            aifieRevenueAgent.step7_profitReinvestment(result.invoice.calculatedProfitInr);
+          }
+          return respond(response, 200, { ok: true, ...result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/revenue/deliver") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const pkg = aifieRevenueAgent.delivery.deliverService(payload || {});
+          return respond(response, 200, { ok: true, deliveryPackage: pkg });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/revenue/report/daily") {
+      const dailyReport = aifieRevenueAgent.generateDailyReport();
+      return respond(response, 200, { ok: true, dailyReport });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/revenue/cycle") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const cycle = aifieRevenueAgent.runAutonomousBusinessCycle(payload || {});
+          return respond(response, 200, { ok: true, cycle });
+        } catch (err) {
+          return respond(response, 500, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
       return;
     }
 

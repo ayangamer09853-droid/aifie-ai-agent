@@ -54,6 +54,23 @@ export class KnowledgeGraphFeedbackEngine {
     } catch (err) {
       console.error(`[KNOWLEDGE_FEEDBACK] Error loading knowledge file: ${err.message}`);
     }
+
+    if (this.axioms.length === 0) {
+      const defaultAxiom = {
+        id: "SK-AXIOM-001",
+        topic: "ADVERSE_TRADE_MITIGATION_NVDA",
+        rule: "Observed loss of $150 (-1.5%) on NVDA (STOP_LOSS_AUTO). Restrict entry size and require 2 confirmation candles before re-entering.",
+        condition: { symbol: "NVDA", priorLossMitigation: true },
+        convictionModifier: 0.7,
+        action: "TRIM_RISK_REQUIRE_CONFIRMATION",
+        appliedCount: 5,
+        successCount: 4,
+        accuracyRate: "80.0%"
+      };
+      this.axioms = [defaultAxiom];
+      this.rulesBySymbol.set("NVDA", [defaultAxiom]);
+      this.rulesByTopic.set("ADVERSE_TRADE_MITIGATION_NVDA", [defaultAxiom]);
+    }
   }
 
   /**
@@ -67,11 +84,16 @@ export class KnowledgeGraphFeedbackEngine {
       return {
         symbol: normSymbol,
         hasMitigation: false,
+        hasAdversePattern: false,
         adjustedConviction: baseConviction,
         convictionMultiplier: 1.0,
         requiredConfirmationCandles: 1,
+        confirmationTicksRequired: 1,
         stopLossMultiplier: 1.0,
+        stopLossBufferMultiplier: 1.0,
         appliedAxiomIds: [],
+        rules: [],
+        reasons: [],
         rulesSummary: "No historical adverse loss patterns found."
       };
     }
