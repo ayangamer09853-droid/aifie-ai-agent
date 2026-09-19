@@ -482,6 +482,7 @@ export class BinanceMiningPoolMonitor extends EventEmitter {
         } catch (_) {}
       }
     }, 30000);
+    if (this.pingIntervalTimer.unref) this.pingIntervalTimer.unref();
   }
 
   /**

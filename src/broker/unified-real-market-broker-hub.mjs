@@ -44,7 +44,8 @@ export class DhanHQBrokerAdapter {
   }
 
   async placeOrder({ symbol, side, quantity, price, orderType = 'LIMIT', productType = 'INTRADAY' }) {
-    if (!process.env.ENABLE_LIVE_TRADING && !process.env.LIVE_TRADING_ENABLED) {
+    const isLiveEnabled = process.env.ENABLE_LIVE_TRADING === 'true' || process.env.LIVE_TRADING_ENABLED === 'true';
+    if (!isLiveEnabled) {
       throw new Error('Live trading is disabled. Set ENABLE_LIVE_TRADING=true in .env to place live orders.');
     }
     const orderId = 'DHAN_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
@@ -129,7 +130,8 @@ export class BinanceLiveDirectAdapter {
   }
 
   async placeOrder({ symbol, side, quantity, price, type = 'LIMIT' }) {
-    if (!process.env.ENABLE_LIVE_TRADING && !process.env.LIVE_TRADING_ENABLED) {
+    const isLiveEnabled = process.env.ENABLE_LIVE_TRADING === 'true' || process.env.LIVE_TRADING_ENABLED === 'true';
+    if (!isLiveEnabled) {
       throw new Error('Live trading is disabled. Set ENABLE_LIVE_TRADING=true in .env');
     }
     const orderId = 'BN_' + Date.now();
@@ -216,7 +218,7 @@ export class UnifiedRealMarketBrokerHub {
     return {
       totalBrokers: this.registeredBrokers.length,
       freeMarketDataAccess: '100%_ACTIVE_UNLIMITED',
-      liveTradingSwitchActive: Boolean(process.env.ENABLE_LIVE_TRADING || process.env.LIVE_TRADING_ENABLED),
+      liveTradingSwitchActive: process.env.ENABLE_LIVE_TRADING === 'true' || process.env.LIVE_TRADING_ENABLED === 'true',
       brokers: {
         dhan_hq: {
           name: 'DhanHQ (India NSE/BSE/FNO)',

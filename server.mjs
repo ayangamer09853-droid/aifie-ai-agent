@@ -235,7 +235,8 @@ import { nativeBrowserRunner } from "./src/automation/native-browser-runner.mjs"
 import { autonomousSignupEngine } from "./src/auth/autonomous-signup-engine.mjs";
 import { openHandsControlGateway } from "./src/integrations/openhands-control-gateway.mjs";
 import { globalEventBus } from "./src/core/event-bus.mjs";
-import { globalLifecycle } from "./src/core/lifecycle.mjs";
+import { globalLifecycle, LIFECYCLE_STATES } from "./src/core/lifecycle.mjs";
+import { classifyError } from "./src/core/errors.mjs";
 import { globalCriticAgent } from "./src/intelligence/critic-agent.mjs";
 import { globalDataQualityGate } from "./src/market/data-quality-gate.mjs";
 import { globalShadowModeEngine } from "./src/execution/shadow-mode-engine.mjs";
@@ -702,6 +703,66 @@ export function app(request, response) {
       const entity = url.searchParams.get("entity") || "BTC";
       const hops = Number(url.searchParams.get("hops") || 2);
       return respond(response, 200, globalGraphRag.retrieveContext(entity, hops));
+    }
+
+    // Lifecycle State Machine Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/lifecycle/status" || url.pathname === "/api/lifecycle")) {
+      return respond(response, 200, globalLifecycle.getStatus());
+    }
+    if (request.method === "POST" && url.pathname === "/api/lifecycle/pause") {
+      readJsonBody(request, response).then(payload => {
+        const record = globalLifecycle.pause(payload?.reason || "Operational pause requested via API");
+        return respond(response, 200, { success: true, lifecycle: globalLifecycle.getStatus(), transition: record });
+      }).catch(err => respond(response, 400, { error: err.message }));
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/lifecycle/resume") {
+      readJsonBody(request, response).then(payload => {
+        const record = globalLifecycle.resume(payload?.reason || "Operations resumed via API");
+        return respond(response, 200, { success: true, lifecycle: globalLifecycle.getStatus(), transition: record });
+      }).catch(err => respond(response, 400, { error: err.message }));
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/lifecycle/emergency-halt") {
+      readJsonBody(request, response).then(payload => {
+        const record = globalLifecycle.emergencyHalt(payload?.reason || "Emergency halt triggered via API");
+        return respond(response, 200, { success: true, lifecycle: globalLifecycle.getStatus(), transition: record });
+      }).catch(err => respond(response, 400, { error: err.message }));
+      return;
+    }
+    if (request.method === "POST" && url.pathname === "/api/lifecycle/transition") {
+      readJsonBody(request, response).then(payload => {
+        if (!payload?.targetState) return respond(response, 400, { error: "Missing 'targetState'" });
+        const record = globalLifecycle.transitionTo(payload.targetState, { reason: payload.reason, user: payload.user || "API_USER" });
+        return respond(response, 200, { success: true, lifecycle: globalLifecycle.getStatus(), transition: record });
+      }).catch(err => respond(response, 400, { error: err.message }));
+      return;
+    }
+
+    // Central Event Bus Endpoints
+    if (request.method === "GET" && (url.pathname === "/api/event-bus/status" || url.pathname === "/api/event-bus")) {
+      return respond(response, 200, globalEventBus.getStatus());
+    }
+    if (request.method === "GET" && url.pathname === "/api/event-bus/history") {
+      const eventType = url.searchParams.get("eventType") || undefined;
+      const correlationId = url.searchParams.get("correlationId") || undefined;
+      const sinceTimestamp = url.searchParams.get("since") ? Number(url.searchParams.get("since")) : undefined;
+      const limit = url.searchParams.get("limit") ? Number(url.searchParams.get("limit")) : 50;
+      return respond(response, 200, {
+        events: globalEventBus.queryHistory({ eventType, correlationId, sinceTimestamp, limit }),
+        totalRecorded: globalEventBus.history.length
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/event-bus/publish") {
+      readJsonBody(request, response).then(payload => {
+        if (!payload?.eventType) return respond(response, 400, { error: "Missing 'eventType'" });
+        const evt = globalEventBus.publish(payload.eventType, payload.data || payload.payload || {}, {
+          source: payload.source || "API_INJECTION",
+          correlationId: payload.correlationId
+        });
+        return respond(response, 200, { success: true, event: evt });
+      }).catch(err => respond(response, 400, { error: err.message }));
+      return;
     }
 
     // Shadow Mode & Counterfactual Benchmarking Endpoints
@@ -1763,9 +1824,19 @@ export function app(request, response) {
     if (request.method === "POST" && url.pathname === "/api/orders") {
       readJsonBody(request, response).then(async payload => {
         try {
-          // GUARD: Only paper mode
-          if (payload.mode === "live" && !process.env.ENABLE_LIVE_TRADING) {
-            return respond(response, 403, { error: "Live trading disabled. Set ENABLE_LIVE_TRADING=true" });
+          // 1. LIFECYCLE GUARD: If PAUSED or EMERGENCY_HALTED, reject orders
+          const currentLifecycleState = globalLifecycle.getState();
+          if (currentLifecycleState === LIFECYCLE_STATES.PAUSED || currentLifecycleState === LIFECYCLE_STATES.EMERGENCY_HALTED) {
+            const haltReason = `Order rejected: System lifecycle state is ${currentLifecycleState}`;
+            try { globalEventBus.publishOrderRejected(payload, haltReason, { lifecycleState: currentLifecycleState }); } catch (_) {}
+            return respond(response, 403, { error: haltReason, lifecycleState: currentLifecycleState });
+          }
+
+          // 2. LIVE TRADING STRICT SAFETY GUARD (Must strictly equal "true")
+          if (payload.mode === "live" && process.env.ENABLE_LIVE_TRADING !== "true") {
+            const guardReason = "Live trading disabled. Set ENABLE_LIVE_TRADING=true";
+            try { globalEventBus.publishOrderRejected(payload, guardReason, { securityGate: "FAIL_CLOSED" }); } catch (_) {}
+            return respond(response, 403, { error: guardReason });
           }
 
           const result = await orderMutex.runExclusive(async () => {
@@ -1783,6 +1854,25 @@ export function app(request, response) {
               if (orders.length > MAX_MEMORY_ORDERS) orders.splice(0, orders.length - MAX_MEMORY_ORDERS);
               persist();
               emailNotificationService.sendTradeNotification(order).catch(() => {});
+
+              try {
+                globalEventBus.publishOrderSubmitted(order);
+                globalEventBus.publishOrderFilled(order);
+                autonomousClosedLoopSystem.collector.recordTrade({
+                  orderId: order.id,
+                  symbol: sym,
+                  side: String(payload.side || "BUY").toUpperCase(),
+                  requestedQuantity: Number(payload.qty || payload.quantity || 1),
+                  filledQuantity: Number(payload.qty || payload.quantity || 1),
+                  fillPrice: Number(fill?.price || payload.price || 150),
+                  feeUsd: 0,
+                  slippageBps: 0,
+                  mode: "paper",
+                  status: "FILLED",
+                  timestamp: order.requestedAt
+                });
+              } catch (_) {}
+
               return { status: 200, body: { success: true, order } };
             } else if (payload.mode === "live") {
               // Alpaca live
@@ -1792,12 +1882,32 @@ export function app(request, response) {
               if (orders.length > MAX_MEMORY_ORDERS) orders.splice(0, orders.length - MAX_MEMORY_ORDERS);
               persist();
               emailNotificationService.sendTradeNotification(saved).catch(() => {});
+
+              try {
+                globalEventBus.publishOrderSubmitted(saved);
+                globalEventBus.publishOrderFilled(saved);
+                autonomousClosedLoopSystem.collector.recordTrade({
+                  orderId: saved.id,
+                  symbol: String(payload.symbol).toUpperCase(),
+                  side: String(payload.side || "BUY").toUpperCase(),
+                  requestedQuantity: Number(payload.qty || payload.quantity || 1),
+                  filledQuantity: Number(order.filled_qty || payload.qty || payload.quantity || 1),
+                  fillPrice: Number(order.filled_avg_price || payload.price || 0),
+                  feeUsd: 0,
+                  slippageBps: 0,
+                  mode: "live",
+                  status: "FILLED",
+                  timestamp: new Date().toISOString()
+                });
+              } catch (_) {}
+
               return { status: 200, body: { success: true, order: saved } };
             }
             return { status: 400, body: { error: `Unsupported mode: ${payload.mode}` } };
           });
           return respond(response, result.status, result.body);
         } catch (err) {
+          try { globalEventBus.publishOrderRejected(payload, err.message); } catch (_) {}
           return respond(response, 400, { error: err.message });
         }
       }).catch(() => {});
@@ -3798,6 +3908,32 @@ export function app(request, response) {
     if (request.method === "GET" && url.pathname === "/api/mining/watchdog/status") {
       return respond(response, 200, binanceMultiServerCluster.watchdog.getStatus());
     }
+    if (request.method === "GET" && url.pathname === "/api/mining/247/status") {
+      const clusterStats = binanceMultiServerCluster.getClusterStats();
+      const watchdogStatus = binanceMultiServerCluster.watchdog.getStatus();
+      const proxyStatus = binanceStratumMiner.getStats().proxy;
+      const poolStatus = binanceMiningPoolMonitor.getStatus();
+      return respond(response, 200, {
+        status: "ONLINE_247",
+        timestamp: new Date().toISOString(),
+        cluster: clusterStats,
+        watchdog: watchdogStatus,
+        proxy: proxyStatus,
+        pool: poolStatus
+      });
+    }
+    if (request.method === "POST" && url.pathname === "/api/mining/247/restart") {
+      readJsonBody(request, response).then(async (payload) => {
+        binanceMultiServerCluster.stopCluster();
+        const threads = Number(payload?.threads) || Number(process.env.MINING_MAX_THREADS) || 8;
+        const intensity = Number(payload?.intensity) || Number(process.env.MINING_INTENSITY) || 95;
+        const stats = await binanceMultiServerCluster.startCluster({ threads, intensity, autoWatchdog: true });
+        return respond(response, 200, { success: true, message: "24/7 Mining Cluster restarted", stats });
+      }).catch((err) => {
+        return respond(response, 500, { success: false, error: err.message });
+      });
+      return;
+    }
 
     return respond(response, 404, { error: "not found" });
   } catch (err) {
@@ -3806,16 +3942,43 @@ export function app(request, response) {
 }
 
 process.on("uncaughtException", (err) => {
-  console.error("[AIFIE_PROCESS_EXCEPTION_SHIELD]", err?.message || err);
+  const classification = classifyError(err);
+  console.error("[AIFIE_PROCESS_EXCEPTION_SHIELD]", classification.type, err?.message || err);
+  try {
+    globalEventBus.publish("SYSTEM_ERROR", {
+      type: classification.type,
+      action: classification.action,
+      error: err?.message || String(err),
+      stack: err?.stack
+    }, { source: "ProcessExceptionShield" });
+  } catch (_) {}
+  if (classification.type === "FATAL" || classification.type === "SECURITY_BREACH") {
+    try { globalLifecycle.emergencyHalt(`Fatal unhandled exception: ${err?.message || err}`); } catch (_) {}
+  }
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("[AIFIE_PROCESS_REJECTION_SHIELD]", reason?.message || reason);
+  const classification = classifyError(reason);
+  console.error("[AIFIE_PROCESS_REJECTION_SHIELD]", classification.type, reason?.message || reason);
+  try {
+    globalEventBus.publish("SYSTEM_ERROR", {
+      type: classification.type,
+      action: classification.action,
+      error: reason?.message || String(reason)
+    }, { source: "ProcessRejectionShield" });
+  } catch (_) {}
 });
 
 if (process.argv[1] && (process.argv[1].endsWith("server.mjs") || process.argv[1].replace(/\\/g, "/").endsWith("server.mjs"))) {
   const port = Number(process.env.PORT || 8787);
   const host = process.env.HOST || "0.0.0.0";
+
+  try {
+    if (globalLifecycle.getState() === LIFECYCLE_STATES.INITIALIZING) {
+      globalLifecycle.transitionTo(LIFECYCLE_STATES.BOOTING, { reason: "Server startup initiated" });
+    }
+  } catch (_) {}
+
   const httpServer = createServer(app);
   initializeWebSocketGateway({ server: httpServer });
 
@@ -3828,6 +3991,12 @@ if (process.argv[1] && (process.argv[1].endsWith("server.mjs") || process.argv[1
   });
 
   httpServer.listen(port, host, () => {
+    try {
+      if (globalLifecycle.getState() === LIFECYCLE_STATES.BOOTING) {
+        globalLifecycle.transitionTo(LIFECYCLE_STATES.ONLINE, { reason: "HTTP server and services online" });
+      }
+    } catch (_) {}
+
     startTelegramCommandListener({ paper, orders: paper.orders || [] });
     console.log(`\n==================================================`);
     console.log(`🚀 AIFIE AI AGENT ONLINE (PHASE 0 CORE)`);
@@ -3849,7 +4018,42 @@ if (process.argv[1] && (process.argv[1].endsWith("server.mjs") || process.argv[1
       }).catch((err) => {
         console.error(`[MINING-SWARM] Autostart warning:`, err.message);
       });
+
+      binanceStratumMiner.startProxy(3333).then((proxy) => {
+        console.log(`[MINING-PROXY] Local Stratum V1 ASIC Proxy ACTIVE on 0.0.0.0:${proxy.port}! Ready for Antminer/Whatsminer/CGMiner.`);
+      }).catch((err) => {
+        console.warn(`[MINING-PROXY] Proxy startup notice:`, err.message);
+      });
     }
   });
+
+  const handleGracefulShutdown = (signal) => {
+    console.log(`\n[AIFIE] ${signal} received. Initiating graceful shutdown...`);
+    try {
+      if (globalLifecycle.getState() === LIFECYCLE_STATES.ONLINE || globalLifecycle.getState() === LIFECYCLE_STATES.PAUSED) {
+        globalLifecycle.transitionTo(LIFECYCLE_STATES.DRAINING, { reason: `${signal} shutdown requested` });
+      }
+    } catch (_) {}
+
+    try { binanceMultiServerCluster.stopCluster(); } catch (_) {}
+    try { binanceStratumMiner.stopProxy(); } catch (_) {}
+    try { persist(); } catch (_) {}
+
+    httpServer.close(() => {
+      try {
+        globalLifecycle.transitionTo(LIFECYCLE_STATES.STOPPED, { reason: "HTTP server closed cleanly" });
+      } catch (_) {}
+      console.log(`[AIFIE] Graceful shutdown completed.`);
+      process.exit(0);
+    });
+
+    setTimeout(() => {
+      console.warn(`[AIFIE] Forced shutdown timeout.`);
+      process.exit(1);
+    }, 5000).unref();
+  };
+
+  process.on("SIGTERM", () => handleGracefulShutdown("SIGTERM"));
+  process.on("SIGINT", () => handleGracefulShutdown("SIGINT"));
 }
 

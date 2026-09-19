@@ -15,6 +15,7 @@
  */
 
 import { EventEmitter } from "node:events";
+import { globalEventBus } from "./event-bus.mjs";
 
 // =============================================================================
 // PILLAR 1: AUTOMATED TRADE EXECUTOR
@@ -73,6 +74,7 @@ export class AutomatedTradeExecutor extends EventEmitter {
       };
       this.orders.set(orderId, rejectedOrder);
       this.emit("order_rejected", rejectedOrder);
+      try { globalEventBus.publishOrderRejected(rejectedOrder, rejectedOrder.reason, { strategyId }); } catch (_) {}
       return rejectedOrder;
     }
 
@@ -104,6 +106,7 @@ export class AutomatedTradeExecutor extends EventEmitter {
     this.orders.set(orderId, filledOrder);
     this._updatePosition(cleanSym, side, quantity, fillPrice);
     this.emit("order_filled", filledOrder);
+    try { globalEventBus.publishOrderFilled(filledOrder, { strategyId }); } catch (_) {}
 
     return filledOrder;
   }
@@ -792,7 +795,11 @@ export class AutonomousClosedLoopTradingSystem extends EventEmitter {
     const execPrice = currentPrice || price;
 
     // 1. Adapt Strategy to Current Market Regime
-    const regimeState = this.regimeAdapter.classifyRegime({ adx: 27, rsi: 54, volatility: 0.18 });
+    const rawIndicators = context.indicators || {};
+    const adx = Number(rawIndicators.adx ?? context.adx ?? 27);
+    const rsi = Number(rawIndicators.rsi ?? context.rsi ?? 54);
+    const volatility = Number(rawIndicators.volatility ?? context.volatility ?? 0.18);
+    const regimeState = this.regimeAdapter.classifyRegime({ adx, rsi, volatility });
 
     // 2. Risk & Position Sizing Gate
     const positionSizing = this.riskManager.calculatePositionSize({
@@ -817,12 +824,23 @@ export class AutonomousClosedLoopTradingSystem extends EventEmitter {
 
     // 4. Ingest Trade for Performance & Learning
     if (orderResult && orderResult.status === "FILLED") {
-      const simulatedPnl = (Math.random() - 0.42) * 200; // Stochastic PnL
+      let simulatedPnl = 0;
+      if (typeof context.realizedPnl === "number") {
+        simulatedPnl = context.realizedPnl;
+      } else if (typeof context.pnlUsd === "number") {
+        simulatedPnl = context.pnlUsd;
+      } else if (typeof context.exitPrice === "number" && context.exitPrice > 0) {
+        simulatedPnl = (context.exitPrice - orderResult.fillPrice) * orderResult.filledQuantity * (orderResult.side === "BUY" ? 1 : -1);
+      } else {
+        simulatedPnl = (Math.random() - 0.42) * 200; // Stochastic PnL fallback
+      }
+      const isWin = typeof context.isWin === "boolean" ? context.isWin : simulatedPnl > 0;
+
       this.evaluator.addCompletedTrade({
         symbol,
         pnlUsd: Number(simulatedPnl.toFixed(2)),
         returnPct: Number(((simulatedPnl / orderResult.notionalValue) * 100).toFixed(2)),
-        isWin: simulatedPnl > 0,
+        isWin,
         strategyId
       });
 
@@ -830,9 +848,9 @@ export class AutonomousClosedLoopTradingSystem extends EventEmitter {
       this.learner.ingestTradeOutcome({
         tradeId: orderResult.orderId,
         strategyId,
-        isWin: simulatedPnl > 0,
+        isWin,
         pnlUsd: simulatedPnl,
-        rootCause: simulatedPnl > 0 ? "Regime alignment & GNN conviction" : "Minor liquidity variance"
+        rootCause: isWin ? "Regime alignment & GNN conviction" : "Minor liquidity variance"
       });
     }
 

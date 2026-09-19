@@ -3,14 +3,25 @@
 ## Authoritative System State
 
 ```yaml
-version: 1.2.0
-architecture: Graph-Engineered Cognitive Financial Architecture
+version: 1.3.1
+architecture: Graph-Engineered Cognitive Financial Architecture & 24/7 Mining Swarm
 runtime:
   engine: Node.js (ESM Native)
   status: OPERATIONAL
   port: 8787
   cloud_port: 10000
   zero_external_dependencies: true
+
+mining_247:
+  status: OPERATIONAL_247
+  engine: Native OS Worker Threads (node:worker_threads)
+  stratum_v1_proxy: ACTIVE (port 3333, external ASIC multiplexer)
+  active_pool: sha256.poolbinance.com:443
+  failover_pools: btc.poolbinance.com:1800, bs.poolbinance.com:3333
+  worker_account: aifieming001.001
+  watchdog: ACTIVE (15s heartbeats, auto-recovery, dynamic failover)
+  supervisor: ACTIVE (run-247-mining-supervisor.ps1, START_247_MINER.bat)
+  state_persistence: data/mining-cluster-state.json
 
 trading:
   mode: paper
@@ -33,6 +44,11 @@ agent_runtime:
   critic_agent: ACTIVE (Adversarial Falsification)
   total_specialists: 7
 
+core_nervous_system:
+  lifecycle_state_machine: ACTIVE (ONLINE, PAUSED, EMERGENCY_HALTED, DRAINING, STOPPED)
+  central_event_bus: ACTIVE (Ring Buffer, Monotonic Sequences, Replay Engine)
+  error_classification_shield: ACTIVE (Retryable, DataUnsafe, RiskBreach, Fatal)
+
 graph_engineering:
   task_graph: ACTIVE
   knowledge_graph: ACTIVE
@@ -48,8 +64,8 @@ data_engine:
   zero_key_fallback: ACTIVE (Binance Public, CoinGecko, Yahoo Finance, Frankfurter ECB, Stooq)
 
 verification:
-  test_suites: 23
-  total_tests: 1068
+  test_suites: 22
+  total_tests: 1113
   passing_rate: 100%
   critical_security_findings: 0
 ```

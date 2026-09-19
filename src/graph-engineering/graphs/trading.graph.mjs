@@ -21,7 +21,7 @@ export function createTradingTaskGraph({ strategyName = "momentum-v3" } = {}) {
     type: GRAPH_NODE_TYPES.EVENT,
     description: "Ingests raw quote and executes schema/staleness/price sanity checks",
     handler: async (state, ctx) => {
-      const rawTick = ctx.tick || state.marketState?.quote || { symbol: "BTCUSDT", price: 65000, timestamp: Date.now() };
+      const rawTick = ctx.tick || ctx.quote || (ctx.symbol ? { symbol: ctx.symbol, price: Number(ctx.price || 65000), timestamp: Date.now() } : null) || state.marketState?.quote || { symbol: "BTCUSDT", price: 65000, timestamp: Date.now() };
       const quality = globalDataQualityGate.validateTick(rawTick);
       return {
         marketState: {

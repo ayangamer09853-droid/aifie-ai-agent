@@ -131,6 +131,59 @@ export class AifieEventBus extends EventEmitter {
   }
 
   /**
+   * Replay recorded events to a callback
+   * @param {Object} [options]
+   * @param {number} [options.sinceTimestamp]
+   * @param {string} [options.eventType]
+   * @param {(event: Object) => void | Promise<void>} onEvent
+   * @returns {Promise<number>} count of replayed events
+   */
+  async replay({ sinceTimestamp, eventType } = {}, onEvent) {
+    const events = this.queryHistory({ sinceTimestamp, eventType, limit: this.maxHistory });
+    for (const evt of events) {
+      if (typeof onEvent === "function") {
+        await onEvent(evt);
+      }
+    }
+    return events.length;
+  }
+
+  /**
+   * Convenience: publish order submitted event
+   */
+  publishOrderSubmitted(order, metadata = {}) {
+    return this.publish("ORDER_SUBMITTED", order, { source: "OrderRouter", ...metadata });
+  }
+
+  /**
+   * Convenience: publish order filled event
+   */
+  publishOrderFilled(order, metadata = {}) {
+    return this.publish("ORDER_FILLED", order, { source: "ExecutionEngine", ...metadata });
+  }
+
+  /**
+   * Convenience: publish order rejected event
+   */
+  publishOrderRejected(order, reason, metadata = {}) {
+    return this.publish("ORDER_REJECTED", { order, reason }, { source: "RiskGate", ...metadata });
+  }
+
+  /**
+   * Convenience: publish risk breach event
+   */
+  publishRiskBreach(breach, metadata = {}) {
+    return this.publish("RISK_BREACH", breach, { source: "RiskFortress", ...metadata });
+  }
+
+  /**
+   * Convenience: publish market quote/tick event
+   */
+  publishMarketTick(quote, metadata = {}) {
+    return this.publish("MARKET_TICK", quote, { source: "MarketData", ...metadata });
+  }
+
+  /**
    * Reset history (useful for testing)
    */
   clear() {

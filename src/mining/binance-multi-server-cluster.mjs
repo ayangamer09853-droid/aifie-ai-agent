@@ -11,6 +11,8 @@
 
 import { EventEmitter } from 'node:events';
 import { cpus } from 'node:os';
+import { Worker } from 'node:worker_threads';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { BinanceMiningPoolMonitor } from './binance-mining-pool-monitor.mjs';
@@ -22,6 +24,8 @@ import {
   difficultyToTarget,
   hashMeetsTarget
 } from './binance-stratum-miner.mjs';
+
+const WORKER_SCRIPT_PATH = fileURLToPath(new URL('./mining-worker.mjs', import.meta.url));
 
 /**
  * Cluster Node representing a single Stratum V1 connection to a Binance Pool endpoint
@@ -60,6 +64,7 @@ export class BinanceClusterNode extends EventEmitter {
     this.lastShareAt = null;
     this.lastJobReceivedAt = null;
     this.assignedThreads = 0;
+    this.consecutiveFailures = 0;
 
     this.initListeners();
   }
@@ -223,6 +228,7 @@ export class Mining24x7Watchdog extends EventEmitter {
     this.timer = setInterval(() => {
       this.runHealthCheck();
     }, this.checkIntervalMs);
+    if (this.timer.unref) this.timer.unref();
   }
 
   stop() {
@@ -248,8 +254,23 @@ export class Mining24x7Watchdog extends EventEmitter {
     // 1. Audit Each Node Connection
     for (const node of this.cluster.nodes) {
       const state = node.monitor.connectionState;
-      if (state === 'DISCONNECTED' || state === 'DISCONNECTING') {
-        this.recordRecovery('NODE_DISCONNECTED', `Node ${node.index} (${node.poolUrl}) was disconnected. Auto-reconnecting...`);
+      if (state === 'AUTHORIZED') {
+        node.consecutiveFailures = 0;
+      } else if (state === 'DISCONNECTED' || state === 'DISCONNECTING') {
+        node.consecutiveFailures = (node.consecutiveFailures || 0) + 1;
+        this.recordRecovery('NODE_DISCONNECTED', `Node ${node.index} (${node.poolUrl}) disconnected (failure #${node.consecutiveFailures}). Auto-reconnecting...`);
+
+        // Failover rotation: if 3 consecutive failures, switch to next Binance endpoint
+        if (node.consecutiveFailures >= 3 && this.cluster.endpoints && this.cluster.endpoints.length > 1) {
+          const rotationOffset = Math.floor(node.consecutiveFailures / 3);
+          const targetIndex = (node.index + rotationOffset) % this.cluster.endpoints.length;
+          const nextIndex = targetIndex === node.index ? (node.index + 1) % this.cluster.endpoints.length : targetIndex;
+          const nextPoolUrl = this.cluster.endpoints[nextIndex];
+          this.recordRecovery('ENDPOINT_FAILOVER_ROTATION', `Node ${node.index} rotating pool endpoint to failover ${nextPoolUrl}`);
+          node.poolUrl = nextPoolUrl;
+          node.monitor.pools = [nextPoolUrl];
+        }
+
         node.connect().catch(() => {});
       }
 
@@ -260,9 +281,9 @@ export class Mining24x7Watchdog extends EventEmitter {
       }
     }
 
-    // 2. Audit Hashing Thread Liveness
-    if (this.cluster.isMining && this.cluster.miningLoops.length === 0) {
-      this.recordRecovery('DEAD_THREADS_REVIVED', `All hashing loops stopped while isMining=true. Reviving threads...`);
+    // 2. Audit Hashing Thread & Worker Liveness
+    if (this.cluster.isMining && this.cluster.miningLoops.length === 0 && this.cluster.workers.length === 0) {
+      this.recordRecovery('DEAD_THREADS_REVIVED', `All hashing threads and workers stopped while isMining=true. Reviving threads...`);
       this.cluster.restartHashingThreads();
     }
 
@@ -348,6 +369,9 @@ export class BinanceMultiServerCluster extends EventEmitter {
     this.clusterStartTime = null;
 
     this.extranonce2Counter = 1;
+    this.useWorkerThreads = options.useWorkerThreads ?? (process.env.MINING_USE_WORKER_THREADS !== 'false');
+    /** @type {Worker[]} */
+    this.workers = [];
     this.miningLoops = [];
     this.hashWindowSamples = [];
     this.metricsTimer = null;
@@ -394,6 +418,16 @@ export class BinanceMultiServerCluster extends EventEmitter {
 
       node.on('difficulty', ({ nodeIndex, difficulty }) => {
         this.log(`[NODE-${nodeIndex}] Difficulty target updated to ${difficulty}`);
+        const targetBigInt = difficultyToTarget(difficulty);
+        for (const worker of this.workers) {
+          try {
+            worker.postMessage({
+              action: 'UPDATE_TARGET',
+              diff: difficulty,
+              targetBigIntHex: '0x' + targetBigInt.toString(16)
+            });
+          } catch (_) {}
+        }
       });
 
       node.on('authorized', ({ nodeIndex, worker }) => {
@@ -447,6 +481,14 @@ export class BinanceMultiServerCluster extends EventEmitter {
     }
     this.miningLoops = [];
 
+    for (const w of this.workers) {
+      try {
+        w.postMessage({ action: 'STOP' });
+        w.terminate();
+      } catch (_) {}
+    }
+    this.workers = [];
+
     if (this.metricsTimer) {
       clearInterval(this.metricsTimer);
       this.metricsTimer = null;
@@ -477,6 +519,16 @@ export class BinanceMultiServerCluster extends EventEmitter {
     this.intensity = Math.min(100, Math.max(25, intensity));
 
     this.log(`[BOOST] Upgraded cluster to ${this.threads} CPU threads @ ${this.intensity}% intensity.`);
+
+    for (const worker of this.workers) {
+      try {
+        worker.postMessage({
+          action: 'SET_INTENSITY',
+          intensity: this.intensity
+        });
+      } catch (_) {}
+    }
+
     if (this.isMining) {
       this.restartHashingThreads();
     }
@@ -507,10 +559,104 @@ export class BinanceMultiServerCluster extends EventEmitter {
     }
     this.miningLoops = [];
 
+    for (const w of this.workers) {
+      try {
+        w.postMessage({ action: 'STOP' });
+        w.terminate();
+      } catch (_) {}
+    }
+    this.workers = [];
+
     if (!this.isMining) return;
 
     this.partitionThreads();
 
+    if (this.useWorkerThreads) {
+      try {
+        this.launchNativeWorkerThreads();
+        return;
+      } catch (err) {
+        this.log(`[WORKER_POOL] Worker threads fallback to async loops: ${err.message}`);
+      }
+    }
+
+    this.launchAsyncHashingLoops();
+  }
+
+  /**
+   * Launch true parallel OS Worker Threads across CPU cores
+   */
+  launchNativeWorkerThreads() {
+    let threadCounter = 0;
+    for (let nIdx = 0; nIdx < this.nodes.length; nIdx++) {
+      const node = this.nodes[nIdx];
+      const count = node.assignedThreads;
+
+      for (let t = 0; t < count; t++) {
+        const globalThreadId = threadCounter++;
+        const worker = new Worker(WORKER_SCRIPT_PATH, {
+          workerData: {
+            globalThreadId,
+            totalThreads: this.threads,
+            intensity: this.intensity,
+            nodeIndex: nIdx
+          }
+        });
+
+        const targetBigInt = difficultyToTarget(node.currentDifficulty || 1);
+
+        worker.on('message', (msg) => {
+          if (!msg) return;
+          if (msg.type === 'SHARE_FOUND') {
+            this.log(`[SHARE-FOUND!] Worker Thread #${msg.globalThreadId} (Node ${msg.nodeIndex}) solved share! Nonce: ${msg.nonceHex}, Diff: ${msg.diff}`);
+            node.submitShare(msg.jobId, msg.extranonce2, msg.ntime, msg.nonceHex).then((accepted) => {
+              if (accepted) {
+                this.acceptedShares++;
+                this.log(`[SHARE-ACCEPTED!] Binance Pool ACCEPTED share for worker ${node.worker}`);
+              } else {
+                this.rejectedShares++;
+                this.log(`[SHARE-REJECTED] Binance Pool rejected share for worker ${node.worker}`);
+              }
+            }).catch(() => {});
+          } else if (msg.type === 'HASH_BATCH') {
+            this.totalHashes += Number(msg.count) || 0;
+          }
+        });
+
+        worker.on('error', (err) => {
+          this.log(`[WORKER-ERR] Worker Thread #${globalThreadId} error: ${err.message}`);
+        });
+
+        worker.on('exit', (code) => {
+          if (this.isMining && code !== 0) {
+            this.log(`[WORKER-EXIT] Worker Thread #${globalThreadId} exited (code ${code}). Watchdog will auto-revive.`);
+          }
+        });
+
+        const currentJob = node.currentJob || node.monitor.currentJob;
+        worker.postMessage({
+          action: 'INIT',
+          globalThreadId,
+          totalThreads: this.threads,
+          intensity: this.intensity,
+          nodeIndex: nIdx,
+          extranonce1: node.monitor.extranonce1 || '00000000',
+          extranonce2Size: node.monitor.extranonce2Size || 4,
+          diff: node.currentDifficulty || 1,
+          targetBigIntHex: '0x' + targetBigInt.toString(16),
+          job: currentJob
+        });
+
+        this.workers.push(worker);
+      }
+    }
+    this.log(`[SWARM] Launched ${this.workers.length} native OS worker threads across CPU cores!`);
+  }
+
+  /**
+   * Launch asynchronous non-blocking loops (fallback)
+   */
+  launchAsyncHashingLoops() {
     let threadCounter = 0;
     for (let nIdx = 0; nIdx < this.nodes.length; nIdx++) {
       const node = this.nodes[nIdx];
@@ -614,6 +760,21 @@ export class BinanceMultiServerCluster extends EventEmitter {
   }
 
   broadcastJobToAssignedThreads(nodeIndex, job) {
+    const node = this.nodes[nodeIndex];
+    const diff = node ? (node.currentDifficulty || 1) : 1;
+    const targetBigInt = difficultyToTarget(diff);
+
+    for (const worker of this.workers) {
+      try {
+        worker.postMessage({
+          action: 'UPDATE_JOB',
+          job,
+          diff,
+          targetBigIntHex: '0x' + targetBigInt.toString(16)
+        });
+      } catch (_) {}
+    }
+
     if (job && job.cleanJobs) {
       for (const loop of this.miningLoops) {
         if (loop.nodeIndex === nodeIndex) {
@@ -650,6 +811,7 @@ export class BinanceMultiServerCluster extends EventEmitter {
       prevHashes = this.totalHashes;
       prevTime = now;
     }, 1000);
+    if (this.metricsTimer.unref) this.metricsTimer.unref();
   }
 
   /**
@@ -667,7 +829,7 @@ export class BinanceMultiServerCluster extends EventEmitter {
 
     return {
       clusterEngine: 'BinanceMultiServerMiningCluster',
-      version: '3.0.0',
+      version: '3.1.0',
       mode: '24/7_CONTINUOUS_SWARM',
       algorithm: 'SHA256',
       coin: 'Bitcoin (BTC)',
@@ -675,6 +837,9 @@ export class BinanceMultiServerCluster extends EventEmitter {
       threads: this.threads,
       maxSystemCores: this.maxSystemCores,
       intensity: this.intensity,
+      useWorkerThreads: this.useWorkerThreads,
+      workerThreadsActive: this.workers.length,
+      asyncLoopsActive: this.miningLoops.length,
       hashrate: this.hashrate,
       hashrateKh: this.hashrateKh,
       hashrateMh: this.hashrateMh,

@@ -33,6 +33,7 @@ try {
     Write-Host "1. Aifie Agent will automatically start in the background." -ForegroundColor White
     Write-Host "2. No command prompt window will bother you." -ForegroundColor White
     Write-Host "3. Telegram Bot and Trading Engine will activate immediately." -ForegroundColor White
+    Write-Host "4. 24/7 Crypto Mining Swarm & ASIC Proxy (port 3333) will run automatically." -ForegroundColor White
     Write-Host ""
     Write-Host "Note on Sleep/Shutdown:" -ForegroundColor Cyan
     Write-Host "If you want your computer to never sleep while trading, go to:" -ForegroundColor Gray

@@ -143,7 +143,7 @@ export function executeCloudTerminalCommand(command, workingDir = process.cwd())
     }
 
     const startTime = Date.now();
-    const timeoutMs = 8000;
+    const timeoutMs = 15000;
 
     try {
       exec(

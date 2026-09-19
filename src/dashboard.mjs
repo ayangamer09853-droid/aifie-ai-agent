@@ -373,8 +373,11 @@ export const DASHBOARD = `<!DOCTYPE html>
       <div class="brand-badge">AIFIE</div>
       <div class="brand-title">QUANT PLATFORM v100.0</div>
       <div class="status-pill"><div class="pulse-dot"></div><span id="liveBotPill">● PAPER ENGINE ACTIVE</span></div>
+      <div class="status-pill" id="lifecyclePill" style="border-color: #38bdf8; color: #38bdf8; background: rgba(56, 189, 248, 0.1);">⚙️ LIFECYCLE: <span id="lifecycleStateText">ONLINE</span></div>
       <div class="status-pill" style="border-color: var(--neon-green); color: var(--neon-green); background: rgba(0, 255, 157, 0.08);">🛡️ 100% CAPITAL SAFE</div>
       <div class="status-pill" style="border-color: var(--neon-amber); color: var(--neon-amber); background: rgba(255, 184, 0, 0.08);">SIMULATED PAPER MODE</div>
+      <button onclick="toggleSystemPause()" id="pauseResumeBtn" style="background: rgba(255, 184, 0, 0.15); border: 1px solid #ffb800; color: #ffb800; border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 800; cursor: pointer;">⏸️ PAUSE</button>
+      <button onclick="triggerEmergencyHalt()" id="emergencyHaltBtn" style="background: rgba(255, 59, 92, 0.15); border: 1px solid #ff3b5c; color: #ff3b5c; border-radius: 4px; padding: 3px 8px; font-size: 11px; font-weight: 800; cursor: pointer;">🛑 EMERGENCY STOP</button>
     </div>
 
     <div class="nav-tabs">
@@ -9609,7 +9612,66 @@ export const DASHBOARD = `<!DOCTYPE html>
       }
     }
 
+    async function fetchLifecycleStatus() {
+      try {
+        const res = await fetch('/api/lifecycle/status');
+        const data = await res.json();
+        updateLifecycleDisplay(data.currentState);
+      } catch (_) {}
+    }
+
+    async function toggleSystemPause() {
+      const btn = document.getElementById('pauseResumeBtn');
+      const isPaused = btn && btn.innerText.includes('RESUME');
+      const endpoint = isPaused ? '/api/lifecycle/resume' : '/api/lifecycle/pause';
+      try {
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason: 'Operator toggle via Dashboard' }) });
+        const data = await res.json();
+        updateLifecycleDisplay(data.lifecycle?.currentState);
+      } catch (e) {
+        alert('Lifecycle toggle error: ' + e.message);
+      }
+    }
+
+    async function triggerEmergencyHalt() {
+      if (!confirm('⚠️ Are you sure you want to trigger EMERGENCY HALT? All trade executions will be blocked immediately!')) return;
+      try {
+        const res = await fetch('/api/lifecycle/emergency-halt', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reason: 'Operator Emergency Stop via Dashboard' }) });
+        const data = await res.json();
+        updateLifecycleDisplay(data.lifecycle?.currentState);
+        alert('🛑 EMERGENCY HALT ACTIVE: All trading operations blocked.');
+      } catch (e) {
+        alert('Emergency halt error: ' + e.message);
+      }
+    }
+
+    function updateLifecycleDisplay(state) {
+      const text = document.getElementById('lifecycleStateText');
+      const pill = document.getElementById('lifecyclePill');
+      const btn = document.getElementById('pauseResumeBtn');
+      if (!text || !pill) return;
+      text.innerText = state || 'ONLINE';
+      if (state === 'PAUSED') {
+        pill.style.borderColor = '#ffb800';
+        pill.style.color = '#ffb800';
+        pill.style.background = 'rgba(255, 184, 0, 0.15)';
+        if (btn) { btn.innerText = '▶️ RESUME'; btn.style.borderColor = '#00ff9d'; btn.style.color = '#00ff9d'; }
+      } else if (state === 'EMERGENCY_HALTED') {
+        pill.style.borderColor = '#ff3b5c';
+        pill.style.color = '#ff3b5c';
+        pill.style.background = 'rgba(255, 59, 92, 0.2)';
+        if (btn) { btn.innerText = '▶️ RESUME'; btn.style.borderColor = '#00ff9d'; btn.style.color = '#00ff9d'; }
+      } else {
+        pill.style.borderColor = '#38bdf8';
+        pill.style.color = '#38bdf8';
+        pill.style.background = 'rgba(56, 189, 248, 0.1)';
+        if (btn) { btn.innerText = '⏸️ PAUSE'; btn.style.borderColor = '#ffb800'; btn.style.color = '#ffb800'; }
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
+      fetchLifecycleStatus();
+      setInterval(fetchLifecycleStatus, 3000);
       loadOpenBBUi();
       loadIntegrationsUi();
       loadPlatformUi();

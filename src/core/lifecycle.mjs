@@ -85,6 +85,46 @@ export class AifieLifecycleManager extends EventEmitter {
   }
 
   /**
+   * Pause operations
+   * @param {string} [reason="Operational pause requested"]
+   */
+  pause(reason = "Operational pause requested") {
+    return this.transitionTo(LIFECYCLE_STATES.PAUSED, { reason, user: "OPERATOR" });
+  }
+
+  /**
+   * Resume normal online operations
+   * @param {string} [reason="Resuming operational state"]
+   */
+  resume(reason = "Resuming operational state") {
+    return this.transitionTo(LIFECYCLE_STATES.ONLINE, { reason, user: "OPERATOR" });
+  }
+
+  /**
+   * Drain requests before stopping
+   * @param {string} [reason="Draining system prior to shutdown"]
+   */
+  drain(reason = "Draining system prior to shutdown") {
+    return this.transitionTo(LIFECYCLE_STATES.DRAINING, { reason, user: "SYSTEM" });
+  }
+
+  /**
+   * Stop system completely
+   * @param {string} [reason="System stopped"]
+   */
+  stop(reason = "System stopped") {
+    return this.transitionTo(LIFECYCLE_STATES.STOPPED, { reason, user: "SYSTEM" });
+  }
+
+  /**
+   * Check if trade execution is permitted in current state
+   * @returns {boolean}
+   */
+  isExecutionAllowed() {
+    return this.currentState === LIFECYCLE_STATES.ONLINE || this.currentState === LIFECYCLE_STATES.SHADOW_ONLY;
+  }
+
+  /**
    * Get lifecycle diagnostics
    */
   getStatus() {

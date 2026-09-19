@@ -431,6 +431,7 @@ export class BinanceStratumMiner extends EventEmitter {
         totalHashes: this.totalHashes
       });
     }, 1000);
+    if (this.metricsTimer.unref) this.metricsTimer.unref();
   }
 
   /**

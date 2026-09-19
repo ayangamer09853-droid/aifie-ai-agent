@@ -51,3 +51,8 @@ The app binds to `127.0.0.1:8787`; set `PORT` to use another port.
 - Never claim completion without recorded verification. Mark unavailable checks as `UNVERIFIED`.
 - Update `.ai/MEMORY.md`, `.ai/PROGRESS.md`, `.ai/TASKS.md`, `.ai/CHANGELOG.md`, and `.ai/SESSION.md` after meaningful work.
 - Record material failures and their prevention in `.ai/ERRORS.md`.
+- Strict Environment Flag Comparisons: Always check `process.env.FLAG === "true"` for boolean feature flags and safety guards. Never use truthy checks like `!process.env.FLAG` or `Boolean(process.env.FLAG)` which treat the string `"false"` as enabled.
+- Lifecycle & Safety State Invariant: Order execution must fail-closed if `globalLifecycle.isExecutionAllowed()` is false or if the system is `PAUSED` or `EMERGENCY_HALTED`. Server bootstrap must advance lifecycle state to `ONLINE`, and shutdown hooks (`SIGINT`/`SIGTERM`) must transition to `DRAINING` -> `STOPPED`.
+- Universal Event Bus Telemetry: Any module creating, filling, or rejecting orders must publish standardized events (`ORDER_SUBMITTED`, `ORDER_FILLED`, `ORDER_REJECTED`, `RISK_BREACH`) to `globalEventBus`.
+- Deterministic Autonomous Learning: Always prioritize real contextual trade outcomes and dynamic market indicators over static defaults or stochastic random numbers in closed-loop learning cycles.
+
