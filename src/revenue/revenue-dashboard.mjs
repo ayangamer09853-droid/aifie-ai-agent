@@ -1,7 +1,8 @@
 /**
- * AIFIE Autonomous Revenue & Business Operating System - Web Dashboard
- * Rich, futuristic glassmorphic UI with real-time telemetry, 53-offering matrix,
- * 7-Agent Business Swarm grid, Zero-Capital Growth Highway, and instant product generator.
+ * AIFIE AUTONOMOUS BUSINESS EMPIRE - Corporate Governance & Operations Dashboard
+ * Level 1: Supreme Governor Agent (8-Pillar Decision Framework)
+ * Level 2: Executive Council (CRO, CMO, CSO, CCO, COO, CFO 40/25/20/10/5, CIO)
+ * 53 Practical Revenue Offerings • Zero-Capital Growth Highway • Instant Fulfillment
  * Zero external dependencies. Pure Node.js ESM.
  */
 
@@ -10,7 +11,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIFIE REVENUE AGENT — 53-Offering Matrix & 7-Agent Business Swarm</title>
+  <title>AIFIE BUSINESS EMPIRE — Supreme Governor & Executive Council</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -18,13 +19,12 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
     :root {
       --bg-base: #030712;
       --bg-card: rgba(15, 23, 42, 0.75);
-      --bg-card-hover: rgba(30, 41, 59, 0.85);
       --border-card: rgba(56, 189, 248, 0.2);
       --neon-cyan: #00f0ff;
       --neon-green: #10b981;
       --neon-purple: #a855f7;
       --neon-amber: #f59e0b;
-      --neon-emerald: #059669;
+      --neon-gold: #fbbf24;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --font-mono: 'JetBrains Mono', monospace;
@@ -48,7 +48,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       justify-content: space-between;
       align-items: center;
       padding: 16px 32px;
-      background: rgba(3, 7, 18, 0.85);
+      background: rgba(3, 7, 18, 0.9);
       border-bottom: 1px solid var(--border-card);
       backdrop-filter: blur(16px);
       position: sticky;
@@ -61,7 +61,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       gap: 14px;
     }
     .brand-badge {
-      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+      background: linear-gradient(135deg, var(--neon-gold), var(--neon-purple));
       color: #000;
       font-weight: 900;
       font-size: 13px;
@@ -103,6 +103,12 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
     }
+    .btn-gold {
+      background: linear-gradient(135deg, #d97706, #fbbf24);
+      color: #000;
+      font-weight: 800;
+      box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4);
+    }
     .btn-green {
       background: linear-gradient(135deg, #059669, #10b981);
       box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
@@ -120,104 +126,139 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       gap: 24px;
     }
 
-    /* Highway Banner */
-    .highway-banner {
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
-      border: 1px solid var(--border-card);
+    /* Governor Supreme Banner */
+    .governor-banner {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.85), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(251, 191, 36, 0.35);
       border-radius: 14px;
-      padding: 20px 24px;
+      padding: 22px 28px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
     }
-    .highway-header {
+    .gov-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .highway-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--neon-cyan);
+    .gov-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--neon-gold);
       display: flex;
       align-items: center;
       gap: 10px;
     }
-    .highway-track {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
+    .gov-badge {
+      background: rgba(251, 191, 36, 0.2);
+      border: 1px solid var(--neon-gold);
+      color: var(--neon-gold);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 700;
     }
-    .highway-step {
+    .gov-framework-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+    .gov-pillar {
       background: rgba(3, 7, 18, 0.6);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      transition: all 0.2s ease;
+      gap: 4px;
     }
-    .highway-step.active {
-      border-color: var(--neon-green);
-      background: rgba(16, 185, 129, 0.1);
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
-    }
-    .highway-step-num {
-      font-size: 11px;
+    .gov-pillar-num {
+      font-size: 10px;
+      color: var(--neon-cyan);
       font-family: var(--font-mono);
-      color: var(--neon-amber);
       font-weight: 700;
     }
-    .highway-step-name {
-      font-size: 13px;
+    .gov-pillar-name {
+      font-size: 12px;
       font-weight: 700;
-    }
-    .highway-step-target {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
+      color: #fff;
     }
 
-    /* KPI Grid */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-    .kpi-card {
+    /* Treasury 40/25/20/10/5 Bar */
+    .treasury-box {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 12px;
-      padding: 18px;
+      padding: 18px 22px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      position: relative;
-      overflow: hidden;
+      gap: 12px;
+    }
+    .treasury-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--neon-green);
+    }
+    .treasury-bars {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 900px) {
+      .treasury-bars { grid-template-columns: 1fr; }
+    }
+    .tr-pillar {
+      background: rgba(3, 7, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tr-name { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .tr-val { font-size: 16px; font-weight: 800; color: var(--neon-cyan); font-family: var(--font-mono); }
+    .tr-pct { font-size: 10px; color: var(--neon-green); font-family: var(--font-mono); }
+
+    /* Executive Council Grid */
+    .council-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .council-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       transition: transform 0.2s ease;
     }
-    .kpi-card:hover { transform: translateY(-2px); }
-    .kpi-title {
-      font-size: 12px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      font-weight: 600;
+    .council-card:hover { transform: translateY(-2px); border-color: var(--neon-cyan); }
+    .council-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .kpi-value {
-      font-size: 26px;
+    .council-title {
+      font-size: 14px;
       font-weight: 800;
-      color: var(--neon-cyan);
-      font-family: var(--font-mono);
+      color: var(--neon-purple);
     }
-    .kpi-sub {
+    .council-role {
       font-size: 11px;
-      color: var(--neon-green);
-      font-family: var(--font-mono);
+      color: var(--text-muted);
+      line-height: 1.3;
     }
 
-    /* Section Cards */
+    /* Section & Matrix */
     .section-card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
@@ -235,55 +276,16 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       padding-bottom: 12px;
     }
     .section-title {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
     }
-
-    /* Swarm Agents Grid */
-    .swarm-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-    }
-    .swarm-card {
-      background: rgba(3, 7, 18, 0.65);
-      border: 1px solid rgba(168, 85, 247, 0.25);
-      border-radius: 10px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      position: relative;
-    }
-    .swarm-agent-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--neon-purple);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .swarm-agent-role {
-      font-size: 11px;
-      color: var(--text-muted);
-      line-height: 1.3;
-    }
-    .swarm-agent-metric {
-      font-size: 18px;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      color: #fff;
-    }
-
-    /* Filters */
     .filter-tabs {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 8px;
     }
     .tab-btn {
       background: rgba(15, 23, 42, 0.9);
@@ -302,13 +304,11 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       border-color: var(--neon-cyan);
       font-weight: 700;
     }
-
-    /* 53 Matrix Grid */
     .matrix-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 14px;
-      max-height: 520px;
+      max-height: 480px;
       overflow-y: auto;
       padding-right: 6px;
     }
@@ -320,17 +320,11 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       display: flex;
       flex-direction: column;
       gap: 8px;
-      transition: all 0.2s ease;
-    }
-    .offering-card:hover {
-      border-color: var(--neon-cyan);
-      transform: translateY(-2px);
     }
     .offering-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 8px;
     }
     .offering-id {
       background: rgba(56, 189, 248, 0.15);
@@ -341,16 +335,15 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       padding: 2px 6px;
       border-radius: 4px;
     }
-    .offering-title {
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.3;
-    }
     .offering-price {
       font-size: 15px;
       font-weight: 800;
       color: var(--neon-green);
       font-family: var(--font-mono);
+    }
+    .offering-title {
+      font-size: 14px;
+      font-weight: 700;
     }
     .offering-meta {
       font-size: 11px;
@@ -362,8 +355,8 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
     .offering-deliverables {
       font-size: 11px;
       color: #cbd5e1;
-      line-height: 1.4;
       padding-left: 14px;
+      line-height: 1.4;
     }
 
     /* Generator Box */
@@ -374,23 +367,9 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
     }
     @media (max-width: 900px) {
       .generator-grid { grid-template-columns: 1fr; }
-      .highway-track { grid-template-columns: 1fr; }
     }
-    .gen-form {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .form-label {
-      font-size: 12px;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
     .form-select, .form-input {
       background: rgba(3, 7, 18, 0.8);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -408,7 +387,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       font-family: var(--font-mono);
       font-size: 11px;
       color: #38bdf8;
-      max-height: 280px;
+      max-height: 260px;
       overflow-y: auto;
       white-space: pre-wrap;
     }
@@ -417,75 +396,89 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
 <body>
   <header class="header">
     <div class="brand">
-      <div class="brand-badge">AIFIE 7-SWARM</div>
+      <div class="brand-badge">AIFIE 7-SWARM EMPIRE</div>
       <div>
-        <div class="brand-title">Autonomous Revenue OS</div>
-        <div class="brand-sub">53 Practical Revenue Offerings • Zero-Capital Highway • 7 Multi-Agent Swarm</div>
+        <div class="brand-title">AIFIE REVENUE AGENT — Autonomous Business Empire</div>
+        <div class="brand-sub">Zero-Capital Business OS • Level 1: Supreme Governor • Level 2: Executive Council • 53 Matrix</div>
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-purple" onclick="runSwarmCycle(event)">⚡ Run 7-Agent Swarm Cycle</button>
+      <button class="btn btn-gold" onclick="runEmpireCouncilCycle(event)">👑 Run Empire Council Cycle</button>
+      <button class="btn btn-purple" onclick="runSwarmCycle(event)">⚡ Run Swarm Cycle</button>
       <button class="btn btn-green" onclick="refreshAllTelemetry()">🔄 Refresh Live Telemetry</button>
     </div>
   </header>
 
   <main class="container">
-    <!-- Zero-Capital Growth Highway Banner -->
-    <div class="highway-banner">
-      <div class="highway-header">
-        <div class="highway-title">
-          <span>🚀 Zero-Capital Practical Growth Highway</span>
-          <span style="font-size: 12px; color: var(--neon-green); font-family: var(--font-mono);" id="highway-status-badge">Stage 1: Active</span>
+    <!-- Level 1: Supreme Governor Agent Banner -->
+    <div class="governor-banner">
+      <div class="gov-head">
+        <div class="gov-title">
+          <span>🏛️ Level 1: Supreme Governor Agent</span>
+          <span class="gov-badge" id="gov-rate-badge">Approval Rate: 100%</span>
         </div>
-        <div style="font-size: 13px; font-family: var(--font-mono); color: var(--text-muted);">
-          Progression Target: <span style="color: var(--neon-cyan); font-weight: 700;" id="highway-progress-txt">0%</span>
+        <div style="font-size: 12px; font-family: var(--font-mono); color: var(--text-muted);">
+          Final Approval Authority • 8-Pillar Decision Framework
         </div>
       </div>
-      <div class="highway-track" id="highway-track-container">
-        <!-- Injected via JavaScript -->
+      <div class="gov-framework-grid">
+        <div class="gov-pillar"><span class="gov-pillar-num">01. REVENUE</span><span class="gov-pillar-name">Expected ROI</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">02. COST</span><span class="gov-pillar-name">Capital Efficiency</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">03. RISK</span><span class="gov-pillar-name">Legal & Safety</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">04. CUSTOMER</span><span class="gov-pillar-name">Net Value Impact</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">05. SCALE</span><span class="gov-pillar-name">Marginal Effort</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">06. AUTO</span><span class="gov-pillar-name">Automation Potential</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">07. TRUST</span><span class="gov-pillar-name">Reputation Impact</span></div>
+        <div class="gov-pillar"><span class="gov-pillar-num">08. VALUE</span><span class="gov-pillar-name">Long-Term Asset</span></div>
       </div>
     </div>
 
-    <!-- Live Performance KPIs -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-title">Gross Revenue Collected</div>
-        <div class="kpi-value" id="kpi-revenue">₹0</div>
-        <div class="kpi-sub" id="kpi-revenue-usd">$0 USD Equivalent</div>
+    <!-- Empire Treasury Allocation (40/25/20/10/5) -->
+    <div class="treasury-box">
+      <div class="treasury-header">
+        <span>💰 Empire Capital Treasury & Reinvestment Allocation</span>
+        <span style="font-size: 13px; font-family: var(--font-mono); color: var(--neon-cyan);" id="tr-total-rev">Collected: ₹0</span>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Swarm Cycles Completed</div>
-        <div class="kpi-value" id="kpi-cycles">0</div>
-        <div class="kpi-sub">7 Autonomous Stages</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Catalog Offerings</div>
-        <div class="kpi-value">53</div>
-        <div class="kpi-sub">Across 9 High-ROI Verticals</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Lead Conversion Rate</div>
-        <div class="kpi-value" id="kpi-conversion">24.5%</div>
-        <div class="kpi-sub">BANT Qualified Prospecting</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Customer Satisfaction</div>
-        <div class="kpi-value">100%</div>
-        <div class="kpi-sub">Zero-Defect QA Handoff</div>
+      <div class="treasury-bars">
+        <div class="tr-pillar">
+          <div class="tr-name">Growth & Acquisition</div>
+          <div class="tr-val" id="tr-growth">₹0</div>
+          <div class="tr-pct">40% Allocation</div>
+        </div>
+        <div class="tr-pillar">
+          <div class="tr-name">Reserve Vault</div>
+          <div class="tr-val" id="tr-reserve">₹0</div>
+          <div class="tr-pct">25% Allocation</div>
+        </div>
+        <div class="tr-pillar">
+          <div class="tr-name">Infrastructure & Compute</div>
+          <div class="tr-val" id="tr-infra">₹0</div>
+          <div class="tr-pct">20% Allocation</div>
+        </div>
+        <div class="tr-pillar">
+          <div class="tr-name">Research & Intelligence</div>
+          <div class="tr-val" id="tr-research">₹0</div>
+          <div class="tr-pct">10% Allocation</div>
+        </div>
+        <div class="tr-pillar">
+          <div class="tr-name">Emergency Fund</div>
+          <div class="tr-val" id="tr-emergency">₹0</div>
+          <div class="tr-pct">5% Allocation</div>
+        </div>
       </div>
     </div>
 
-    <!-- 7-Agent Business Swarm -->
+    <!-- Level 2: Executive Council Grid -->
     <div class="section-card">
       <div class="section-header">
         <div class="section-title">
-          <span>🐝 7-Agent Autonomous Business Swarm</span>
+          <span>👔 Level 2: Executive Council (C-Suite Agents)</span>
         </div>
         <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
-          Active Swarm Topology: Fully Operational
+          7 Reporting Autonomous Executives
         </div>
       </div>
-      <div class="swarm-grid" id="swarm-grid-container">
+      <div class="council-grid" id="council-grid-container">
         <!-- Injected via JavaScript -->
       </div>
     </div>
@@ -526,37 +519,35 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
         </div>
       </div>
       <div class="generator-grid">
-        <div class="gen-form">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
           <div class="form-group">
-            <label class="form-label">Select Offering Type</label>
+            <label class="form-label">Select Offering</label>
             <select class="form-select" id="gen-offering-select">
               <option value="16">16. Prompt Engineering Packs (Enterprise Vault)</option>
               <option value="17">17. Niche E-Book Publishing Engine</option>
               <option value="18">18. Responsive HTML/CSS Website Templates</option>
               <option value="19">19. Executive Business Analytics Dashboards</option>
               <option value="20">20. Autonomous AI Agent Templates</option>
-              <option value="24">24. Agri Advisory: Comprehensive Schedule</option>
               <option value="28">28. Smart Irrigation Recommendation Schedule</option>
               <option value="29">29. Crop Disease Diagnostic Dossier</option>
               <option value="32">32. Fertilizer & N-P-K Nutrient Plan</option>
               <option value="33">33. Harvest Yield Forecast & Revenue Predictor</option>
               <option value="34">34. Micro-SaaS Invoicing Platform Spec</option>
-              <option value="40">40. Viral Video Script & Hook Generator</option>
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Client or Enterprise Name</label>
-            <input class="form-input" id="gen-client-input" value="Kisan Agrotech & Retail Co." placeholder="e.g. Acme Innovations">
+            <input class="form-input" id="gen-client-input" value="Kisan Agrotech & Retail Co.">
           </div>
           <div class="form-group">
-            <label class="form-label">Crop / Niche / Topic (Optional)</label>
-            <input class="form-input" id="gen-niche-input" value="Wheat / Mustard" placeholder="e.g. Wheat, Tomato, B2B SaaS">
+            <label class="form-label">Crop / Niche / Topic</label>
+            <input class="form-input" id="gen-niche-input" value="Wheat / Mustard">
           </div>
           <button class="btn btn-green" onclick="generateInstantProduct(event)">🛠️ Generate Commercial Deliverable</button>
         </div>
         <div>
           <div class="form-label" style="margin-bottom: 6px;">Generated Output Dossier</div>
-          <div class="gen-output" id="gen-output-box">// Select an offering and click 'Generate Commercial Deliverable'...</div>
+          <div class="gen-output" id="gen-output-box">// Output appears here...</div>
         </div>
       </div>
     </div>
@@ -566,55 +557,44 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
     let allOfferings = [];
     let activeFilter = 'ALL';
 
-    async function loadGrowthPath() {
+    async function loadEmpireStatus() {
       try {
-        const res = await fetch('/api/revenue/growth-path');
+        const res = await fetch('/api/empire/status');
         const data = await res.json();
-        if (data.ok && data.growthStatus) {
-          const s = data.growthStatus;
-          document.getElementById('highway-status-badge').textContent = s.milestoneName;
-          document.getElementById('highway-progress-txt').textContent = s.progressPercent;
-          document.getElementById('kpi-revenue').textContent = '₹' + s.currentRevenueInr.toLocaleString();
-          document.getElementById('kpi-revenue-usd').textContent = '$' + Math.round(s.currentRevenueInr / 83).toLocaleString() + ' USD Equivalent';
-
-          const track = document.getElementById('highway-track-container');
-          track.innerHTML = '';
-          s.allMilestones.forEach(m => {
-            const el = document.createElement('div');
-            el.className = 'highway-step ' + (m.stage === s.currentMilestoneStage ? 'active' : '');
-            el.innerHTML = \`
-              <div class="highway-step-num">STAGE \${m.stage}</div>
-              <div class="highway-step-name">\${m.name}</div>
-              <div class="highway-step-target">Target: ₹\${m.targetRevenueInr.toLocaleString()}</div>
-            \`;
-            track.appendChild(el);
-          });
-        }
-      } catch (e) { console.error('Growth path error', e); }
-    }
-
-    async function loadSwarmStatus() {
-      try {
-        const res = await fetch('/api/revenue/swarm/status');
-        const data = await res.json();
-        if (data.ok && data.swarm) {
-          document.getElementById('kpi-cycles').textContent = data.swarm.totalCycles;
-          const container = document.getElementById('swarm-grid-container');
-          container.innerHTML = '';
-          data.swarm.agents.forEach(a => {
+        if (data.ok && data.empire) {
+          const emp = data.empire;
+          if (emp.governor && emp.governor.audit) {
+            document.getElementById('gov-rate-badge').textContent = 'Approval Rate: ' + emp.governor.audit.approvalRate;
+          }
+          const councilCont = document.getElementById('council-grid-container');
+          councilCont.innerHTML = '';
+          emp.executiveCouncil.forEach(c => {
             const card = document.createElement('div');
-            card.className = 'swarm-card';
-            const metricKey = Object.keys(a).find(k => k.includes('Count') || k.includes('Scouted') || k.includes('Outreach') || k.includes('Generated') || k.includes('Delivered') || k.includes('Active') || k.includes('totalInvoices'));
-            const metricVal = metricKey ? a[metricKey] : 0;
+            card.className = 'council-card';
             card.innerHTML = \`
-              <div class="swarm-agent-name">🤖 \${a.name}</div>
-              <div class="swarm-agent-role">\${a.role}</div>
-              <div class="swarm-agent-metric">\${metricVal}</div>
+              <div class="council-head">
+                <span class="council-title">\${c.title}</span>
+                <span style="font-size: 10px; font-family: var(--font-mono); color: var(--neon-gold);">LEVEL 2</span>
+              </div>
+              <div style="font-weight: 700; font-size: 13px;">\${c.name}</div>
+              <div class="council-role">\${c.role}</div>
             \`;
-            container.appendChild(card);
+            councilCont.appendChild(card);
           });
+
+          // CFO Treasury
+          const cfo = emp.executiveCouncil.find(c => c.title === 'CFO');
+          if (cfo && cfo.treasuryBalances) {
+            const b = cfo.treasuryBalances;
+            document.getElementById('tr-total-rev').textContent = 'Collected: ₹' + (cfo.cumulativeRevenueInr || 0).toLocaleString();
+            document.getElementById('tr-growth').textContent = '₹' + (b.growth_40 || 0).toLocaleString();
+            document.getElementById('tr-reserve').textContent = '₹' + (b.reserveVault_25 || 0).toLocaleString();
+            document.getElementById('tr-infra').textContent = '₹' + (b.infrastructure_20 || 0).toLocaleString();
+            document.getElementById('tr-research').textContent = '₹' + (b.research_10 || 0).toLocaleString();
+            document.getElementById('tr-emergency').textContent = '₹' + (b.emergencyFund_5 || 0).toLocaleString();
+          }
         }
-      } catch (e) { console.error('Swarm status error', e); }
+      } catch (e) { console.error('Empire status error', e); }
     }
 
     async function loadMatrix() {
@@ -625,7 +605,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
           allOfferings = data.offerings;
           renderMatrix();
         }
-      } catch (e) { console.error('Matrix load error', e); }
+      } catch (e) { console.error('Matrix error', e); }
     }
 
     function renderMatrix() {
@@ -666,6 +646,55 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       renderMatrix();
     }
 
+    async function runEmpireCouncilCycle(evt) {
+      const btn = evt.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ Executive Council Running...';
+      try {
+        const res = await fetch('/api/empire/cycle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientName: 'Tata Agri & Global Innovations',
+            company: 'Tata Enterprise Group',
+            niche: 'AgriTech & Enterprise Automation'
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('Empire Cycle Complete! Governor Decision: ' + data.cycle.governorDecision.decision + ' (Score: ' + data.cycle.governorDecision.compositeScore + '/100)');
+          await refreshAllTelemetry();
+        }
+      } catch (e) {
+        alert('Empire execution error: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '👑 Run Empire Council Cycle';
+      }
+    }
+
+    async function runSwarmCycle(evt) {
+      const btn = evt.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ Executing Swarm...';
+      try {
+        const res = await fetch('/api/revenue/swarm/cycle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('Swarm Cycle complete! Gross collected: ₹' + data.cycle.financialSettlement.grossCollectedInr.toLocaleString());
+          await refreshAllTelemetry();
+        }
+      } catch (e) { alert('Swarm error: ' + e.message); }
+      finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Run Swarm Cycle';
+      }
+    }
+
     async function generateInstantProduct(evt) {
       const btn = evt.target;
       btn.disabled = true;
@@ -694,37 +723,10 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       }
     }
 
-    async function runSwarmCycle(evt) {
-      const btn = evt.target;
-      btn.disabled = true;
-      btn.textContent = '⏳ Executing 7 Agents...';
-      try {
-        const res = await fetch('/api/revenue/swarm/cycle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            clientName: 'Agro & Digital Micro-Enterprise',
-            targetNiche: 'Agricultural Cooperatives & Retailers'
-          })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          alert('Swarm Cycle #' + data.cycle.cycleId + ' complete! Gross collected: ₹' + data.cycle.financialSettlement.grossCollectedInr.toLocaleString());
-          await refreshAllTelemetry();
-        }
-      } catch (e) {
-        alert('Swarm execution error: ' + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = '⚡ Run 7-Agent Swarm Cycle';
-      }
-    }
-
     async function refreshAllTelemetry() {
-      await Promise.all([loadGrowthPath(), loadSwarmStatus(), loadMatrix()]);
+      await Promise.all([loadEmpireStatus(), loadMatrix()]);
     }
 
-    // Initial boot
     refreshAllTelemetry();
     setInterval(refreshAllTelemetry, 15000);
   </script>

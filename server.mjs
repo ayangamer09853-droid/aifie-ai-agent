@@ -245,9 +245,11 @@ import { CATALOG_MATRIX_53, getOfferingById, getOfferingByKey, getOfferingsByVer
 import { ZeroCapitalGrowthPath, GROWTH_MILESTONES } from "./src/revenue/zero-capital-growth-path.mjs";
 import { AutonomousBusinessSwarm } from "./src/revenue/business-swarm.mjs";
 import { DigitalProductFulfillmentEngine } from "./src/revenue/digital-product-fulfillment.mjs";
+import { AifieBusinessEmpire, SupremeGovernorAgent, GOVERNOR_DECISION, ACTION_CATEGORIES } from "./src/revenue/business-empire.mjs";
 
 const autonomousBusinessSwarm = new AutonomousBusinessSwarm();
 const digitalProductFulfillmentEngine = new DigitalProductFulfillmentEngine();
+const aifieBusinessEmpire = new AifieBusinessEmpire();
 import { globalDataQualityGate } from "./src/market/data-quality-gate.mjs";
 import { globalShadowModeEngine } from "./src/execution/shadow-mode-engine.mjs";
 import { createTradingTaskGraph } from "./src/graph-engineering/graphs/trading.graph.mjs";
@@ -4122,6 +4124,56 @@ export function app(request, response) {
         }
       }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
       return;
+    }
+
+    // =========================================================================
+    // AIFIE AUTONOMOUS BUSINESS EMPIRE: Supreme Governor & Executive Council
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/empire/status") {
+      return respond(response, 200, {
+        ok: true,
+        empire: aifieBusinessEmpire.getEmpireStatus()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/propose") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const evaluation = aifieBusinessEmpire.proposeToGovernor(payload || {});
+          return respond(response, 200, { ok: true, evaluation });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/cycle") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const cycle = await aifieBusinessEmpire.runEmpireCycle(payload || {});
+          return respond(response, 200, { ok: true, cycle });
+        } catch (err) {
+          return respond(response, 500, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/empire/council") {
+      const status = aifieBusinessEmpire.getEmpireStatus();
+      return respond(response, 200, {
+        ok: true,
+        governor: status.governor,
+        executiveCouncil: status.executiveCouncil
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/empire/governor/audit") {
+      return respond(response, 200, {
+        ok: true,
+        audit: aifieBusinessEmpire.governor.getAuditSummary()
+      });
     }
 
     return respond(response, 404, { error: "not found" });
