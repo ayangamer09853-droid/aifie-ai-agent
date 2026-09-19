@@ -317,3 +317,5 @@ export class RevenueCRM {
     };
   }
 }
+
+export const RevenueCrm = RevenueCRM;

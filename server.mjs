@@ -241,6 +241,13 @@ import { globalCriticAgent } from "./src/intelligence/critic-agent.mjs";
 import { aifieRevenueAgent } from "./src/revenue/aifie-revenue-agent.mjs";
 import { getAllServices, getServiceById } from "./src/revenue/service-catalog.mjs";
 import { REVENUE_DASHBOARD_HTML } from "./src/revenue/revenue-dashboard.mjs";
+import { CATALOG_MATRIX_53, getOfferingById, getOfferingByKey, getOfferingsByVertical } from "./src/revenue/catalog-matrix-53.mjs";
+import { ZeroCapitalGrowthPath, GROWTH_MILESTONES } from "./src/revenue/zero-capital-growth-path.mjs";
+import { AutonomousBusinessSwarm } from "./src/revenue/business-swarm.mjs";
+import { DigitalProductFulfillmentEngine } from "./src/revenue/digital-product-fulfillment.mjs";
+
+const autonomousBusinessSwarm = new AutonomousBusinessSwarm();
+const digitalProductFulfillmentEngine = new DigitalProductFulfillmentEngine();
 import { globalDataQualityGate } from "./src/market/data-quality-gate.mjs";
 import { globalShadowModeEngine } from "./src/execution/shadow-mode-engine.mjs";
 import { createTradingTaskGraph } from "./src/graph-engineering/graphs/trading.graph.mjs";
@@ -4056,6 +4063,64 @@ export function app(request, response) {
           return respond(response, 500, { ok: false, error: err.message });
         }
       }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 53-Offering Practical Revenue Matrix
+    if (request.method === "GET" && (url.pathname === "/api/revenue/matrix/53" || url.pathname === "/api/revenue/matrix")) {
+      const idParam = url.searchParams.get("id");
+      const verticalParam = url.searchParams.get("vertical");
+      if (idParam) {
+        const item = getOfferingById(idParam);
+        return respond(response, item ? 200 : 404, item ? { ok: true, offering: item } : { ok: false, error: "Offering not found" });
+      }
+      if (verticalParam) {
+        const filtered = getOfferingsByVertical(verticalParam);
+        return respond(response, 200, { ok: true, count: filtered.length, vertical: verticalParam, offerings: filtered });
+      }
+      return respond(response, 200, { ok: true, count: CATALOG_MATRIX_53.length, offerings: CATALOG_MATRIX_53 });
+    }
+
+    // Zero-Capital Practical Growth Highway
+    if (request.method === "GET" && url.pathname === "/api/revenue/growth-path") {
+      return respond(response, 200, {
+        ok: true,
+        growthStatus: autonomousBusinessSwarm.growthPath.getStatus()
+      });
+    }
+
+    // 7-Agent Autonomous Business Swarm Telemetry
+    if (request.method === "GET" && url.pathname === "/api/revenue/swarm/status") {
+      return respond(response, 200, {
+        ok: true,
+        swarm: autonomousBusinessSwarm.getSwarmStatus()
+      });
+    }
+
+    // 7-Agent Autonomous Swarm Execution Cycle
+    if (request.method === "POST" && url.pathname === "/api/revenue/swarm/cycle") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const cycle = await autonomousBusinessSwarm.runSwarmCycle(payload || {});
+          return respond(response, 200, { ok: true, cycle });
+        } catch (err) {
+          return respond(response, 500, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
+      return;
+    }
+
+    // Instant Digital Product & AgriTech Deliverable Fulfillment
+    if (request.method === "POST" && url.pathname === "/api/revenue/products/generate") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const identifier = payload.offeringId ? Number(payload.offeringId) : (payload.offeringKey || payload.key || 16);
+          const product = digitalProductFulfillmentEngine.generateProduct(identifier, payload || {});
+          return respond(response, 200, { ok: true, product });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
       return;
     }
 

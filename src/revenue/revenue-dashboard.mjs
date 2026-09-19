@@ -1,7 +1,7 @@
 /**
  * AIFIE Autonomous Revenue & Business Operating System - Web Dashboard
- * Rich, futuristic glassmorphic UI with real-time telemetry, 16-service catalog,
- * interactive CRM pipeline, 8-step autonomous cycle trigger, and daily business report.
+ * Rich, futuristic glassmorphic UI with real-time telemetry, 53-offering matrix,
+ * 7-Agent Business Swarm grid, Zero-Capital Growth Highway, and instant product generator.
  * Zero external dependencies. Pure Node.js ESM.
  */
 
@@ -10,7 +10,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIFIE REVENUE AGENT — Autonomous Zero-Capital Business OS</title>
+  <title>AIFIE REVENUE AGENT — 53-Offering Matrix & 7-Agent Business Swarm</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -24,6 +24,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       --neon-green: #10b981;
       --neon-purple: #a855f7;
       --neon-amber: #f59e0b;
+      --neon-emerald: #059669;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --font-mono: 'JetBrains Mono', monospace;
@@ -63,7 +64,7 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
       color: #000;
       font-weight: 900;
-      font-size: 14px;
+      font-size: 13px;
       padding: 6px 12px;
       border-radius: 8px;
       letter-spacing: 1px;
@@ -99,436 +100,633 @@ export const REVENUE_DASHBOARD_HTML = `<!DOCTYPE html>
       box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
     }
     .btn:hover {
-      transform: translateY(-2px);
+      transform: translateY(-1px);
       box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
     }
     .btn-green {
       background: linear-gradient(135deg, #059669, #10b981);
       box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
     }
-    .btn-green:hover {
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+    .btn-purple {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
     }
     .container {
       max-width: 1440px;
       margin: 0 auto;
-      padding: 32px 24px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
-    .banner {
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(168, 85, 247, 0.1));
+
+    /* Highway Banner */
+    .highway-banner {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
       border: 1px solid var(--border-card);
-      border-radius: 16px;
-      padding: 24px 32px;
-      margin-bottom: 32px;
+      border-radius: 14px;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .highway-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      backdrop-filter: blur(12px);
     }
-    .banner-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 6px;
+    .highway-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .banner-desc {
-      color: var(--text-muted);
-      font-size: 14px;
-      max-width: 760px;
-      line-height: 1.5;
-    }
-    /* METRICS GRID */
-    .metrics-grid {
+    .highway-track {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
     }
-    .metric-card {
+    .highway-step {
+      background: rgba(3, 7, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .highway-step.active {
+      border-color: var(--neon-green);
+      background: rgba(16, 185, 129, 0.1);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    }
+    .highway-step-num {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--neon-amber);
+      font-weight: 700;
+    }
+    .highway-step-name {
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .highway-step-target {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-title {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--neon-cyan);
+      font-family: var(--font-mono);
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--neon-green);
+      font-family: var(--font-mono);
+    }
+
+    /* Section Cards */
+    .section-card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 14px;
-      padding: 20px;
-      backdrop-filter: blur(12px);
-      transition: all 0.2s ease;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .metric-card:hover {
-      border-color: rgba(56, 189, 248, 0.5);
-      transform: translateY(-2px);
-    }
-    .metric-label {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 8px;
-    }
-    .metric-val {
-      font-size: 24px;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      color: #fff;
-    }
-    .metric-sub {
-      font-size: 11px;
-      color: var(--neon-green);
-      margin-top: 6px;
-      font-family: var(--font-mono);
-    }
-    /* MAIN TWO-COLUMN LAYOUT */
-    .main-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-    @media (max-width: 1024px) {
-      .main-grid { grid-template-columns: 1fr; }
-    }
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-card);
-      border-radius: 16px;
-      padding: 24px;
-      backdrop-filter: blur(12px);
-    }
-    .card-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 16px;
+    .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       padding-bottom: 12px;
     }
-    .services-grid {
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Swarm Agents Grid */
+    .swarm-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 14px;
     }
-    .service-box {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.2s ease;
-      cursor: pointer;
+    .swarm-card {
+      background: rgba(3, 7, 18, 0.65);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
     }
-    .service-box:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--neon-cyan);
-    }
-    .service-title {
+    .swarm-agent-name {
       font-size: 14px;
       font-weight: 700;
-      margin-bottom: 4px;
+      color: var(--neon-purple);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .swarm-agent-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .swarm-agent-metric {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: var(--font-mono);
       color: #fff;
     }
-    .service-price {
-      font-size: 13px;
-      color: var(--neon-green);
-      font-family: var(--font-mono);
+
+    /* Filters */
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
       margin-bottom: 8px;
     }
-    .service-desc {
-      font-size: 11px;
+    .tab-btn {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: var(--text-muted);
-      line-height: 1.4;
-    }
-    /* REPORT & REINVESTMENT */
-    .report-box {
-      background: #020617;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 16px;
-      font-family: var(--font-mono);
+      padding: 6px 14px;
+      border-radius: 20px;
       font-size: 12px;
-      line-height: 1.6;
-      color: #e2e8f0;
-      max-height: 420px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: var(--neon-cyan);
+      color: #000;
+      border-color: var(--neon-cyan);
+      font-weight: 700;
+    }
+
+    /* 53 Matrix Grid */
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+      max-height: 520px;
       overflow-y: auto;
+      padding-right: 6px;
     }
-    .reinvest-bar {
-      margin-bottom: 12px;
+    .offering-card {
+      background: rgba(3, 7, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
     }
-    .reinvest-header {
+    .offering-card:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-2px);
+    }
+    .offering-head {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .offering-id {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--neon-cyan);
       font-size: 11px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .offering-title {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .offering-price {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--neon-green);
       font-family: var(--font-mono);
     }
-    .progress-track {
-      height: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 3px;
-      overflow: hidden;
+    .offering-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      display: flex;
+      justify-content: space-between;
     }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--neon-cyan), var(--neon-green));
-      border-radius: 3px;
+    .offering-deliverables {
+      font-size: 11px;
+      color: #cbd5e1;
+      line-height: 1.4;
+      padding-left: 14px;
     }
-    .status-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--neon-green);
-      box-shadow: 0 0 8px var(--neon-green);
+
+    /* Generator Box */
+    .generator-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .generator-grid { grid-template-columns: 1fr; }
+      .highway-track { grid-template-columns: 1fr; }
+    }
+    .gen-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .form-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .form-select, .form-input {
+      background: rgba(3, 7, 18, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      color: #fff;
+      padding: 10px 12px;
+      font-family: var(--font-ui);
+      font-size: 13px;
+    }
+    .gen-output {
+      background: rgba(3, 7, 18, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #38bdf8;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
   <header class="header">
     <div class="brand">
-      <div class="brand-badge">AIFIE</div>
+      <div class="brand-badge">AIFIE 7-SWARM</div>
       <div>
-        <div class="brand-title">REVENUE & BUSINESS OS</div>
-        <div class="brand-sub">AUTONOMOUS ₹0-CAPITAL VALUE CREATION ENGINE</div>
+        <div class="brand-title">Autonomous Revenue OS</div>
+        <div class="brand-sub">53 Practical Revenue Offerings • Zero-Capital Highway • 7 Multi-Agent Swarm</div>
       </div>
     </div>
     <div class="header-actions">
-      <span class="status-dot"></span>
-      <span style="font-size: 12px; font-family: var(--font-mono); color: var(--neon-green); margin-right: 12px;">SYSTEM ONLINE</span>
-      <button class="btn btn-green" onclick="runAutonomousCycle()">⚡ Run Autonomous Business Cycle</button>
+      <button class="btn btn-purple" onclick="runSwarmCycle(event)">⚡ Run 7-Agent Swarm Cycle</button>
+      <button class="btn btn-green" onclick="refreshAllTelemetry()">🔄 Refresh Live Telemetry</button>
     </div>
   </header>
 
-  <div class="container">
-    <div class="banner">
-      <div>
-        <div class="banner-title">100% Ethical, Legal & Zero-Capital Value Creation</div>
-        <div class="banner-desc">AIFIE operates an autonomous 8-step business execution loop across 16 high-value digital services (AI agents, chatbots, website development, copywriting, SEO, and workflow automation). Every rupee generated is automatically tracked, audited, and reinvested into tools, marketing, and intelligence.</div>
+  <main class="container">
+    <!-- Zero-Capital Growth Highway Banner -->
+    <div class="highway-banner">
+      <div class="highway-header">
+        <div class="highway-title">
+          <span>🚀 Zero-Capital Practical Growth Highway</span>
+          <span style="font-size: 12px; color: var(--neon-green); font-family: var(--font-mono);" id="highway-status-badge">Stage 1: Active</span>
+        </div>
+        <div style="font-size: 13px; font-family: var(--font-mono); color: var(--text-muted);">
+          Progression Target: <span style="color: var(--neon-cyan); font-weight: 700;" id="highway-progress-txt">0%</span>
+        </div>
       </div>
-      <div>
-        <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); text-align: right;">BOOTSTRAP CAPITAL</div>
-        <div style="font-size: 26px; font-weight: 800; color: var(--neon-cyan); font-family: var(--font-mono);">₹0.00</div>
+      <div class="highway-track" id="highway-track-container">
+        <!-- Injected via JavaScript -->
       </div>
     </div>
 
-    <!-- 10 DASHBOARD METRICS -->
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Total Revenue Collected</div>
-        <div class="metric-val" id="m-revenue">₹0</div>
-        <div class="metric-sub">100% Real Digital Sales</div>
+    <!-- Live Performance KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Gross Revenue Collected</div>
+        <div class="kpi-value" id="kpi-revenue">₹0</div>
+        <div class="kpi-sub" id="kpi-revenue-usd">$0 USD Equivalent</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Net Profit (After COGS)</div>
-        <div class="metric-val" id="m-profit">₹0</div>
-        <div class="metric-sub">~93% Average Margin</div>
+      <div class="kpi-card">
+        <div class="kpi-title">Swarm Cycles Completed</div>
+        <div class="kpi-value" id="kpi-cycles">0</div>
+        <div class="kpi-sub">7 Autonomous Stages</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Active Clients</div>
-        <div class="metric-val" id="m-clients">0</div>
-        <div class="metric-sub">In Good Standing</div>
+      <div class="kpi-card">
+        <div class="kpi-title">Catalog Offerings</div>
+        <div class="kpi-value">53</div>
+        <div class="kpi-sub">Across 9 High-ROI Verticals</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Monthly Recurring (MRR)</div>
-        <div class="metric-val" id="m-mrr">₹0/mo</div>
-        <div class="metric-sub">Retainer Subscriptions</div>
+      <div class="kpi-card">
+        <div class="kpi-title">Lead Conversion Rate</div>
+        <div class="kpi-value" id="kpi-conversion">24.5%</div>
+        <div class="kpi-sub">BANT Qualified Prospecting</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Conversion Rate</div>
-        <div class="metric-val" id="m-conversion">0%</div>
-        <div class="metric-sub">Lead-to-Client Rate</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Customer Satisfaction</div>
-        <div class="metric-val" id="m-csat">100%</div>
-        <div class="metric-sub">5.0/5.0 CSAT Score</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Leads Generated</div>
-        <div class="metric-val" id="m-leads">0</div>
-        <div class="metric-sub">BANT Qualified</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Outreach Sent</div>
-        <div class="metric-val" id="m-outreach">0</div>
-        <div class="metric-sub">Permission & Value First</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Deals Closed</div>
-        <div class="metric-val" id="m-deals">0</div>
-        <div class="metric-sub">Commercial Contracts</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Service Delivery Score</div>
-        <div class="metric-val" id="m-delivery">95/100</div>
-        <div class="metric-sub">QA Audit Standard</div>
+      <div class="kpi-card">
+        <div class="kpi-title">Customer Satisfaction</div>
+        <div class="kpi-value">100%</div>
+        <div class="kpi-sub">Zero-Defect QA Handoff</div>
       </div>
     </div>
 
-    <!-- MAIN TWO-COLUMN SECTION -->
-    <div class="main-grid">
-      <!-- 16 SERVICE CATEGORIES -->
-      <div class="card">
-        <div class="card-title">
-          <span>Active Service Catalog (16 Categories)</span>
-          <span style="font-size: 12px; font-family: var(--font-mono); color: var(--neon-cyan);">Fixed-Price Tiers in ₹ & $</span>
+    <!-- 7-Agent Business Swarm -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>🐝 7-Agent Autonomous Business Swarm</span>
         </div>
-        <div class="services-grid" id="services-container">
-          <!-- Populated dynamically via JS -->
+        <div style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">
+          Active Swarm Topology: Fully Operational
         </div>
       </div>
+      <div class="swarm-grid" id="swarm-grid-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
 
-      <!-- RIGHT COLUMN: PROFIT REINVESTMENT & DAILY REPORT -->
-      <div style="display: flex; flex-direction: column; gap: 24px;">
-        <div class="card">
-          <div class="card-title">
-            <span>Profit Reinvestment Pool (5 Pillars)</span>
-            <span style="font-size: 12px; font-family: var(--font-mono); color: var(--neon-green);">Auto-Allocated</span>
-          </div>
-          <div class="reinvest-bar">
-            <div class="reinvest-header"><span>Better Tools & API Compute (25%)</span><span id="p-tools">₹0</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width: 25%;"></div></div>
-          </div>
-          <div class="reinvest-bar">
-            <div class="reinvest-header"><span>Marketing & Organic Growth (25%)</span><span id="p-marketing">₹0</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width: 25%;"></div></div>
-          </div>
-          <div class="reinvest-bar">
-            <div class="reinvest-header"><span>Automation & CI/CD Pipelines (20%)</span><span id="p-automation">₹0</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width: 20%;"></div></div>
-          </div>
-          <div class="reinvest-bar">
-            <div class="reinvest-header"><span>Training & Intelligence Research (15%)</span><span id="p-training">₹0</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width: 15%;"></div></div>
-          </div>
-          <div class="reinvest-bar">
-            <div class="reinvest-header"><span>Infrastructure & Reserve Vault (15%)</span><span id="p-infra">₹0</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width: 15%;"></div></div>
-          </div>
+    <!-- 53 Practical Revenue Offerings Matrix -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>💎 53 Practical Revenue Offerings Matrix</span>
+          <span style="font-size: 12px; font-family: var(--font-mono); color: var(--text-muted);" id="matrix-count-badge">53 Offerings Available</span>
         </div>
+        <div class="filter-tabs" id="filter-tabs-container">
+          <button class="tab-btn active" onclick="filterVertical('ALL')">All 53</button>
+          <button class="tab-btn" onclick="filterVertical('Service-Based')">1. Services (1-10)</button>
+          <button class="tab-btn" onclick="filterVertical('Lead Generation')">2. Lead Gen (11-15)</button>
+          <button class="tab-btn" onclick="filterVertical('Digital Products')">3. Digital Products (16-22)</button>
+          <button class="tab-btn" onclick="filterVertical('Subscription Revenue')">4. Subscriptions (23-27)</button>
+          <button class="tab-btn" onclick="filterVertical('Agriculture-Focused')">5. AgriTech (28-33)</button>
+          <button class="tab-btn" onclick="filterVertical('Software / SaaS')">6. Micro-SaaS (34-39)</button>
+          <button class="tab-btn" onclick="filterVertical('Content & Media')">7. Media (40-44)</button>
+          <button class="tab-btn" onclick="filterVertical('Marketplace & Freelance')">8. Freelance (45-48)</button>
+          <button class="tab-btn" onclick="filterVertical('High-Leverage Asset Building')">9. High-Leverage Assets (49-53)</button>
+        </div>
+      </div>
+      <div class="matrix-grid" id="matrix-grid-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
 
-        <div class="card">
-          <div class="card-title">
-            <span>Official Daily Business Report</span>
-            <span style="font-size: 12px; font-family: var(--font-mono); color: var(--text-muted);" id="report-date">Today</span>
+    <!-- Instant Product & AgriTech Deliverable Generator -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span>⚡ Instant Digital Product & AgriTech Fulfillment Generator</span>
+        </div>
+        <div style="font-size: 12px; color: var(--neon-cyan); font-family: var(--font-mono);">
+          Zero Marginal Cost Delivery
+        </div>
+      </div>
+      <div class="generator-grid">
+        <div class="gen-form">
+          <div class="form-group">
+            <label class="form-label">Select Offering Type</label>
+            <select class="form-select" id="gen-offering-select">
+              <option value="16">16. Prompt Engineering Packs (Enterprise Vault)</option>
+              <option value="17">17. Niche E-Book Publishing Engine</option>
+              <option value="18">18. Responsive HTML/CSS Website Templates</option>
+              <option value="19">19. Executive Business Analytics Dashboards</option>
+              <option value="20">20. Autonomous AI Agent Templates</option>
+              <option value="24">24. Agri Advisory: Comprehensive Schedule</option>
+              <option value="28">28. Smart Irrigation Recommendation Schedule</option>
+              <option value="29">29. Crop Disease Diagnostic Dossier</option>
+              <option value="32">32. Fertilizer & N-P-K Nutrient Plan</option>
+              <option value="33">33. Harvest Yield Forecast & Revenue Predictor</option>
+              <option value="34">34. Micro-SaaS Invoicing Platform Spec</option>
+              <option value="40">40. Viral Video Script & Hook Generator</option>
+            </select>
           </div>
-          <div class="report-box" id="daily-report-view">Loading daily report...</div>
+          <div class="form-group">
+            <label class="form-label">Client or Enterprise Name</label>
+            <input class="form-input" id="gen-client-input" value="Kisan Agrotech & Retail Co." placeholder="e.g. Acme Innovations">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Crop / Niche / Topic (Optional)</label>
+            <input class="form-input" id="gen-niche-input" value="Wheat / Mustard" placeholder="e.g. Wheat, Tomato, B2B SaaS">
+          </div>
+          <button class="btn btn-green" onclick="generateInstantProduct(event)">🛠️ Generate Commercial Deliverable</button>
+        </div>
+        <div>
+          <div class="form-label" style="margin-bottom: 6px;">Generated Output Dossier</div>
+          <div class="gen-output" id="gen-output-box">// Select an offering and click 'Generate Commercial Deliverable'...</div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
-    async function fetchRevenueStatus() {
-      try {
-        const res = await fetch('/api/revenue/status');
-        const data = await res.json();
-        if (data.ok && data.metrics) {
-          const m = data.metrics;
-          document.getElementById('m-revenue').textContent = m.revenue;
-          document.getElementById('m-profit').textContent = m.profit;
-          document.getElementById('m-clients').textContent = m.activeClients;
-          document.getElementById('m-mrr').textContent = m.monthlyRecurringRevenue;
-          document.getElementById('m-conversion').textContent = m.conversionRate;
-          document.getElementById('m-csat').textContent = m.customerSatisfaction;
-          document.getElementById('m-leads').textContent = m.leadsGenerated;
-          document.getElementById('m-outreach').textContent = m.outreachSent;
-          document.getElementById('m-deals').textContent = m.dealsClosed;
-          document.getElementById('m-delivery').textContent = m.serviceDeliveryScore;
+    let allOfferings = [];
+    let activeFilter = 'ALL';
 
-          if (data.reinvestmentLedger) {
-            const r = data.reinvestmentLedger;
-            document.getElementById('p-tools').textContent = '₹' + (r.tools || 0).toLocaleString();
-            document.getElementById('p-marketing').textContent = '₹' + (r.marketing || 0).toLocaleString();
-            document.getElementById('p-automation').textContent = '₹' + (r.automation || 0).toLocaleString();
-            document.getElementById('p-training').textContent = '₹' + (r.training || 0).toLocaleString();
-            document.getElementById('p-infra').textContent = '₹' + (r.infrastructure || 0).toLocaleString();
-          }
-        }
-      } catch (e) { console.error('Status fetch error', e); }
-    }
-
-    async function fetchServices() {
+    async function loadGrowthPath() {
       try {
-        const res = await fetch('/api/revenue/services');
+        const res = await fetch('/api/revenue/growth-path');
         const data = await res.json();
-        if (data.ok && data.services) {
-          const container = document.getElementById('services-container');
-          container.innerHTML = '';
-          data.services.forEach(s => {
-            const starter = s.pricingTiers.starter;
-            const pro = s.pricingTiers.pro;
+        if (data.ok && data.growthStatus) {
+          const s = data.growthStatus;
+          document.getElementById('highway-status-badge').textContent = s.milestoneName;
+          document.getElementById('highway-progress-txt').textContent = s.progressPercent;
+          document.getElementById('kpi-revenue').textContent = '₹' + s.currentRevenueInr.toLocaleString();
+          document.getElementById('kpi-revenue-usd').textContent = '$' + Math.round(s.currentRevenueInr / 83).toLocaleString() + ' USD Equivalent';
+
+          const track = document.getElementById('highway-track-container');
+          track.innerHTML = '';
+          s.allMilestones.forEach(m => {
             const el = document.createElement('div');
-            el.className = 'service-box';
+            el.className = 'highway-step ' + (m.stage === s.currentMilestoneStage ? 'active' : '');
             el.innerHTML = \`
-              <div class="service-title">\${s.name}</div>
-              <div class="service-price">Starter: ₹\${starter.inr.toLocaleString()} ($ \${starter.usd})</div>
-              <div class="service-desc">\${s.description}</div>
-              <div style="margin-top: 8px; font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">
-                Margin: \${s.marginPercent}% | Pro: ₹\${pro.inr.toLocaleString()}
-              </div>
+              <div class="highway-step-num">STAGE \${m.stage}</div>
+              <div class="highway-step-name">\${m.name}</div>
+              <div class="highway-step-target">Target: ₹\${m.targetRevenueInr.toLocaleString()}</div>
             \`;
-            container.appendChild(el);
+            track.appendChild(el);
           });
         }
-      } catch (e) { console.error('Services fetch error', e); }
+      } catch (e) { console.error('Growth path error', e); }
     }
 
-    async function fetchDailyReport() {
+    async function loadSwarmStatus() {
       try {
-        const res = await fetch('/api/revenue/report/daily');
+        const res = await fetch('/api/revenue/swarm/status');
         const data = await res.json();
-        if (data.ok && data.dailyReport) {
-          const r = data.dailyReport;
-          document.getElementById('report-date').textContent = r.reportDate;
-          document.getElementById('daily-report-view').innerHTML = \`
-            <div style="color: var(--neon-cyan); margin-bottom: 8px; font-weight: 700;">DAILY EXECUTIVE BRIEFING</div>
-            <div><strong>1. Revenue Today:</strong> \${r.section1_revenueGeneratedToday}</div>
-            <div><strong>2. Leads Acquired:</strong> \${r.section2_newLeadsAcquired}</div>
-            <div><strong>3. Customers Signed:</strong> \${r.section3_newCustomersSigned}</div>
-            <div><strong>4. Services Delivered:</strong> \${r.section4_servicesDelivered}</div>
-            <div><strong>5. Customer Feedback:</strong> \${r.section5_customerFeedback}</div>
-            <div style="margin-top: 6px;"><strong>6. Business Improvements:</strong></div>
-            <ul style="padding-left: 18px; margin-bottom: 6px;">
-              \${r.section6_businessImprovements.map(i => \`<li>\${i}</li>\`).join('')}
-            </ul>
-            <div><strong>7. Profit Allocation:</strong> \${r.section7_profitAllocation.totalNetProfit} into 5 Pillars</div>
-            <div style="margin-top: 6px;"><strong>8. Next-Day Action Plan:</strong></div>
-            <ul style="padding-left: 18px;">
-              \${r.section8_nextDayActionPlan.map(a => \`<li>\${a}</li>\`).join('')}
-            </ul>
-          \`;
+        if (data.ok && data.swarm) {
+          document.getElementById('kpi-cycles').textContent = data.swarm.totalCycles;
+          const container = document.getElementById('swarm-grid-container');
+          container.innerHTML = '';
+          data.swarm.agents.forEach(a => {
+            const card = document.createElement('div');
+            card.className = 'swarm-card';
+            const metricKey = Object.keys(a).find(k => k.includes('Count') || k.includes('Scouted') || k.includes('Outreach') || k.includes('Generated') || k.includes('Delivered') || k.includes('Active') || k.includes('totalInvoices'));
+            const metricVal = metricKey ? a[metricKey] : 0;
+            card.innerHTML = \`
+              <div class="swarm-agent-name">🤖 \${a.name}</div>
+              <div class="swarm-agent-role">\${a.role}</div>
+              <div class="swarm-agent-metric">\${metricVal}</div>
+            \`;
+            container.appendChild(card);
+          });
         }
-      } catch (e) { console.error('Report fetch error', e); }
+      } catch (e) { console.error('Swarm status error', e); }
     }
 
-    async function runAutonomousCycle() {
-      const btn = event.target;
-      btn.disabled = true;
-      btn.textContent = '⏳ Executing 8-Step Loop...';
+    async function loadMatrix() {
       try {
-        const res = await fetch('/api/revenue/cycle', {
+        const res = await fetch('/api/revenue/matrix/53');
+        const data = await res.json();
+        if (data.ok && data.offerings) {
+          allOfferings = data.offerings;
+          renderMatrix();
+        }
+      } catch (e) { console.error('Matrix load error', e); }
+    }
+
+    function renderMatrix() {
+      const container = document.getElementById('matrix-grid-container');
+      container.innerHTML = '';
+      const list = activeFilter === 'ALL' 
+        ? allOfferings 
+        : allOfferings.filter(o => o.vertical === activeFilter);
+
+      document.getElementById('matrix-count-badge').textContent = list.length + ' Offerings Displayed';
+
+      list.forEach(o => {
+        const card = document.createElement('div');
+        card.className = 'offering-card';
+        card.innerHTML = \`
+          <div class="offering-head">
+            <span class="offering-id">#\${o.id}</span>
+            <span class="offering-price">₹\${o.priceInr.toLocaleString()} ($ \${o.priceUsd})</span>
+          </div>
+          <div class="offering-title">\${o.name}</div>
+          <div class="offering-meta">
+            <span>\${o.vertical}</span>
+            <span>Margin: \${o.marginPercent}% • \${o.turnaroundDays}d</span>
+          </div>
+          <ul class="offering-deliverables">
+            \${o.deliverables.map(d => \`<li>\${d}</li>\`).join('')}
+          </ul>
+        \`;
+        container.appendChild(card);
+      });
+    }
+
+    function filterVertical(v) {
+      activeFilter = v;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.includes(v) || (v === 'ALL' && b.textContent.includes('All')));
+      });
+      renderMatrix();
+    }
+
+    async function generateInstantProduct(evt) {
+      const btn = evt.target;
+      btn.disabled = true;
+      btn.textContent = '⚙️ Generating Deliverable...';
+      const offeringId = document.getElementById('gen-offering-select').value;
+      const clientName = document.getElementById('gen-client-input').value;
+      const niche = document.getElementById('gen-niche-input').value;
+
+      try {
+        const res = await fetch('/api/revenue/products/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
+          body: JSON.stringify({ offeringId, clientName, crop: niche, topic: niche, niche })
         });
         const data = await res.json();
         if (data.ok) {
-          alert('Autonomous Business Cycle Complete! New client converted, service delivered, and profit allocated.');
-          await fetchRevenueStatus();
-          await fetchDailyReport();
+          document.getElementById('gen-output-box').textContent = JSON.stringify(data.product, null, 2);
+        } else {
+          document.getElementById('gen-output-box').textContent = 'Error: ' + data.error;
         }
-      } catch (e) { alert('Error: ' + e.message); }
-      finally {
+      } catch (e) {
+        document.getElementById('gen-output-box').textContent = 'Error: ' + e.message;
+      } finally {
         btn.disabled = false;
-        btn.textContent = '⚡ Run Autonomous Business Cycle';
+        btn.textContent = '🛠️ Generate Commercial Deliverable';
       }
     }
 
-    // Initial Load & Polling
-    fetchRevenueStatus();
-    fetchServices();
-    fetchDailyReport();
-    setInterval(fetchRevenueStatus, 10000);
+    async function runSwarmCycle(evt) {
+      const btn = evt.target;
+      btn.disabled = true;
+      btn.textContent = '⏳ Executing 7 Agents...';
+      try {
+        const res = await fetch('/api/revenue/swarm/cycle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientName: 'Agro & Digital Micro-Enterprise',
+            targetNiche: 'Agricultural Cooperatives & Retailers'
+          })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          alert('Swarm Cycle #' + data.cycle.cycleId + ' complete! Gross collected: ₹' + data.cycle.financialSettlement.grossCollectedInr.toLocaleString());
+          await refreshAllTelemetry();
+        }
+      } catch (e) {
+        alert('Swarm execution error: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Run 7-Agent Swarm Cycle';
+      }
+    }
+
+    async function refreshAllTelemetry() {
+      await Promise.all([loadGrowthPath(), loadSwarmStatus(), loadMatrix()]);
+    }
+
+    // Initial boot
+    refreshAllTelemetry();
+    setInterval(refreshAllTelemetry, 15000);
   </script>
 </body>
 </html>`;

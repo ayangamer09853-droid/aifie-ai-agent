@@ -201,3 +201,5 @@ export class InvoiceManager {
     };
   }
 }
+
+export const InvoiceAndBillingManager = InvoiceManager;
