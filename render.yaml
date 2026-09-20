@@ -41,9 +41,15 @@ services:
         sync: false
       - key: MASTER_VAULT_PASSWORD
         generateValue: true
+      - key: BANK_UPI_ID
+        value: "9928264212@ibl"
+      - key: BANK_BENEFICIARY_NAME
+        value: "Aifie AI Revenue Enterprise"
+      - key: ENABLE_PRODUCTION_COMMERCE
+        value: "true"
       - key: USER_EMAIL
         value: "m69249661@gmail.com"
       - key: ADMIN_EMAIL
         value: "m69249661@gmail.com"
-    healthCheckPath: /api/status
+    healthCheckPath: /api/security/status
     autoDeploy: true

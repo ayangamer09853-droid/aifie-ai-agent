@@ -116,9 +116,11 @@ test("Level 3 Specialized Execution Agents & 10-Step Autonomous Business Loop Su
     assert.ok(competitors[0].vulnerabilities.length > 0);
 
     // 3. Trend Detection
-    const trends = cio.detectTrends();
-    assert.ok(trends.length >= 4);
-    assert.ok(trends[0].momentumScore >= 80);
+    const trendResult = cio.detectTrends();
+    assert.ok(trendResult.trends.length >= 4);           // structured object (REQ-10)
+    assert.ok(trendResult.trends[0].momentumScore >= 80); // top trend quality
+    assert.ok(trendResult.topTrend.length > 5);           // topTrend string populated
+    assert.ok(trendResult.count >= 4);                    // count field present
 
     // 4. Opportunity Scoring
     const score = cio.scoreOpportunity({ name: "WhatsApp Advisory Micro-SaaS", marginPercent: 94, demandScore: 90, capitalRequired: 0 });

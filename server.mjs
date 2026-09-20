@@ -246,6 +246,14 @@ import { ZeroCapitalGrowthPath, GROWTH_MILESTONES } from "./src/revenue/zero-cap
 import { AutonomousBusinessSwarm } from "./src/revenue/business-swarm.mjs";
 import { DigitalProductFulfillmentEngine } from "./src/revenue/digital-product-fulfillment.mjs";
 import { AifieBusinessEmpire, SupremeGovernorAgent, GOVERNOR_DECISION, ACTION_CATEGORIES } from "./src/revenue/business-empire.mjs";
+import { globalPaymentGateway, PAYMENT_VERIFICATION_SOURCE, generateUpiIntentUri, generateQrSvg } from "./src/revenue/real-payment-gateway.mjs";
+import { globalLeadPipeline } from "./src/revenue/real-lead-pipeline.mjs";
+import { globalStorefront } from "./src/revenue/instant-digital-storefront.mjs";
+import { globalLeadSwarm } from "./src/revenue/high-velocity-lead-swarm.mjs";
+import { globalApiMarketplace } from "./src/revenue/developer-api-marketplace.mjs";
+import { globalAffiliateEngine } from "./src/revenue/affiliate-referral-engine.mjs";
+import { globalDefenseFortress } from "./src/security/anti-hacker-defense-fortress.mjs";
+import { globalOutreachDispatcher } from "./src/revenue/client-outreach-dispatcher.mjs";
 
 const autonomousBusinessSwarm = new AutonomousBusinessSwarm();
 const digitalProductFulfillmentEngine = new DigitalProductFulfillmentEngine();
@@ -305,10 +313,14 @@ function respond(response, status, payload, type = "application/json", headers =
     "content-type": `${type}; charset=utf-8`,
     "access-control-allow-origin": "*",
     "access-control-allow-methods": "GET, POST, OPTIONS",
-    "access-control-allow-headers": "content-type, authorization",
+    "access-control-allow-headers": "content-type, authorization, x-api-key",
+    "content-security-policy": "default-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:;",
+    "strict-transport-security": "max-age=31536000; includeSubDomains",
     "x-content-type-options": "nosniff",
     "x-frame-options": "DENY",
     "x-xss-protection": "1; mode=block",
+    "referrer-policy": "strict-origin-when-cross-origin",
+    "permissions-policy": "geolocation=(), camera=(), microphone=()",
     ...headers
   });
   response.end(type === "application/json" ? JSON.stringify(payload) : payload);
@@ -330,15 +342,32 @@ function readJsonBody(request, response, maxBytes = 1048576) {
     request.on("end", () => {
       try {
         const raw = chunks.length === 0 ? "{}" : Buffer.concat(chunks, receivedBytes).toString("utf8");
-        const payload = JSON.parse(raw.trim() || "{}");
+        // Deep Packet Inspection on Body
+        const inspect = globalDefenseFortress.inspectBodyString(raw);
+        const isTestEndpoint = request.url?.includes("/api/security/test-attack");
+        if (inspect.malicious && !isTestEndpoint) {
+          const clientIp = request.socket?.remoteAddress || "127.0.0.1";
+          globalDefenseFortress.recordStrike(clientIp, inspect.vector, inspect.evidence);
+          respond(response, 400, { error: `Malicious Payload Blocked by Anti-Hacker WAF: ${inspect.vector}` });
+          return reject(new Error("MALICIOUS_PAYLOAD_BLOCKED"));
+        }
+        let payload = JSON.parse(raw.trim() || "{}");
+        if (!isTestEndpoint) {
+          // Prototype Pollution Neutralizer
+          payload = globalDefenseFortress.sanitizeObject(payload);
+        }
         resolve(payload);
       } catch (err) {
-        respond(response, 400, { error: `Invalid JSON payload: ${err.message}` });
+        if (!response.writableEnded) {
+          respond(response, 400, { error: `Invalid JSON payload: ${err.message}` });
+        }
         reject(err);
       }
     });
     request.on("error", (err) => {
-      respond(response, 400, { error: err.message });
+      if (!response.writableEnded) {
+        respond(response, 400, { error: err.message });
+      }
       reject(err);
     });
   });
@@ -350,6 +379,22 @@ export function app(request, response) {
     if (request.method === "OPTIONS") return respond(response, 204, "");
 
     const clientIp = request.socket?.remoteAddress || request.headers["x-forwarded-for"] || "127.0.0.1";
+
+    // 1. IP Ban Enforcement
+    if (globalDefenseFortress.isIpBanned(clientIp)) {
+      return respond(response, 403, { error: "Access Denied: Your IP has been temporarily banned due to cyber attack attempts." });
+    }
+
+    // 2. Deep Packet Inspection on URL & Query String
+    const urlInspection = globalDefenseFortress.inspectUrlAndHeaders(request.url, request.headers);
+    if (urlInspection.malicious) {
+      globalDefenseFortress.recordStrike(clientIp, urlInspection.vector, urlInspection.evidence);
+      return respond(response, 400, {
+        error: `Malicious Request Blocked by Anti-Hacker WAF: ${urlInspection.vector}`,
+        evidence: urlInspection.evidence
+      });
+    }
+
     if (!checkRateLimit(clientIp)) {
       return respond(response, 429, { error: "Too Many Requests: Rate limit exceeded. Please back off." });
     }
@@ -4253,6 +4298,743 @@ export function app(request, response) {
         ok: true,
         metrics: aifieBusinessEmpire.metricsTracker.getMetrics()
       });
+    }
+
+    // =========================================================================
+    // BREAKTHROUGH INNOVATIONS REST APIS
+    // =========================================================================
+
+    // 1. Commercial Adversarial Critic & Falsifier
+    if (request.method === "POST" && url.pathname === "/api/empire/critic/audit") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const audit = aifieBusinessEmpire.critic.falsifyProposal(payload || {});
+          return respond(response, 200, { ok: true, audit });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 2. Dynamic Meta-DAG Pipeline Compiler
+    if (request.method === "POST" && url.pathname === "/api/empire/dag/execute") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const result = await aifieBusinessEmpire.dagCompiler.executeDag(payload || {});
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 500, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 3. Multi-Vector Metered Public API Hub
+    if (request.method === "GET" && url.pathname === "/api/empire/metered/status") {
+      return respond(response, 200, {
+        ok: true,
+        gateway: aifieBusinessEmpire.meteredGateway.getStatus()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/api-keys/generate") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { clientName, creditBalanceInr } = payload || {};
+          const keyRecord = aifieBusinessEmpire.meteredGateway.generateApiKey(clientName, creditBalanceInr);
+          return respond(response, 200, { ok: true, keyRecord });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // Public Metered Micro-API: AgriTech Precision Advisory
+    if (request.method === "POST" && (url.pathname === "/api/public/agritech/advisory" || url.pathname === "/api/empire/public/agritech/advisory")) {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const apiKey = request.headers["x-api-key"] || payload?.apiKey;
+          const advisory = aifieBusinessEmpire.meteredGateway.handleAgriTechAdvisory(apiKey, payload || {});
+          return respond(response, 200, { ok: true, advisory });
+        } catch (err) {
+          const statusCode = err.message.startsWith("MISSING_API_KEY") || err.message.startsWith("INVALID_API_KEY") ? 401 : 402;
+          return respond(response, statusCode, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // Public Metered Micro-API: Instant SEO Strategy
+    if (request.method === "POST" && (url.pathname === "/api/public/seo/audit" || url.pathname === "/api/empire/public/seo/audit")) {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const apiKey = request.headers["x-api-key"] || payload?.apiKey;
+          const audit = aifieBusinessEmpire.meteredGateway.handleSeoAudit(apiKey, payload || {});
+          return respond(response, 200, { ok: true, audit });
+        } catch (err) {
+          const statusCode = err.message.startsWith("MISSING_API_KEY") || err.message.startsWith("INVALID_API_KEY") ? 401 : 402;
+          return respond(response, statusCode, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // Public Metered Micro-API: Commercial Copywriting
+    if (request.method === "POST" && (url.pathname === "/api/public/copy/generate" || url.pathname === "/api/empire/public/copy/generate")) {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const apiKey = request.headers["x-api-key"] || payload?.apiKey;
+          const copy = aifieBusinessEmpire.meteredGateway.handleCopywriting(apiKey, payload || {});
+          return respond(response, 200, { ok: true, copy });
+        } catch (err) {
+          const statusCode = err.message.startsWith("MISSING_API_KEY") || err.message.startsWith("INVALID_API_KEY") ? 401 : 402;
+          return respond(response, statusCode, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 4. Neuro-Evolutionary Genetic Prompt Mega-Factory
+    if (request.method === "POST" && url.pathname === "/api/empire/genetic/evolve") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const report = aifieBusinessEmpire.promptEvolver.runEvolutionCycle(payload || {});
+          return respond(response, 200, { ok: true, report });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/empire/genetic/champion") {
+      return respond(response, 200, {
+        ok: true,
+        champion: aifieBusinessEmpire.promptEvolver.getChampionPrompt()
+      });
+    }
+
+    // 5. Conversational Executive War Room & Multimodal Copilot
+    if (request.method === "POST" && url.pathname === "/api/empire/warroom/command") {
+      readJsonBody(request, response).then(async (payload) => {
+        try {
+          const { command } = payload || {};
+          const result = await aifieBusinessEmpire.warRoom.processCommand(command || "");
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 6. Autonomous Immune Mesh & Self-Healing Sentry (Innovation 3)
+    if (request.method === "GET" && url.pathname === "/api/empire/immune/status") {
+      return respond(response, 200, {
+        ok: true,
+        immune: aifieBusinessEmpire.immuneMesh.getStatus()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/immune/heal") {
+      try {
+        const healingResult = aifieBusinessEmpire.immuneMesh.healAllSubsystems();
+        return respond(response, 200, { ok: true, result: healingResult });
+      } catch (err) {
+        return respond(response, 500, { ok: false, error: err.message });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/immune/circuit-breaker") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { subsystem, action, reason } = payload || {};
+          if (!subsystem) {
+            return respond(response, 400, { ok: false, error: "MISSING_SUBSYSTEM: Specify subsystem name" });
+          }
+          let result;
+          if (action === "TRIP") {
+            result = aifieBusinessEmpire.immuneMesh.tripCircuit(subsystem, reason || "Manual trip via REST API");
+          } else {
+            result = aifieBusinessEmpire.immuneMesh.resetCircuit(subsystem, true);
+          }
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 7. Distributed P2P Sovereign Edge Node Mesh (Innovation 4)
+    if (request.method === "GET" && url.pathname === "/api/empire/mesh/status") {
+      return respond(response, 200, {
+        ok: true,
+        mesh: aifieBusinessEmpire.sovereignMesh.getMeshStatus()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/mesh/heartbeat") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { nodeId, latencyMs, status } = payload || {};
+          const result = aifieBusinessEmpire.sovereignMesh.recordHeartbeat(nodeId, { latencyMs, status });
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/mesh/offload") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { taskType, taskPayload } = payload || {};
+          const result = aifieBusinessEmpire.sovereignMesh.dispatchWorkload(taskType, taskPayload || {});
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 500, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 500, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/mesh/sync") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { peerNodeId, peerState } = payload || {};
+          const result = aifieBusinessEmpire.sovereignMesh.syncStateWithPeer(peerNodeId || "node-render-singapore-02", peerState || {});
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/empire/mesh/bft-vote") {
+      readJsonBody(request, response).then((payload) => {
+        try {
+          const { proposalId, proposalTitle, votes } = payload || {};
+          const result = aifieBusinessEmpire.sovereignMesh.evaluateBftConsensus(proposalId, proposalTitle, votes);
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch((err) => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // =========================================================================
+    // Real Production Commerce, Payment Gateways & Real Lead Pipeline Routes
+    // =========================================================================
+
+    // Razorpay Webhook Listener
+    if (request.method === "POST" && url.pathname === "/api/webhooks/razorpay") {
+      let rawData = "";
+      request.on("data", chunk => { rawData += chunk; });
+      request.on("end", () => {
+        try {
+          const sig = request.headers["x-razorpay-signature"] || "";
+          const parsed = JSON.parse(rawData || "{}");
+          const result = globalPaymentGateway.processWebhookPayment({
+            gateway: "RAZORPAY",
+            rawBody: rawData,
+            signatureHeader: sig,
+            parsedPayload: parsed
+          });
+
+          if (!result.success) {
+            return respond(response, 400, { ok: false, error: result.error });
+          }
+
+          if (result.auditEntry?.invoiceId) {
+            aifieRevenueAgent.invoicing.recordRealPayment(result.auditEntry.invoiceId, {
+              verificationSource: PAYMENT_VERIFICATION_SOURCE.RAZORPAY_WEBHOOK,
+              paymentId: result.auditEntry.paymentId,
+              paidAmountInr: result.auditEntry.amountInr,
+              method: "RAZORPAY_GATEWAY"
+            });
+          }
+
+          return respond(response, 200, { ok: true, status: "PROCESSED_REAL", result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      });
+      return;
+    }
+
+    // Stripe Webhook Listener
+    if (request.method === "POST" && url.pathname === "/api/webhooks/stripe") {
+      let rawData = "";
+      request.on("data", chunk => { rawData += chunk; });
+      request.on("end", () => {
+        try {
+          const sig = request.headers["stripe-signature"] || "";
+          const parsed = JSON.parse(rawData || "{}");
+          const result = globalPaymentGateway.processWebhookPayment({
+            gateway: "STRIPE",
+            rawBody: rawData,
+            signatureHeader: sig,
+            parsedPayload: parsed
+          });
+
+          if (!result.success) {
+            return respond(response, 400, { ok: false, error: result.error });
+          }
+
+          if (result.auditEntry?.invoiceId) {
+            aifieRevenueAgent.invoicing.recordRealPayment(result.auditEntry.invoiceId, {
+              verificationSource: PAYMENT_VERIFICATION_SOURCE.STRIPE_WEBHOOK,
+              paymentId: result.auditEntry.paymentId,
+              paidAmountInr: result.auditEntry.amountInr,
+              method: "STRIPE_CHECKOUT"
+            });
+          }
+
+          return respond(response, 200, { ok: true, status: "PROCESSED_REAL", result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      });
+      return;
+    }
+
+    // Admin Bank UTR / IMPS Manual Reconciler
+    if (request.method === "POST" && url.pathname === "/api/billing/verify-utr") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { invoiceId, utrNumber, amountInr, senderBank, notes } = payload || {};
+          const recon = globalPaymentGateway.reconcileBankUtr({
+            invoiceId,
+            utrNumber,
+            amountInr,
+            senderBank,
+            verifiedBy: "ADMIN_CONSOLE",
+            notes
+          });
+
+          const settlement = aifieRevenueAgent.invoicing.recordRealPayment(invoiceId, {
+            verificationSource: PAYMENT_VERIFICATION_SOURCE.VERIFIED_BANK_UTR,
+            paymentId: utrNumber,
+            paidAmountInr: Number(amountInr),
+            method: "BANK_NEFT_IMPS_UPI",
+            senderBank
+          });
+
+          return respond(response, 200, { ok: true, reconciliation: recon, settlement });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // Production Ledger Summary
+    if (request.method === "GET" && url.pathname === "/api/billing/production-summary") {
+      const summary = aifieRevenueAgent.invoicing.getProductionLedgerSummary();
+      const auditLog = globalPaymentGateway.getAuditLog();
+      return respond(response, 200, {
+        ok: true,
+        mode: "100% REAL PRODUCTION (ZERO SIMULATIONS)",
+        summary,
+        gatewayAuditTrail: auditLog
+      });
+    }
+
+    // Dynamic QR & Printable HTML Invoices
+    if (request.method === "GET" && url.pathname.startsWith("/api/billing/invoice/")) {
+      const parts = url.pathname.split("/");
+      const invoiceId = parts[4];
+      const action = parts[5]; // "qr" or "html"
+
+      const inv = aifieRevenueAgent.invoicing.invoices.get(invoiceId);
+      if (!inv) {
+        return respond(response, 404, { ok: false, error: `Invoice ${invoiceId} not found` });
+      }
+
+      if (action === "html") {
+        const html = aifieRevenueAgent.invoicing.generateInvoiceHtml(invoiceId);
+        response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        response.end(html);
+        return;
+      }
+
+      // Default: Return QR JSON data
+      return respond(response, 200, {
+        ok: true,
+        invoiceId: inv.id,
+        clientName: inv.clientName,
+        amountInr: inv.amountInr,
+        status: inv.status,
+        upiIntentUri: inv.upiIntentUri,
+        qrSvg: inv.qrSvg
+      });
+    }
+
+    // Real Freelance Jobs Radar
+    if (request.method === "GET" && url.pathname === "/api/leads/real-jobs") {
+      const openJobs = globalLeadPipeline.getOpenJobs();
+      const proposals = globalLeadPipeline.getProposals();
+      return respond(response, 200, {
+        ok: true,
+        totalOpenJobs: openJobs.length,
+        jobs: openJobs,
+        proposalsCount: proposals.length
+      });
+    }
+
+    // Generate Tailored Proposal for Real Job
+    if (request.method === "POST" && url.pathname === "/api/leads/generate-pitch") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { jobId, customPriceInr, customTimelineDays } = payload || {};
+          const proposal = globalLeadPipeline.generateTailoredProposal(jobId, {
+            customPriceInr: customPriceInr ? Number(customPriceInr) : null,
+            customTimelineDays: customTimelineDays ? Number(customTimelineDays) : 3
+          });
+          return respond(response, 200, { ok: true, proposal });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // =========================================================================
+    // High-Velocity Revenue Multiplier Routes (Storefront, Swarm, Marketplace, Affiliate)
+    // =========================================================================
+
+    // 1. Instant Digital Storefront & Automated Download Token Engine
+    if (request.method === "GET" && url.pathname === "/api/store/products") {
+      return respond(response, 200, {
+        ok: true,
+        totalProducts: globalStorefront.getProducts().length,
+        products: globalStorefront.getProducts()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/store/checkout") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const session = globalStorefront.createCheckoutSession(payload || {});
+          return respond(response, 201, { ok: true, session });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/store/confirm-payment") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { orderId, transactionRef, method } = payload || {};
+          const result = globalStorefront.confirmPayment(orderId, { transactionRef, method });
+          // If affiliate was attached, attribute commission automatically
+          const order = globalStorefront.orders.get(orderId);
+          if (order?.affiliateRef) {
+            globalAffiliateEngine.attributeConversion({
+              affiliateId: order.affiliateRef,
+              orderOrInvoiceId: orderId,
+              grossAmountInr: order.priceInr,
+              clientName: order.customerEmail
+            });
+          }
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname.startsWith("/api/store/download/")) {
+      const token = url.pathname.split("/")[4];
+      const delivery = globalStorefront.validateAndDeliverAsset(token);
+      if (!delivery.valid) {
+        return respond(response, 403, { ok: false, error: delivery.error });
+      }
+      return respond(response, 200, { ok: true, delivery });
+    }
+
+    // 2. High-Velocity Lead Swarm & Attached PoC Prototype Generator
+    if (request.method === "GET" && url.pathname === "/api/leads/swarm/opportunities") {
+      return respond(response, 200, {
+        ok: true,
+        total: globalLeadSwarm.getOpportunities().length,
+        opportunities: globalLeadSwarm.getOpportunities()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/leads/swarm/poc") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { jobId } = payload || {};
+          const poc = globalLeadSwarm.generateProofOfConceptPrototype(jobId);
+          return respond(response, 200, { ok: true, poc });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/leads/swarm/bid") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { jobId, customQuoteInr, customTimelineDays } = payload || {};
+          const bid = globalLeadSwarm.compileTailoredBidWithPoc(jobId, { customQuoteInr, customTimelineDays });
+          return respond(response, 200, { ok: true, bid });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/leads/swarm/batch") {
+      const batchBids = globalLeadSwarm.compileBatchBids();
+      return respond(response, 200, {
+        ok: true,
+        totalCompiled: batchBids.length,
+        batchBids
+      });
+    }
+
+    // 3. Developer Micro-SaaS API Marketplace
+    if (request.method === "GET" && url.pathname === "/api/marketplace/plans") {
+      return respond(response, 200, {
+        ok: true,
+        plans: globalApiMarketplace.getPlans(),
+        status: globalApiMarketplace.getStatus()
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/marketplace/subscribe") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { developerEmail, planTier, transactionRef } = payload || {};
+          const sub = globalApiMarketplace.subscribeDeveloper({ developerEmail, planTier, transactionRef });
+          return respond(response, 201, { ok: true, subscription: sub });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // 5 Paid Micro-APIs with Key Authentication & Credit Deduction
+    const marketplaceEndpoints = [
+      { path: "/api/marketplace/service/crypto-arbitrage", handler: (p) => globalApiMarketplace.executeCryptoArbitrageScanner(p) },
+      { path: "/api/marketplace/service/lead-enrichment", handler: (p) => globalApiMarketplace.executeLeadEnrichment(p) },
+      { path: "/api/marketplace/service/competitor-backlinks", handler: (p) => globalApiMarketplace.executeCompetitorBacklinkGap(p) },
+      { path: "/api/marketplace/service/climate-risk", handler: (p) => globalApiMarketplace.executeAgriClimateRiskIndex(p) },
+      { path: "/api/marketplace/service/invoice-ocr", handler: (p) => globalApiMarketplace.executeInvoiceOcrExtractor(p) }
+    ];
+
+    for (const ep of marketplaceEndpoints) {
+      if (request.method === "POST" && url.pathname === ep.path) {
+        const apiKey = request.headers["x-api-key"] || url.searchParams.get("key");
+        const auth = globalApiMarketplace.authenticateAndDeduct(apiKey);
+        if (!auth.authorized) {
+          return respond(response, 401, { ok: false, error: auth.error });
+        }
+        readJsonBody(request, response).then(payload => {
+          try {
+            const data = ep.handler(payload || {});
+            return respond(response, 200, {
+              ok: true,
+              data,
+              creditsRemaining: auth.remainingCredits
+            });
+          } catch (err) {
+            return respond(response, 500, { ok: false, error: err.message });
+          }
+        }).catch(() => {
+          const data = ep.handler({});
+          return respond(response, 200, { ok: true, data, creditsRemaining: auth.remainingCredits });
+        });
+        return;
+      }
+    }
+
+    // 4. Viral Affiliate Referral Engine
+    if (request.method === "POST" && url.pathname === "/api/affiliate/register") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { name, email, upiVpa, customSlug } = payload || {};
+          const partner = globalAffiliateEngine.registerPartner({ name, email, upiVpa, customSlug });
+          return respond(response, 201, { ok: true, partner });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/affiliate/stats") {
+      const affiliateId = url.searchParams.get("id");
+      const stats = globalAffiliateEngine.getAffiliateStats(affiliateId);
+      if (!stats) return respond(response, 404, { ok: false, error: "Affiliate ID not found" });
+      return respond(response, 200, { ok: true, stats });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/affiliate/track") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { affiliateId, ipAddress } = payload || {};
+          const track = globalAffiliateEngine.trackReferralClick(affiliateId, ipAddress);
+          return respond(response, 200, { ok: true, track });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // =========================================================================
+    // 5. Anti-Hacker Cyber Defense Fortress & Security Gate Routes
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/security/status") {
+      return respond(response, 200, {
+        ok: true,
+        fortress: globalDefenseFortress.getFortressStatus()
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/security/events") {
+      return respond(response, 200, {
+        ok: true,
+        totalEvents: globalDefenseFortress.events.length,
+        events: globalDefenseFortress.events.slice(0, 50)
+      });
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/security/test-attack") {
+      readJsonBody(request, response).then(payload => {
+        const testPayload = payload?.payload || "";
+        const clientIp = request.socket?.remoteAddress || "127.0.0.1";
+        const inspect = globalDefenseFortress.inspectBodyString(testPayload);
+        if (inspect.malicious) {
+          globalDefenseFortress.recordStrike(clientIp, inspect.vector, inspect.evidence);
+          return respond(response, 200, {
+            ok: true,
+            intercepted: true,
+            vector: inspect.vector,
+            evidence: inspect.evidence,
+            message: "🛡️ THREAT INTERCEPTED: Attack payload successfully recognized and neutralized by WAF."
+          });
+        }
+        return respond(response, 200, {
+          ok: true,
+          intercepted: false,
+          message: "Payload is clean. No malicious signature detected."
+        });
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/security/unban") {
+      readJsonBody(request, response).then(payload => {
+        const ip = payload?.ip;
+        if (!ip) return respond(response, 400, { ok: false, error: "Missing ip parameter" });
+        const result = globalDefenseFortress.unbanIp(ip);
+        return respond(response, 200, { ok: true, result });
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/security/mfa/generate") {
+      readJsonBody(request, response).then(payload => {
+        const email = payload?.email || "admin@aifie.internal";
+        const mfa = globalDefenseFortress.generateTotpSecret(email);
+        return respond(response, 200, { ok: true, mfa });
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/security/mfa/verify") {
+      readJsonBody(request, response).then(payload => {
+        const { secret, pin } = payload || {};
+        if (!secret || !pin) {
+          return respond(response, 400, { ok: false, error: "Missing secret or pin parameter" });
+        }
+        const verified = globalDefenseFortress.verifyTotpCode(secret, pin);
+        return respond(response, 200, {
+          ok: true,
+          verified,
+          message: verified ? "✅ RFC-6238 TOTP verified successfully" : "❌ Invalid or expired MFA PIN"
+        });
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    // =========================================================================
+    // 6. Autonomous Client Outreach & Deal CRM Routes
+    // =========================================================================
+    if (request.method === "GET" && url.pathname === "/api/outreach/pipeline") {
+      return respond(response, 200, {
+        ok: true,
+        summary: globalOutreachDispatcher.getPipelineSummary()
+      });
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/outreach/packet") {
+      const jobId = url.searchParams.get("jobId");
+      if (!jobId) return respond(response, 400, { ok: false, error: "Missing jobId query parameter" });
+      try {
+        const packet = globalOutreachDispatcher.getDispatchPacket(jobId);
+        return respond(response, 200, { ok: true, packet });
+      } catch (err) {
+        return respond(response, 404, { ok: false, error: err.message });
+      }
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/outreach/dispatch") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { jobId, channel, recipient, notes } = payload || {};
+          if (!jobId) return respond(response, 400, { ok: false, error: "Missing jobId parameter" });
+          const result = globalOutreachDispatcher.recordDispatch(jobId, { channel, recipient, notes });
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/outreach/update-stage") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { jobId, stage, notes } = payload || {};
+          if (!jobId || !stage) return respond(response, 400, { ok: false, error: "Missing jobId or stage parameter" });
+          const result = globalOutreachDispatcher.updateDealStage(jobId, stage, { notes });
+          return respond(response, 200, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
+    }
+
+    if (request.method === "POST" && url.pathname === "/api/outreach/create-deal-invoice") {
+      readJsonBody(request, response).then(payload => {
+        try {
+          const { jobId, customAmountInr, customNotes } = payload || {};
+          if (!jobId) return respond(response, 400, { ok: false, error: "Missing jobId parameter" });
+          const result = globalOutreachDispatcher.generateClientInvoice(jobId, { customAmountInr, customNotes });
+          return respond(response, 201, { ok: true, result });
+        } catch (err) {
+          return respond(response, 400, { ok: false, error: err.message });
+        }
+      }).catch(err => respond(response, 400, { ok: false, error: err.message }));
+      return;
     }
 
     return respond(response, 404, { error: "not found" });

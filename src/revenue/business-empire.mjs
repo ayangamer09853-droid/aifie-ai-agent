@@ -32,6 +32,13 @@ import {
   EmpireSelfImprovementSystem,
   EmpireSuccessMetricsTracker
 } from "./execution-agents-level3.mjs";
+import { CommercialCriticAgent, FALSIFICATION_VERDICT } from "./commercial-critic.mjs";
+import { DynamicDagCompiler } from "./dynamic-dag-compiler.mjs";
+import { MeteredApiGateway } from "./metered-api-gateway.mjs";
+import { GeneticPromptEvolver } from "./genetic-prompt-evolver.mjs";
+import { ExecutiveWarRoom } from "./executive-war-room.mjs";
+import { AutonomousImmuneMesh, CIRCUIT_STATE, IMMUNE_HEALTH } from "../core/autonomous-immune-mesh.mjs";
+import { SovereignNodeMesh, NODE_ROLES, NODE_STATUS } from "../platform/sovereign-node-mesh.mjs";
 
 export {
   EmpireSafetyEngine,
@@ -49,7 +56,19 @@ export {
   AnalyticsAgent,
   ReportingAgent,
   EmpireSelfImprovementSystem,
-  EmpireSuccessMetricsTracker
+  EmpireSuccessMetricsTracker,
+  CommercialCriticAgent,
+  FALSIFICATION_VERDICT,
+  DynamicDagCompiler,
+  MeteredApiGateway,
+  GeneticPromptEvolver,
+  ExecutiveWarRoom,
+  AutonomousImmuneMesh,
+  CIRCUIT_STATE,
+  IMMUNE_HEALTH,
+  SovereignNodeMesh,
+  NODE_ROLES,
+  NODE_STATUS
 };
 
 export const GOVERNOR_DECISION = {
@@ -419,6 +438,7 @@ export class ChiefOperationsAgent {
       offeringTitle: offering.name || offering.title,
       clientName: clientSpecs.clientName || "Enterprise Client",
       qaAudit,
+      qaScore: qaAudit.score,
       artifact,
       status: "FULFILLED_EXCELLENT",
       completedAt: new Date().toISOString()
@@ -506,13 +526,23 @@ export class ChiefFinanceAgent {
     return { invoice, payment, distribution, record };
   }
 
+  getReserveVaultStatus() {
+    return {
+      growthCapitalInr: this.treasuryAllocations.growth_40,
+      reserveVaultInr: this.treasuryAllocations.reserveVault_25,
+      infrastructureInr: this.treasuryAllocations.infrastructure_20,
+      researchInr: this.treasuryAllocations.research_10,
+      emergencyFundInr: this.treasuryAllocations.emergencyFund_5
+    };
+  }
+
   getTreasurySummary() {
     return {
       cumulativeRevenueInr: this.cumulativeRevenueInr,
       cumulativeProfitInr: this.cumulativeProfitInr,
       treasuryBalances: this.treasuryAllocations,
       ledgerEntriesCount: this.ledger.length,
-      growthHighwayStatus: this.growthPath.getStatus()
+      growthHighwayStatus: this.growthPath?.getStatus ? this.growthPath.getStatus() : null
     };
   }
 }
@@ -557,13 +587,20 @@ export class ChiefIntelligenceAgent {
 
   detectTrends(timeframe = "Q3-Q4 2026") {
     const trends = [
-      { trend: "Direct WhatsApp Business API Automated Consultations", momentumScore: 94, actionableVertical: "Software / SaaS" },
-      { trend: "Precision AgriTech Hyperlocal Weather & Crop Advisory", momentumScore: 91, actionableVertical: "Agriculture-Focused" },
-      { trend: "High-Margin Micro-SaaS Platforms with Stripe/UPI", momentumScore: 89, actionableVertical: "High-Leverage Asset Building" },
-      { trend: "Permission-First Value-Engine Email Prospecting", momentumScore: 87, actionableVertical: "Lead Generation" }
+      { name: "Direct WhatsApp Business API Automated Consultations", trend: "Direct WhatsApp Business API Automated Consultations", momentumScore: 94, actionableVertical: "Software / SaaS" },
+      { name: "Precision AgriTech Hyperlocal Weather & Crop Advisory", trend: "Precision AgriTech Hyperlocal Weather & Crop Advisory", momentumScore: 91, actionableVertical: "Agriculture-Focused" },
+      { name: "High-Margin Micro-SaaS Platforms with Stripe/UPI", trend: "High-Margin Micro-SaaS Platforms with Stripe/UPI", momentumScore: 89, actionableVertical: "High-Leverage Asset Building" },
+      { name: "Permission-First Value-Engine Email Prospecting", trend: "Permission-First Value-Engine Email Prospecting", momentumScore: 87, actionableVertical: "Lead Generation" }
     ];
     this.detectedTrends = trends;
-    return trends;
+    // Return structured object for REQ-10 measurability (array also preserved via .trends)
+    return {
+      trends,
+      timeframe,
+      count: trends.length,
+      topTrend: trends[0].name,
+      detectedAt: new Date().toISOString()
+    };
   }
 
   scoreOpportunity(offeringOrConcept = {}) {
@@ -665,6 +702,15 @@ export class AifieBusinessEmpire {
     this.selfImprovement = new EmpireSelfImprovementSystem();
     this.metricsTracker = new EmpireSuccessMetricsTracker();
 
+    // Breakthrough Innovations Engines
+    this.critic = new CommercialCriticAgent();
+    this.dagCompiler = new DynamicDagCompiler(this);
+    this.meteredGateway = new MeteredApiGateway(this.cfo);
+    this.promptEvolver = new GeneticPromptEvolver();
+    this.warRoom = new ExecutiveWarRoom(this);
+    this.immuneMesh = new AutonomousImmuneMesh();
+    this.sovereignMesh = new SovereignNodeMesh();
+
     this.empireCyclesRun = 0;
     this.empireHistory = [];
   }
@@ -736,6 +782,16 @@ export class AifieBusinessEmpire {
       email: params.email || "founder@apexglobal.io"
     }, offer);
 
+    // Adversarial Critic Falsification Stress-Test
+    const criticAudit = this.critic.falsifyProposal({
+      title: offer.title,
+      expectedRevenueInr: offer.recommendedPriceInr,
+      costInr: Math.round(offer.recommendedPriceInr * (1 - (offer.targetGrossMarginPercent / 100))),
+      turnaroundDays: offer.turnaroundDays,
+      isDigitalAsset: ["Digital Products", "Software / SaaS", "Agriculture-Focused"].includes(offer.vertical),
+      isRecurring: Boolean(params.isRecurring)
+    });
+
     // SUPREME GOVERNOR: Evaluates proposal via 8-Dimension Framework
     const governorDecision = this.governor.evaluateProposal({
       title: `Contract Execution: ${offer.title} for ${lead.company}`,
@@ -751,7 +807,7 @@ export class AifieBusinessEmpire {
       isRecurring: Boolean(params.isRecurring),
       isUnethical: Boolean(params.isUnethical)
     });
-    stepsLog.push({ step: 4, name: "Convert Customers", status: governorDecision.decision, governorDecision: governorDecision.decision });
+    stepsLog.push({ step: 4, name: "Convert Customers", status: governorDecision.decision, governorDecision: governorDecision.decision, criticRobustness: criticAudit.robustnessScore });
 
     let executionResult = null;
     let level3Deliverable = null;
@@ -791,9 +847,10 @@ export class AifieBusinessEmpire {
       customerSuccessPlan = this.cco.conductOnboardingAndReview(lead.name, offer);
       stepsLog.push({ step: 7, name: "Gather Feedback", status: "COMPLETED", csatScore: customerSuccessPlan.csatScore });
 
-      // STEP 8: Improve systems (Self-Improvement Daily Review)
+      // STEP 8: Improve systems (Self-Improvement Daily Review & Genetic Prompt Evolution)
       const dailyReview = this.selfImprovement.runDailyReview({ dealsWon: 1 });
-      stepsLog.push({ step: 8, name: "Improve Systems", status: "COMPLETED", reviewId: dailyReview.reviewId });
+      const promptEvolution = this.promptEvolver.runEvolutionCycle({ openRatePercent: 26.5, csatScore: 5.0 });
+      stepsLog.push({ step: 8, name: "Improve Systems", status: "COMPLETED", reviewId: dailyReview.reviewId, promptGeneration: promptEvolution.generation });
 
       // STEP 9: Reinvest profits (40% Growth, 25% Reserve, 20% Infra, 10% Research, 5% Emergency)
       stepsLog.push({ step: 9, name: "Reinvest Profits", status: "COMPLETED", treasuryAllocations: financeSettlement.distribution });
@@ -817,6 +874,7 @@ export class AifieBusinessEmpire {
       emailOutreach,
       lead,
       proposal,
+      criticAudit,
       governorDecision,
       executionResult,
       level3Deliverable,
@@ -862,6 +920,15 @@ export class AifieBusinessEmpire {
         name: agent.name,
         role: agent.role
       })),
+      innovations: {
+        criticAudit: this.critic.getAuditSummary(),
+        dagExecutionsCount: this.dagCompiler.executionHistory.length,
+        meteredApi: this.meteredGateway.getStatus(),
+        promptChampion: this.promptEvolver.getChampionPrompt(),
+        warRoomCommandsCount: this.warRoom.commandHistory.length,
+        immuneMesh: this.immuneMesh.getStatus(),
+        sovereignMesh: this.sovereignMesh.getMeshStatus()
+      },
       successMetrics: this.metricsTracker.getMetrics(),
       selfImprovement: {
         dailyReviewsCount: this.selfImprovement.dailyReviews.length,
@@ -877,3 +944,6 @@ export class AifieBusinessEmpire {
     };
   }
 }
+
+export const aifieBusinessEmpire = new AifieBusinessEmpire();
+

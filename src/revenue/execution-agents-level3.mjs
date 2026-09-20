@@ -630,6 +630,7 @@ export class EmpireSelfImprovementSystem {
     const report = {
       reviewId,
       period: "DAILY",
+      reviewType: "DAILY",   // alias for REQ-6 measurability
       timestamp: new Date().toISOString(),
       wins,
       losses,
@@ -654,6 +655,7 @@ export class EmpireSelfImprovementSystem {
     const report = {
       reviewId,
       period: "WEEKLY",
+      reviewType: "WEEKLY",   // alias for REQ-6 measurability
       timestamp: new Date().toISOString(),
       strategicReview: {
         summary: "Autonomous Business Empire maintains robust zero-capital trajectory towards Stage 3 (Monthly Retainers).",
@@ -689,6 +691,7 @@ export class EmpireSelfImprovementSystem {
     const report = {
       reviewId,
       period: "MONTHLY",
+      reviewType: "MONTHLY",   // alias for REQ-6 measurability
       timestamp: new Date().toISOString(),
       revenueAudit: {
         grossRevenueInr: stats.revenueInr || 125000,
